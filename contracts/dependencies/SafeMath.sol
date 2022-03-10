@@ -237,6 +237,21 @@ library SafeMath256 {
     uint256 internal constant halfRAY = RAY / 2;
 
     /**
+    * @return One ray, 1e27
+    **/
+    function ray() internal pure returns (uint256) {
+    return RAY;
+    }
+
+    /**
+    * @return One wad, 1e18
+    **/
+
+    function wad() internal pure returns (uint256) {
+    return WAD;
+    }
+
+    /**
    * @dev Multiplies two wad, rounding half up to the nearest wad
    * @param a Wad
    * @param b Wad

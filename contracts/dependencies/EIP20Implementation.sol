@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import './Context.sol';
-import './EIP20Interface.sol';
-import '../math/PMath.sol';
+import "./Context.sol";
+import "./EIP20Interface.sol";
+import "../math/PMath.sol";
 
 /**
  * @title Prestare Implementation of the EIP20 interface
@@ -37,11 +37,12 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @param name set the name of the token.
      * @param symbol set the symbol of the token.
      */
-    constructor(string memory name, string memory symbol) public {
+    constructor(string memory name, string memory symbol, uint8 decimals) public {
         _name = name;
         _symbol = symbol;
         // check the p_math file and use ray or wad
-        _decimals = 18;
+        // TODO: 传参数进来还是直接定18？
+        _decimals = decimals;
     }
 
 
@@ -211,7 +212,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @return a boolean value indicating whether the operation succeeded.
      */
     function _mint(address dst, uint256 amount) internal virtual {
-        require(dst != address(0), 'ERC20: mint to the zero address');
+        require(dst != address(0), "ERC20: mint to the zero address");
 
         MathError matherr;
         uint256 result;
@@ -234,7 +235,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @return a boolean value indicating whether the operation succeeded.
      */
     function _burn(address src, uint256 amount) internal virtual {
-        require(src != address(0), 'ERC20: burn from the zero address');
+        require(src != address(0), "ERC20: burn from the zero address");
 
         MathError matherr;
         uint256 result;

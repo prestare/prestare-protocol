@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-library TypeLib {
+library AssetsLib {
   // The reserve infomation which refer to the whitepaper
-  struct ReserveInfo {
+  struct AssetProfile {
     //stores the reserve configuration
-    ReserveConfigMap configuration;
+    AssetConfigMapping configuration;
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
     //variable borrow index. Expressed in ray
@@ -18,7 +18,7 @@ library TypeLib {
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
     //tokens addresses
-    address aTokenAddress;
+    address pTokenAddress;
     address stableDebtTokenAddress;
     address variableDebtTokenAddress;
     //address of the interest rate strategy
@@ -27,7 +27,7 @@ library TypeLib {
     uint8 id;
   }
 
-  struct ReserveConfigMap {
+  struct AssetConfigMapping {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus
@@ -41,7 +41,7 @@ library TypeLib {
     uint256 data;
   }
 
-  struct UserConfigurationMap {
+  struct UserConfigurationMapping {
     uint256 data;
   }
 
