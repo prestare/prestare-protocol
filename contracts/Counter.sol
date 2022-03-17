@@ -9,37 +9,41 @@ import {CounterInterface} from "./Interfaces/CounterInterface.sol";
 
 contract Counter is AssetsStorage, PCounter {
     
-    function deposit (address currency, uint256 amount, address provider) external {
+    // TODO： 设置函数调用权限或者状态
+    function deposit (address assetAddr, uint256 amount, address provider) external {
 
-        AssetsLib.AssetProfile storage assetData = _AssetData[currency];
+        AssetsLib.AssetProfile storage assetData = _AssetData[assetAddr];
 
-        KoiosJudgement.DepositJudgement(currency, amount);
+        KoiosJudgement.DepositJudgement(assetAddr, amount);
 
-        address aTokenAddr = assetData.aTokenAddress;
+        address pTokenAddr = assetData.pTokenAddress;
 
         // TODO: 更新池子状态
         // 更新资产的状态变量
         assetData.updateState();
         // 更新资产的利率模型变量
-        assetData.updateInterestRates(currency, aToken, amount, 0);
+        assetData.updateInterestRates(assetAddr, pTokenAddr, amount, 0);
 
-        EIP20Interface(currency).safeTransferFrom(msg.sender, aTokenAddr, amount);
+        EIP20Interface(assetAddr).safeTransferFrom(msg.sender, pTokenAddr, amount);
 
-        emit Deposit(currency, msg.sender, provider, amount);
+        emit Deposit(assetAddr, msg.sender, provider, amount);
     }
 
-    function withdraw (address asscurrencyet, uint256 amount, address to) external {
+    function withdraw (address assetAddr, uint256 amount, address to) external {
 
-        AssetsLib.AssetProfile storage assetData = _AssetData[currency];
-        address aTokenAddr = assetData.aTokenAddress;
-        uint256 userBalance = EIP20Interface(aTokenAddr).balanceOf(msg.sender); 
+        AssetsLib.AssetProfile storage assetData = _AssetData[assetAddr];
+        address pTokenAddr = assetData.pTokenAddress;
+        uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
         uint256 withdrawAmount = amount;
 
         if (amount == type(uint256).max) {
             withdrawAmount = userBalance;
         }
 
-        KoiosJudgement.WithdrawJudgement(currency, amount);
+        KoiosJudgement.WithdrawJudgement(assetAddr, withdrawAmount);
+
+        assetData.updateState();
+        assetData.updateInterestRates(assetAddr, pTokenAddr, 0, withdrawAmount);
 
         // TODO: burn 掉相应数量的atoken
 

@@ -16,6 +16,18 @@ library AssetsConfiguration {
     uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
     uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
 
+    uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
+
+    /**
+   * @dev Gets the reserve factor of the reserve
+   * @param self The reserve configuration
+   * @return The reserve factor
+   **/
+    function getReserveFactor(AssetsLib.AssetConfigMapping storage self) internal view returns(uint256) {
+        return (self.data & ~RESERVE_FACTOR_MASK >> RESERVE_FACTOR_START_BIT_POSITION);
+    }
+
+
     /**
     * @dev Gets the configuration flags of the reserve
     * @param self The reserve configuration

@@ -9,7 +9,7 @@ import {IncentivesController} from "./Incentives.sol";
  * @notice Interface for the initialize function common between debt tokens
  * @author Aave
  **/
-interface InitialBorrowInterface {
+interface InitialPToken {
     /**
     * @dev Emitted when a debt token is initialized
     * @param underlyingAsset The address of the underlying asset

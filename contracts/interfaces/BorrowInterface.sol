@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 // Author: Aave
 
 import {BalanceInterface} from "./BalanceInterface.sol";
-import {InitialBorrowInterface} from "./InitialBorrowInterface.sol";
+import {InitialPToken} from "./InitialPToken.sol";
 
 // import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 // import {IInitializableDebtToken} from './IInitializableDebtToken.sol';
@@ -15,7 +15,7 @@ import {InitialBorrowInterface} from "./InitialBorrowInterface.sol";
 * @author Aave
 * @notice Defines the basic interface for a variable debt token.
 **/
-interface BorrowInterface is BalanceInterface, InitialBorrowInterface {
+interface BorrowInterface is BalanceInterface, InitialPToken {
     /**
     * @dev Emitted after the mint action
     * @param from The address performing the mint
@@ -63,5 +63,5 @@ interface BorrowInterface is BalanceInterface, InitialBorrowInterface {
     /**
     * @dev Returns the address of the incentives controller contract
     **/
-    function getIncentivesController() external view returns (InitialBorrowInterface);
+    function getIncentivesController() external view returns (InitialPToken);
 }
