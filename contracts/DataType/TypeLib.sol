@@ -9,11 +9,11 @@ library AssetsLib {
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
     //variable borrow index. Expressed in ray
-    uint128 variableBorrowIndex;
+    uint128 totalBorrowIndex;
     //the current supply rate. Expressed in ray
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
-    uint128 currentVariableBorrowRate;
+    uint128 currentBorrowRate;
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;

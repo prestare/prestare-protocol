@@ -13,7 +13,7 @@ library KoiosJudgement {
     * @param asset The asset the user is depositing
     * @param amount The amount to be deposited
     */
-    function DepositJudgement(AssetsLib.AssetsProfile storage asset, uint256 amount) external view {
+    function DepositJudgement(AssetsLib.AssetProfile storage asset, uint256 amount) external view {
 
         (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
 
@@ -35,9 +35,9 @@ library KoiosJudgement {
     * @param assetNumber The number of reserves
     * @param oracle The price oracle
     */
-    function validateWithdraw(
-    address assetAddr,
-    uint256 amount,
+    function WithdrawJudgement(
+    address assetAddr, 
+    uint256 amount, 
     uint256 userBalance,
     mapping(address => AssetsLib.AssetProfile) assetData,
     AssetsLib.UserConfigurationMapping storage userConfig,

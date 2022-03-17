@@ -4,10 +4,13 @@ pragma solidity ^0.8.4;
 // Author: Aave
 
 import {SafeMath256} from "./../dependencies/SafeMath.sol";
+import {WadRayMath} from "./../utils/WadRay.sol";
 
+// TODO: math模块检查
 
 library functions {
     using SafeMath256 for uint256;
+    using WadRayMath for uint256;
 
     uint256 internal constant SECONDS_PER_YEAR = 365 days;
 
@@ -34,7 +37,44 @@ library functions {
 
     return result;
     }
-    
+
+    /**
+    * @dev Function to calculate the interest using a compounded interest rate formula
+    * To avoid expensive exponentiation, the calculation is performed using a binomial approximation:
+    *
+    *  (1+x)^n = 1+n*x+[n/2*(n-1)]*x^2+[n/6*(n-1)*(n-2)*x^3...
+    *
+    * The approximation slightly underpays liquidity providers and undercharges borrowers, with the advantage of great gas cost reductions
+    * The whitepaper contains reference to the approximation and a table showing the margin of error per different time periods
+    *
+    * @param rate The interest rate, in ray
+    * @param lastUpdateTimestamp The timestamp of the last update of the interest
+    * @return The interest rate compounded during the timeDelta, in ray
+    **/
+    function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp, uint256 currentTimestamp)  internal view returns (uint256) {
+
+    (bool status, uint256 timeDiff) = SafeMath256.trySub_(block.timestamp, lastUpdateTimestamp);
+
+    // TODO: Add an error here
+    require(status == true, "TO BE ADDED ERROR");
+
+    if (timeDiff == 0) {
+        return SafeMath256.ray();
+    }
+
+    uint256 diffMinusOne = timeDiff - 1;
+    uint256 diffMinusTwo = timeDiff > 2 ? timeDiff - 2 : 0;
+    uint256 ratePerSecond = rate / SECONDS_PER_YEAR;
+
+    uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
+    uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);
+
+    uint256 secondTerm = timeDiff.mul_(diffMinusOne).mul_(basePowerTwo) / 2;
+    uint256 thirdTerm = timeDiff.mul_(diffMinusOne).mul_(diffMinusTwo).mul_(basePowerThree) / 6;
+
+    return WadRayMath.ray().add_(ratePerSecond.mul_(timeDiff)).add_(secondTerm).add_(thirdTerm);
+    }
+
     function _mulThenAdd(uint256 a, uint256 b, uint256 c) internal pure returns (uint256) {
         (bool status1, uint256 tmp1) = SafeMath256.tryMul_(a, b);
         require(status1 == true, "TO BE ADDED ERROR");

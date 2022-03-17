@@ -5,7 +5,7 @@ import {AssetsStorage} from "./AssetsStorage.sol";
 import {AssetsLib} from "./DataType/TypeLib.sol";
 import {KoiosJudgement} from "./Koios.sol";
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
-import {PCounter} from "./interfaces/PCounter.sol";
+import {CounterInterface} from "./Interfaces/CounterInterface.sol";
 
 contract Counter is AssetsStorage, PCounter {
     

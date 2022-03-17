@@ -21,7 +21,7 @@ library AssetsConfiguration {
     * @param self The reserve configuration
     * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
     **/
-    function getFlags(DataTypes.ReserveConfigurationMap storage self)
+    function getFlags(AssetsLib.AssetConfigMapping storage self)
     internal
     view
     returns (
