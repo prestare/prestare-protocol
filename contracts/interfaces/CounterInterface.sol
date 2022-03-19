@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import {AssetsLib} from "./../DataType/TypeLib.sol";
 
-interface PCounter {
+interface CounterInterface {
     /**
     * @dev Emitted on deposit()
     * @param assetAddr The address of the underlying asset of the reserve

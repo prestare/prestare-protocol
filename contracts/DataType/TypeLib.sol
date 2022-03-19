@@ -6,25 +6,30 @@ library AssetsLib {
   struct AssetProfile {
     //stores the reserve configuration
     AssetConfigMapping configuration;
+    //
+    AssetData _assetData;
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
-    //variable borrow index. Expressed in ray
-    uint128 variableBorrowIndex;
+    //borrow index. Expressed in ray
+    uint128 borrowIndex;
     //the current supply rate. Expressed in ray
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
-    uint128 currentVariableBorrowRate;
+    uint128 currentBorrowRate;
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
     //tokens addresses
     address pTokenAddress;
-    address stableDebtTokenAddress;
-    address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
     uint8 id;
+  }
+
+  struct AssetData {
+    // 记录scb
+    uint256 scaledBorrowedAmount;
   }
 
   struct AssetConfigMapping {
