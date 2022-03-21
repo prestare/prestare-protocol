@@ -18,6 +18,16 @@ library AssetPoolProfile {
 
     using AssetsConfiguration for AssetsLib.AssetConfigMapping;
 
+    // TODO: 根据TypeLib的数据进行初始化
+    function init(
+        AssetsLib.AssetProfile storage asset, 
+        address pTokenAddr
+        ) external {
+            reserve.liquidityIndex = uint128(WadRayMath.ray());
+            reserve.borrowIndex = uint128(WadRayMath.ray());
+            reserve.pTokenAddress = pTokenAddr;
+        }
+
     function updateState(AssetsLib.AssetProfile storage asset) internal {
         uint256 oldBorrowIndex = asset.borrowIndex;
         uint256 oldLiquidityIndex = asset.liquidityIndex;
