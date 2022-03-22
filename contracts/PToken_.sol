@@ -32,6 +32,19 @@ contract PToken is
      */
     address internal _admin;
 
+    // 为了permit函数所设置的
+    bytes32 public DOMAIN_SEPARATOR;
+    
+    bytes public constant EIP712_REVISION = bytes('1');
+    bytes32 internal constant EIP712_DOMAIN =
+        keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
+    
+    bytes32 public constant PERMIT_TYPEHASH =
+        keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
+    
+    /// @dev owner => next valid nonce to submit with permit()
+    mapping(address => uint256) public _nonces;
+
     modifier onlyCounter {
         require(msg.sender == address(_counter), Errors.message);
         _;
@@ -41,6 +54,17 @@ contract PToken is
         require(msg.sender == _admin, Errors.message);
         _;
     }
+
+    event Initialized(        
+        address counter,
+        address gasStation,
+        address underlyingAsset,
+        address crt
+        uint8 pTokenDecimals,
+        string callData pTokenName,
+        string callData pTokenSymbol,
+        bytes calldata params
+    );
 
     /**
      * @notice Initializes the PToken 
@@ -63,7 +87,7 @@ contract PToken is
         string callData pTokenName,
         string callData pTokenSymbol,
         bytes calldata params
-    ) external override onlyAdmin
+    ) external override
     {  
         // TODO 后续可能在继承的EIP20中通过函数的方式设置。
         _name = pTokenName;
@@ -74,9 +98,23 @@ contract PToken is
         _counter = counter;
         _gasStation = gasStation;
         _underlyingAsset = underlyingAsset;
-
+        // 只允许admin改变，暂定
         require(msg.sender == admin, "only admin may initialize the contract");
-
+        
+        // 获取链id，用来区分不同 EVM 链的一个标识
+        uint256 chainId;
+        assembly {
+            chainId := chainid()
+        }
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+            EIP712_DOMAIN,
+            keccak256(bytes(aTokenName)),
+            keccak256(EIP712_REVISION),
+            chainId,
+            address(this)
+        )
+        );
         // Initialize the block number and borrow index
         // accrualBlockNumber = getBlockNumber();
         // borrowIndex = mantissa;
@@ -84,8 +122,19 @@ contract PToken is
         // symbol = symbol_;
 
         // _notEntered = true;
-
+        emit Initialized(
+            address(counter),
+            gasStation,
+            underlyingAsset,
+            crt,
+            pTokenDecimals,
+            pTokenName,
+            pTokenSymbol,
+            params
+        );
     }
+
+    event Mint(address indexed from, uint256 value, uint256 index);
 
     /**
      * @notice Mints {amout} pToken to {user}
@@ -114,8 +163,9 @@ contract PToken is
         return lastBalance == 0;
     }
 
+    // TODO 后续该函数实际由ReserveLogic重写，在Aave的其他部分并未使用
     /**
-     * @dev Mints aTokens to the reserve treasury
+     * @dev Mints pTokens to the reserve treasury
      * - Only callable by the Counter
      * @param amount The amount of tokens getting minted
      * @param index The new liquidity index of the reserve
@@ -131,8 +181,11 @@ contract PToken is
         emit Mint(treasury, amount, index);
     }
 
+
+    event Burn(address indexed from, address indexed target, uint256 value, uint256 index);
+
     /**
-     * @dev Burns aTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
+     * @dev Burns pTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
      * - Only callable by the LendingPool, as extra state updates there need to be managed
      * @param user The owner of the aTokens, getting them burned
      * @param receiverOfUnderlying The address that will receive the underlying
@@ -154,6 +207,8 @@ contract PToken is
         emit Transfer(user, address(0), amount);
         emit Burn(user, receiverOfUnderlying, amount, index);
     }
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
 
     /**
      * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
@@ -203,7 +258,7 @@ contract PToken is
         override(EIP20Interface)
         returns (uint256)
     {
-        return super.balanceOf(user).rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset));
+        return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
     }
 
     /**
@@ -307,294 +362,88 @@ contract PToken is
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    function getBlockNumber() internal view returns (uint) 
-    {
-        return block.number;
+    /**
+     * @dev implements the permit function as for
+     * https://github.com/ethereum/EIPs/blob/8a34d644aacf0f9f8f00815307fd7dd5da07655f/EIPS/eip-2612.md
+     * @param owner The owner of the funds
+     * @param spender The spender
+     * @param value The amount
+     * @param deadline The deadline timestamp, type(uint256).max for max deadline
+     * @param v Signature param
+     * @param s Signature param
+     * @param r Signature param
+     */
+    function permit(
+        address owner,
+        address spender,
+        uint256 value,
+        uint256 deadline,
+        uint8 v,
+        bytes32 r,
+        bytes32 s
+    ) external {
+        require(owner != address(0), 'INVALID_OWNER');
+        //solium-disable-next-line
+        require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+        uint256 currentValidNonce = _nonces[owner];
+        bytes32 digest =
+        keccak256(
+            abi.encodePacked(
+            '\x19\x01',
+            DOMAIN_SEPARATOR,
+            keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
+            )
+        );
+        require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+        _nonces[owner] = currentValidNonce.add(1);
+        _approve(owner, spender, value);
     }
 
-    function transferTokens(address executor, address payer, address payee, uint amount) internal returns(uint)
-    {   
-        // Self-transfers are not allowed
-        if (executor == payer)
-        {
-            return fail(Error.INPUT_ERROR, FailureInfo.SELF_TRANSFER_IS_NOT_ALLOWED);
-        }
-        
-        //TODO: executor 是否有allowance？
-        // Get the allowance, infinite for the account owner
-
-        MathError mathError;
-        uint payerTokensNew; 
-        uint payeeTokensNew; 
-
-        (mathError, payerTokensNew) = subUint256(accountTokens[payer], amount);
-        if (mathError != MathError.NO_ERROR)
-        {
-            return fail(Error.MATH_ERROR, FailureInfo.TRANSFER_NOT_ALLOWED);
-        }
-
-        (mathError, payeeTokensNew) = addUint256(accountTokens[payee], amount);
-        if (mathError != MathError.NO_ERROR)
-        {
-            return fail(Error.MATH_ERROR, FailureInfo.TRANSFER_NOT_ALLOWED);
-        }
-
-        // update accountTokens
-        accountTokens[payer] = payerTokensNew;
-        accountTokens[payee] = payeeTokensNew;
-
-        emit Transfer(payer, payee, amount);
-
-        return uint(Error.NO_ERROR);
-    }
-
-    function transfer(address payee, uint256 amount) external nonReentrant returns (bool) 
-    {
-        return transferTokens(msg.sender, msg.sender, payee, amount) == uint(Error.NO_ERROR);
-    }
-
-    function transferFrom(address payer, address payee, uint256 amount) external nonReentrant returns (bool) {
-        return transferTokens(msg.sender, payer, payee, amount) == uint(Error.NO_ERROR);
-    }
-
-    function accrueInterest() public returns (uint) 
-    {
-        /* Remember the initial block number */
-        uint currentBlockNumber = getBlockNumber();
-        uint accrualBlockNumberPrior = accrualBlockNumber;
-
-        /* Short-circuit accumulating 0 interest */
-        if (accrualBlockNumberPrior == currentBlockNumber) 
-        {
-            return uint(Error.NO_ERROR);
-        }
-
-        /* Read the previous values out of storage */
-        uint cashPrior = getCashPrior();
-        uint borrowsPrior = totalBorrows;
-        uint reservesPrior = totalReserves;
-        uint borrowIndexPrior = borrowIndex;
-
-        // TODO: interest rate model? 
-        // TODO: hardcode
-        uint borrowRateMantissa = 1;
-
-        /* Calculate the number of blocks elapsed since the last accrual */
-        (MathError mathErr, uint blockDelta) = subUint256(currentBlockNumber, accrualBlockNumberPrior);
-        require(mathErr == MathError.NO_ERROR, "could not calculate block delta");
-
-        exponential memory simpleInterestFactor;
-        uint interestAccumulated;
-        uint totalBorrowsNew;
-        uint totalReservesNew;
-        uint borrowIndexNew;
-
-        // TODO: calculate interest model
-        // TODO: update current market varaibles
-        // TODO: new interest generated
-
-        /* We emit an AccrueInterest event */
-        emit AccrueInterest(cashPrior, interestAccumulated, borrowIndexNew, totalBorrowsNew);
-
-        return uint(Error.NO_ERROR);
-    }
-
-
-    /*** mint ***/
-
-    // struct MintLocalVars 
-    // {
-    //     Error err;
-    //     MathError mathErr;
-    //     uint exchangeRateMantissa;
-    //     uint mintTokens;
-    //     uint totalSupplyNew;
-    //     uint accountTokensNew;
-    //     uint actualMintAmount;
-    // }
-
-    // function mintInternal(uint mintAmount) internal nonReentrant returns (uint, uint) 
-    // {
-    //     uint error = accrueInterest();
-
-    //     // TODO: update error list 
-
-    //     // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
-    //     return mintFresh(msg.sender, mintAmount);
-    // }
-
-    // function mintFresh(address minter, uint mintAmount) internal returns (uint, uint) 
-    // {
-
-    //     MintLocalVars memory vars;
-
-    //     // TODO: calculate the exchange rate  
-    //     // TODO: calculate the real amount minted
-    //     // TODO: calculate the real ptokens minted
-    //     // TODO: update the market variables (total pTokens / user's pTokens)
-
-    //     /* We emit a Mint event, and a Transfer event */
-    //     emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
-    //     emit Transfer(address(this), minter, vars.mintTokens);
-
-    //     return (uint(Error.NO_ERROR), vars.actualMintAmount);
-    // }
-
-
-    /*** borrow ***/
-
-    // function borrowInternal(uint borrowAmount) internal nonReentrant returns (uint) 
-    // {
-    //     uint error = accrueInterest();
-
-    //     return borrowFresh(payable(msg.sender), borrowAmount);
-    // }
-
-    // struct BorrowLocalVars 
-    // {
-    //     MathError mathErr;
-    //     uint accountBorrows;
-    //     uint accountBorrowsNew;
-    //     uint totalBorrowsNew;
-    // }
-
-    // function borrowFresh(address payable borrower, uint borrowAmount) internal returns (uint) 
-    // {
-    //     BorrowLocalVars memory vars;
-
-    //     // TODO: check the credit tokens! 
-    //     // TODO: calculate account borrows and total market borrows
-    //     // TODO: update account borrows and market variables
-
-    //     emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
-
-    //     return uint(Error.NO_ERROR);
-    // }
-
-    // function redeemInternal(uint redeemTokens) internal nonReentrant returns (uint) 
-    // {
-    //     uint error = accrueInterest();
-    //     // redeemFresh emits redeem-specific logs on errors, so we don't need to
-    //     return redeemFresh(payable(msg.sender), redeemTokens, 0);
-    // }
-
-    // struct RedeemLocalVars 
-    // {
-    //     Error err;
-    //     MathError mathErr;
-    //     uint exchangeRateMantissa;
-    //     uint redeemTokens;
-    //     uint redeemAmount;
-    //     uint totalSupplyNew;
-    //     uint accountTokensNew;
-    // }
-
-    // function redeemFresh(address payable redeemer, uint redeemTokensIn, uint redeemAmountIn) internal returns (uint) 
-    // {
-        
-    //     // TODO: 1 p-eth can redeem ? eth. 
-    //     // TODO: calculate the amount redeemed.
-    //     // TODO: update account supply and total supply
-
-    //     RedeemLocalVars memory vars;
-
-    //     /* We emit a Transfer event, and a Redeem event */
-    //     emit Transfer(redeemer, address(this), vars.redeemTokens);
-    //     emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
-
-    //     return uint(Error.NO_ERROR);
-    // }
-
-    // function repayBorrowInternal(uint repayAmount) internal nonReentrant returns (uint, uint) 
-    // {
-    //     uint error = accrueInterest();
-    //     return repayBorrowFresh(msg.sender, msg.sender, repayAmount);
-    // }
+    event BalanceTransfer(address indexed from, address indexed to, uint256 value, uint256 index);
     
-    // struct RepayBorrowLocalVars 
-    // {
-    //     Error err;
-    //     MathError mathErr;
-    //     uint repayAmount;
-    //     uint borrowerIndex;
-    //     uint accountBorrows;
-    //     uint accountBorrowsNew;
-    //     uint totalBorrowsNew;
-    //     uint actualRepayAmount;
-    // }
+    /**
+     * @notice Transfers the pTokens between two users. Validates the transfer
+     * (ie checks for valid factor after the transfer) if required
+     * @dev such as when borrowe want to transfer token， we need to validates this transcation
+     * @param from The source address
+     * @param to The destination address
+     * @param amount The amount getting transferred
+     * @param validate `true` if the transfer needs to be validated
+     */
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount,
+        bool validate
+    ) internal {
+        address underlyingAsset = _underlyingAsset;
+        PCounter counter = _counter;
 
-    // function repayBorrowFresh(address payer, address borrower, uint repayAmount) internal returns (uint, uint) 
-    // {
+        uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
 
-    //     RepayBorrowLocalVars memory vars;
+        uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
+        uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
 
-    //     /* We remember the original borrowerIndex for verification purposes */
-    //     vars.borrowerIndex = accountBorrows[borrower].interestIndex;
+        super._transfer(from, to, amount.rayDiv(index));
 
-    //     // TODO: fetch the account borrows
-    //     // TODO: check if the repay amount is legal
-    //     // TODO: calculate and update the account borrow and total market variables
+        if (validate) {
+            counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
+        }
 
-    //     emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
-
-    //     return (uint(Error.NO_ERROR), vars.actualRepayAmount);
-    // }
-
-    // function internalLiquidateManager() internal returns (uint)
-    // {
-        
-    // }
-
-    /*** liquidation ***/
-
-    // function liquidateInternal(address borrower, uint repayAmount, PToken pTokenCollateral) internal nonReentrant returns (uint, uint) 
-    // {
-    //     uint error = accrueInterest();
-
-    //     error = pTokenCollateral.accrueInterest();
-
-    //     // liquidateBorrowFresh emits borrow-specific logs on errors, so we don't need to
-    //     return liquidateFresh(msg.sender, borrower, repayAmount, pTokenCollateral);
-    // }
-
-    // function liquidateFresh(address liquidator, address borrower, uint repayAmount, PTokenStorage pTokenCollateral) internal returns (uint, uint) 
-    // {
-    //     return uint(0);
-    // }
-
-
-    function getCashPrior() virtual internal view returns (uint);
-
-
-    /*** Reentrancy Guard ***/
+        emit BalanceTransfer(from, to, amount, index);
+    }
 
     /**
-     * @dev Prevents a contract from calling itself, directly or indirectly.
-     */
-    modifier nonReentrant() {
-        require(_notEntered, "re-entered");
-        _notEntered = false;
-        _;
-        _notEntered = true; // get a gas-refund post-Istanbul
+    * @dev Overrides the parent _transfer to force validated transfer() and transferFrom()
+    * @param from The source address
+    * @param to The destination address
+    * @param amount The amount getting transferred
+    **/
+    function _transfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal override {
+        _transfer(from, to, amount, true);
     }
 }
