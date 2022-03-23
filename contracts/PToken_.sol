@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.43;
+pragma solidity ^0.8.4;
 
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 import {EIP20Implementation} from "./dependencies/EIP20Implementation.sol";
 import {SafeERC20} from "./dependencies/SafeERC20.sol";
 import {PCounter} from "./interface/PCounter.sol";
+import {PTokenInterface} from "./interfaces/PTokenInterface.sol";
 // 关于WadRayMath的用法
 import "./dependencies/SafeMath.sol";
 import {Errors} from "./utils/ErrorList.sol";
@@ -16,7 +17,7 @@ import {KoiosJudgement} from "./Koios.sol";
 // 
 contract PToken is 
     EIP20Implementation("PTOKEN_IMPL", "PTOKEN", 0),
-    IPToken 
+    PTokenInterface 
 {
     // TODO use wadray directly?
     using SafeMath for uint256;
@@ -27,6 +28,7 @@ contract PToken is
     // TODO Aave add incentivesController to this contract
 
     address internal _crt_pool;
+
     /**
      * @notice Administrator for this contract
      */
@@ -55,22 +57,10 @@ contract PToken is
         _;
     }
 
-    event Initialized(        
-        address counter,
-        address gasStation,
-        address underlyingAsset,
-        address crt
-        uint8 pTokenDecimals,
-        string callData pTokenName,
-        string callData pTokenSymbol,
-        bytes calldata params
-    );
-
     /**
      * @notice Initializes the PToken 
-     * @dev inherit from InitializablePtoken interface
      * @param counter The address of the counter where this pToken will be used
-     * @param gasStation The address of the Aave treasury, receiving the fees on this pToken
+     * @param gasStation The address of the Prestare gasStation, receiving the fees on this pToken
      * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
      * incentivesController The smart contract managing potential incentives distribution
      * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
@@ -109,7 +99,7 @@ contract PToken is
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
             EIP712_DOMAIN,
-            keccak256(bytes(aTokenName)),
+            keccak256(bytes(pTokenName)),
             keccak256(EIP712_REVISION),
             chainId,
             address(this)
@@ -134,18 +124,17 @@ contract PToken is
         );
     }
 
-    event Mint(address indexed from, uint256 value, uint256 index);
 
     /**
      * @notice Mints {amout} pToken to {user}
      * @dev only Counter can call this function
      * @param amount The amount of tokens getting minted
      * @param user The address receiving the minted tokens
-     * @param index The new liquidity index of the reserve
+     * @param newindex The new liquidity index of the reserve
      */
     function mint(
-        uint256 amount,
         address user,
+        uint256 amount,
         uint256 newindex
     ) external override onlyCounter returns (bool) {
         uint256 lastBalance = super.balanceOf(user);
@@ -181,13 +170,10 @@ contract PToken is
         emit Mint(treasury, amount, index);
     }
 
-
-    event Burn(address indexed from, address indexed target, uint256 value, uint256 index);
-
     /**
      * @dev Burns pTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
      * - Only callable by the LendingPool, as extra state updates there need to be managed
-     * @param user The owner of the aTokens, getting them burned
+     * @param user The owner of the pTokens, getting them burned
      * @param receiverOfUnderlying The address that will receive the underlying
      * @param amount The amount being burned
      * @param newIndex The new liquidity index of the reserve
@@ -208,12 +194,10 @@ contract PToken is
         emit Burn(user, receiverOfUnderlying, amount, index);
     }
 
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
     /**
-     * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the aToken
+     * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the pToken
      * - Only callable by the LendingPool
-     * @param from The address getting liquidated, current owner of the aTokens
+     * @param from The address getting liquidated, current owner of the pTokens
      * @param to The recipient
      * @param value The amount of tokens getting transferred
      */
@@ -232,7 +216,7 @@ contract PToken is
     /**
      * @notice Transfer pToken to CRT pool
      * Question 通过CRT清算的方法，如何将财产转化为稳定币存储到CRT中
-     * @param from The address getting liquidated, current owner of the aTokens
+     * @param from The address getting liquidated, current owner of the pTokens
      * @param value The amount of tokens getting transferred
      */
     function transferOnCRT(
@@ -242,7 +226,7 @@ contract PToken is
         address crt = _crt_pool;
 
         // TODO 如何转化传输
-        _transfer(from, crt, value, false);
+        CRTInterface(crt)._transfer(from, crt, value, false);
 
         emit Transfer(from, to, value);
     }
@@ -287,7 +271,7 @@ contract PToken is
     }
 
     /**
-     * @dev calculates the total supply of the specific aToken
+     * @dev calculates the total supply of the specific pToken
      * since the balance of every single user increases over time, the total supply
      * does that too.
      * @return the current total supply
@@ -347,7 +331,7 @@ contract PToken is
     /**
      * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
      * assets in borrow(), withdraw() and flashLoan()
-     * @param target The recipient of the aTokens
+     * @param target The recipient of the pTokens
      * @param amount The amount getting transferred
      * @return The amount transferred
      */
@@ -398,9 +382,6 @@ contract PToken is
         _nonces[owner] = currentValidNonce.add(1);
         _approve(owner, spender, value);
     }
-
-    event BalanceTransfer(address indexed from, address indexed to, uint256 value, uint256 index);
-    
     /**
      * @notice Transfers the pTokens between two users. Validates the transfer
      * (ie checks for valid factor after the transfer) if required
