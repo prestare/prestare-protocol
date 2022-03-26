@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-// What's this ?
-pragma experimental ABIEncoderV2;
-
-interface IncentivesController {
+import {IPrsDistributionManager} from "./IPrsDistributionManager.sol";
+interface IPrsIncentivesController {
     event RewardsAccrued(address indexed user, uint256 amount);
 
     event RewardsClaimed(address indexed user, address indexed to, uint256 amount);
@@ -18,34 +16,19 @@ interface IncentivesController {
 
     event ClaimerSet(address indexed user, address indexed claimer);
 
-    /*
-    * @dev Returns the configuration of the distribution for a certain asset
-    * @param asset The address of the reference asset of the distribution
-    * @return The asset index, the emission per second and the last updated timestamp
-    **/
+    /**
+     * @dev Returns the configuration of the distribution for a certain asset
+     * @param asset The address of the reference asset of the distribution
+     * @return The asset index, the emission per second and the last updated timestamp
+     */
     function getAssetData(address asset)
-    external
-    view
-    returns (
-        uint256,
-        uint256,
-        uint256
-    );
-
-    /*
-    * LEGACY **************************
-    * @dev Returns the configuration of the distribution for a certain asset
-    * @param asset The address of the reference asset of the distribution
-    * @return The asset index, the emission per second and the last updated timestamp
-    **/
-    function assets(address asset)
-    external
-    view
-    returns (
-        uint128,
-        uint128,
-        uint256
-    );
+        external
+        view
+        returns (
+            uint256 index,
+            uint256 emissionPerSecond,
+            uint256 timestamp
+        );
 
     /**
     * @dev Whitelists an address to claim the rewards on behalf of another address
