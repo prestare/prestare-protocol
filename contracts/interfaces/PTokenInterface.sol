@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
-import {IScaledBalanceToken} from "./interfaces/IScaledBalanceToken.sol";
+import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
+import {IScaledBalanceToken} from "./IScaledBalanceToken.sol";
 import {InitialPToken} from "./interfaces/InitialPToken.sol";
 
 interface PTokenInterface is EIP20Interface, IScaledBalanceToken, InitialPToken {

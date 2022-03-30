@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 import {EIP20Implementation} from "./dependencies/EIP20Implementation.sol";
 import {SafeERC20} from "./dependencies/SafeERC20.sol";
-import {PCounter} from "./interface/PCounter.sol";
+import {CounterInterface} from "./interfaces/CounterInterface.sol";
 import {PTokenInterface} from "./interfaces/PTokenInterface.sol";
 // 关于WadRayMath的用法
 import "./dependencies/SafeMath.sol";
@@ -22,7 +22,7 @@ contract PToken is
     // TODO use wadray directly?
     using SafeMath for uint256;
     
-    PCounter internal _counter;
+    CounterInterface internal _counter;
     address internal _gasStation;
     address internal _underlyingAsset;
     // TODO Aave add incentivesController to this contract
@@ -37,7 +37,7 @@ contract PToken is
     // 为了permit函数所设置的
     bytes32 public DOMAIN_SEPARATOR;
     
-    bytes public constant EIP712_REVISION = bytes('1');
+    bytes public constant EIP712_REVISION = bytes("1");
     bytes32 internal constant EIP712_DOMAIN =
         keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
     
@@ -69,13 +69,13 @@ contract PToken is
      */
     // maybe we should add a initializer modify to check the status before call this function
     function initialize(
-        PCOUNTER counter,
+        CounterInterface counter,
         address gasStation,
         address underlyingAsset,
-        address crt
+        address crt,
         uint8 pTokenDecimals,
-        string callData pTokenName,
-        string callData pTokenSymbol,
+        string calldata pTokenName,
+        string calldata pTokenSymbol,
         bytes calldata params
     ) external override
     {  
@@ -220,7 +220,7 @@ contract PToken is
      * @param value The amount of tokens getting transferred
      */
     function transferOnCRT(
-        address from
+        address from,
         uint256 value
     ) external override onlyCounter {
         address crt = _crt_pool;
@@ -309,7 +309,7 @@ contract PToken is
     /**
      * @return the address of the underlying asset of this pToken (like DAI for pDAI)
      */
-    function getCounter() public view returns (PCounter) {
+    function getCounter() public view returns (CounterInterface) {
         return _counter;
     }
 
@@ -398,7 +398,7 @@ contract PToken is
         bool validate
     ) internal {
         address underlyingAsset = _underlyingAsset;
-        PCounter counter = _counter;
+        CounterInterface counter = _counter;
 
         uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
 
