@@ -15,13 +15,13 @@ library KoiosJudgement {
     */
     function DepositJudgement(AssetsLib.AssetProfile storage asset, uint256 amount) external view {
 
-        (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
+        // (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
 
         //1. 数量不能为0
         //2. Asset pool should be alive and should not be frozen
         require(amount != 0, "ERROR");
-        require(isAlive, "ERROR");
-        require(!isStuned, "ERROR");
+        // require(isAlive, "ERROR");
+        // require(!isStuned, "ERROR");
     }
 
     /**
@@ -39,7 +39,7 @@ library KoiosJudgement {
     address assetAddr, 
     uint256 amount, 
     uint256 userBalance,
-    mapping(address => AssetsLib.AssetProfile) memory assetData,
+    mapping(address => AssetsLib.AssetProfile) storage assetData,
     AssetsLib.UserConfigurationMapping storage userConfig,
     mapping(uint256 => address) storage assets,
     uint256 assetNumber,
@@ -51,8 +51,8 @@ library KoiosJudgement {
     require(amount != 0, "ERROR");
     require(amount <= userBalance, "ERROR");
 
-    (bool isAlive, , , ) = assetData[assetAddr].configuration.getFlags();
-    require(isAlive, "ERROR");
+    // (bool isAlive, , , ) = assetData[assetAddr].configuration.getFlags();
+    // require(isAlive, "ERROR");
 
     // TODO: 检查针对用户是否可以赎回 比如赎回的话是否会低于清算值
     }
@@ -65,10 +65,10 @@ library KoiosJudgement {
         uint256 crtBalance,
         uint256 userBalance
     ) external view {
-        (bool isAlive, bool isStuned, bool borrowingEnabled,) = asset.AssetsConfiguration.getFlags();
+        // (bool isAlive, bool isStuned, bool borrowingEnabled,) = asset.AssetsConfiguration.getFlags();
         
-        require(isAlive, "ERROR");
-        require(!isStuned, "ERROR");
+        // require(isAlive, "ERROR");
+        // require(!isStuned, "ERROR");
         require(borrowAmount != 0, "ERROR");
         require(crtRequired <= crtBalance, "ERROR");
     }
@@ -79,9 +79,9 @@ library KoiosJudgement {
         uint256 amount,
         address debtor
         ) external view {
-            (bool isAlive, , ,) = asset.AssetsConfiguration.getFlags();
+            // (bool isAlive, , ,) = asset.AssetsConfiguration.getFlags();
         
-            require(isAlive, "ERROR");
+            // require(isAlive, "ERROR");
             require(amount > 0, "ERROR");
 
         }

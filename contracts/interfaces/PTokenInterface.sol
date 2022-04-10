@@ -3,17 +3,17 @@ pragma solidity ^0.8.4;
 
 import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
 import {IScaledBalanceToken} from "./IScaledBalanceToken.sol";
-import {InitialPToken} from "./interfaces/InitialPToken.sol";
+import {InitialPToken} from "./InitialPToken.sol";
 
 interface PTokenInterface is EIP20Interface, IScaledBalanceToken, InitialPToken {
     
     /**
      * @dev Emitted after the mint action
-     * @param form The address performing the mint
+     * @param from The address performing the mint
      * @param value The amount being
-     * @param index The new liquidity index of the reserve
+     * @param newIndex The new liquidity index of the reserve
      */
-    event Mint(address indexed from, uint256 value, uint256 newindex);
+    event Mint(address indexed from, uint256 value, uint256 newIndex);
     
     /**
      * @dev Emitted after the burn action
@@ -28,15 +28,6 @@ interface PTokenInterface is EIP20Interface, IScaledBalanceToken, InitialPToken 
         uint256 amount, 
         uint256 newIndex
     );
-
-    /**
-     * @dev Emitted after the transfer action
-     * @param form The address performing the transaction
-     * @param to The address receive this token
-     * @param value The amount of tokens getting transferred
-     */
-    event Transfer(address indexed from, address indexed to, uint256 value);
-
 
     /**
      * @dev Emitted during the transfer action
@@ -93,16 +84,16 @@ interface PTokenInterface is EIP20Interface, IScaledBalanceToken, InitialPToken 
         uint256 value
     ) external;
 
-    /**
-     * @notice Transfer pToken to CRT pool
-     * Question 通过CRT清算的方法，如何将财产转化为稳定币存储到CRT中
-     * @param from The address getting liquidated, current owner of the pTokens
-     * @param value The amount of tokens getting transferred
-     */
-    function transferOnCRT(
-        address from,
-        uint256 value
-    ) external;
+    // /**
+    //  * @notice Transfer pToken to CRT pool
+    //  * Question 通过CRT清算的方法，如何将财产转化为稳定币存储到CRT中
+    //  * @param from The address getting liquidated, current owner of the pTokens
+    //  * @param value The amount of tokens getting transferred
+    //  */
+    // function transferOnCRT(
+    //     address from,
+    //     uint256 value
+    // ) external;
 
     /**
      * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
@@ -113,15 +104,15 @@ interface PTokenInterface is EIP20Interface, IScaledBalanceToken, InitialPToken 
      */
     function transferUnderlyingTo(address user, uint256 amount) external returns (uint256);
 
-    /**
-     * @dev Returns the address of the incentives controller contract
-     */
-    function getIncentivesController() external view returns (IAaveIncentivesController);
+    // /**
+    //  * @dev Returns the address of the incentives controller contract
+    //  */
+    // function getIncentivesController() external view returns ();
 
-    /**
-     * @dev Returns the address of the underlying asset of this pToken (E.g. WETH for aWETH)
-    */
-    function UNDERLYING_ASSET_ADDRESS() external view returns (address);
+    // /**
+    //  * @dev Returns the address of the underlying asset of this pToken (E.g. WETH for aWETH)
+    // */
+    // function UNDERLYING_ASSET_ADDRESS() external view returns (address);
 }
 
 contract PTokenStorage {
@@ -220,11 +211,6 @@ contract PTokenStorage {
     event Redeem(address redeemer, uint redeemAmount, uint redeemTokens);
 
     /*** Admin Events ***/
-
-    /**
-     * @notice EIP20 Transfer event
-     */
-    event Transfer(address indexed from, address indexed to, uint amount);
 
     /**
      * @notice Event emitted when a borrow is repaid

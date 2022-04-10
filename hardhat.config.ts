@@ -1,9 +1,10 @@
 import * as dotenv from "dotenv";
-
+import path from "path";
 import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-etherscan";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
+import '@tenderly/hardhat-tenderly';
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 
@@ -22,6 +23,8 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
+require(`${path.join(__dirname, 'tasks')}/set-hre.ts`);
+
 const config: HardhatUserConfig = {
   solidity: "0.8.4",
   networks: {
@@ -37,6 +40,11 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+  tenderly: {
+    project: process.env.TENDERLY_PROJECT || '',
+    username: process.env.TENDERLY_USERNAME || '',
+    forkNetwork: '1', //Network id of the network we want to fork
   },
 };
 

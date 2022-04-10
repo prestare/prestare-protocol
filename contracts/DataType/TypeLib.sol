@@ -2,16 +2,14 @@
 pragma solidity ^0.8.4;
 
 library AssetsLib {
+
   // The reserve infomation which refer to the whitepaper
   struct AssetProfile {
     //stores the reserve configuration
     AssetConfigMapping configuration;
     //
     AssetData _assetData;
-    // crt value mapping to debt ratio
-    // 映射关系 crt value小数的问题怎么处理
-    // 或者其他数学方法 计算 crt value
-    mapping(uint8 => uint8) crtValueMapping;
+
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
     //borrow index. Expressed in ray

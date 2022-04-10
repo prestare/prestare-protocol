@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {CounterInterface} from "../CounterInterface.sol";
-import {IncentivesController} from "./Incentives.sol";
+import {CounterInterface} from "./CounterInterface.sol";
+// import {IncentivesController} from "./Incentives.sol";
 
 /**
  * @title IInitialPToken
@@ -25,11 +25,11 @@ interface InitialPToken {
         address counter,
         address gasStation,
         address underlyingAsset,
-        address crt
+        address crt,
         uint8 pTokenDecimals,
-        string callData pTokenName,
-        string callData pTokenSymbol,
-        bytes calldata params
+        string pTokenName,
+        string pTokenSymbol,
+        bytes params
     );
 
     /**
@@ -44,13 +44,13 @@ interface InitialPToken {
      */
     // maybe we should add a initializer modify to check the status before call this function
     function initialize(
-        PCOUNTER counter,
+        CounterInterface counter,
         address gasStation,
         address underlyingAsset,
-        address crt
+        address crt,
         uint8 pTokenDecimals,
-        string callData pTokenName,
-        string callData pTokenSymbol,
+        string calldata pTokenName,
+        string calldata pTokenSymbol,
         bytes calldata params
     ) external;
 }

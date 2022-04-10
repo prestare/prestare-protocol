@@ -30,4 +30,46 @@ interface CounterInterface {
     event Borrow(address indexed asset, address indexed to, uint256 amount);
 
     event Repay(address indexed asset, address indexed from, uint256 amount);
+
+    /**
+   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
+   * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
+   * @param asset The address of the underlying asset to deposit
+   * @param amount The amount to be deposited
+   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
+   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
+   *   is a different wallet
+   **/
+    function deposit(
+        address asset,
+        uint256 amount,
+        address onBehalfOf
+    ) external;
+
+    function initReserve(
+        address reserve,
+        address variableDebtAddress,
+        address interestRateStrategyAddress
+    ) external;
+
+    /**
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The state of the reserve
+   **/
+    function getReserveData(address asset) external view returns (AssetsLib.AssetProfile memory);
+
+    function getReservesList() external view returns (address[] memory);
+
+    function setConfiguration(address reserve, uint256 configuration) external;
+    
+    /**
+   * @dev Returns the configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The configuration of the reserve
+   **/
+    function getConfiguration(address asset)
+        external
+        view
+        returns (AssetsLib.AssetConfigMapping memory);
 }

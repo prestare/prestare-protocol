@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import "./Context.sol";
+import "./utils/Context.sol";
 import "./EIP20Interface.sol";
 import "../math/PMath.sol";
 
@@ -37,12 +37,12 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @param name set the name of the token.
      * @param symbol set the symbol of the token.
      */
-    constructor(string memory name, string memory symbol, uint8 decimals) public {
+    constructor(string memory name, string memory symbol) public {
         _name = name;
         _symbol = symbol;
         // check the p_math file and use ray or wad
         // TODO: 传参数进来还是直接定18？
-        _decimals = decimals;
+        _decimals = 18;
     }
 
 
@@ -72,14 +72,14 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function totalSupply() public view override returns (uint256) {
+    function totalSupply() public virtual view override returns (uint256) {
         return _totalSupply;
     }
 
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function balanceOf(address owner) public view override returns (uint256) {
+    function balanceOf(address owner) public virtual view override returns (uint256) {
         return _balances[owner];
     }        
 
@@ -89,7 +89,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     function transfer(address dst, uint256 amount) public override returns (bool) {
         
         // TODO If we add the actual msgsender like Aave does, or implement like compound 
-        _transferInternal(_msgsender(), dst, amount);
+        _transferInternal(_msgSender(), dst, amount);
         return true;
     }
 
@@ -109,7 +109,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @dev See detailed information in EIP20Interface
      */
     function approve(address spender, uint256 amount) public override returns (bool) {
-        _approveInternal(_msgsender(), spender, amount);
+        _approveInternal(_msgSender(), spender, amount);
         return true;
     }
 
@@ -131,8 +131,10 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         virtual 
         returns (bool) 
     {
-        (MathError matherr, uint256 allowanceNew) = _allowances[src][_msgSender()].addUint256(amount);
-        require(matherr == NO_ERROR, "ERC 20: Math err");
+        // TODO: Math part
+        // (MathError matherr, uint256 allowanceNew) = _allowances[src][_msgSender()].addUint256(amount);
+        // require(matherr == NO_ERROR, "ERC 20: Math err");
+        uint256 allowanceNew = _allowances[spender][_msgSender()] - amount ;
         _approveInternal(_msgSender(), spender, allowanceNew);
         return true;
     }
@@ -148,8 +150,9 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         virtual
         returns (bool)
     {
-        (MathError matherr, uint256 allowanceNew) = _allowances[src][_msgSender()].subUint256(amount);
-        require(matherr == NO_ERROR, "ERC 20: Math err");
+        // (MathError matherr, uint256 allowanceNew) = _allowances[src][_msgSender()].subUint256(amount);
+        // require(matherr == NO_ERROR, "ERC 20: Math err");
+        uint256 allowanceNew = _allowances[spender][_msgSender()] - amount;
         _approveInternal(_msgSender(), spender, allowanceNew);
         return true;
     }
@@ -168,10 +171,10 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     ) internal virtual {
         uint256 currentAllowance = _allowances[owner][spender];
         if (currentAllowance != type(uint256).max) {
-            MathError matherr;
-            uint256 allowanceNew;
-            (matherr, allowanceNew) = currentAllowance.subUint256(amount);
-            require(matherr == NO_ERROR, "ERC20: insufficient allowance");
+            // MathError matherr;
+            // (matherr, allowanceNew) = currentAllowance.subUint256(amount);
+            // require(matherr == NO_ERROR, "ERC20: insufficient allowance");
+            uint256 allowanceNew = currentAllowance - amount;
             _approveInternal(owner, spender, allowanceNew);
         }
     }
@@ -182,7 +185,6 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @param src The address of the source account
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
-     * @return a boolean value indicating whether the operation succeeded.
      */
     function _transferInternal(address src, address dst, uint256 amount) 
         internal 
@@ -190,15 +192,16 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         require(src != address(0), "ERC20: transfer from the zero address");
         require(dst != address(0), "ERC20: transfer to the zero address");
         
-        MathError matherr;
-        uint newbalance;
-        (matherr, newbalance) = _balancesp[src].subUint256(amount);
-        require(matherr == NO_ERROR, "ERC20: transfer amount exceeds balance");
+        // MathError matherr;
+        // (matherr, newbalance) = _balancesp[src].subUint256(amount);
+        // require(matherr == NO_ERROR, "ERC20: transfer amount exceeds balance");
+        uint newbalance = _balances[src] - amount;
         _balances[src] = newbalance;
 
-        (matherr, newbalance) = _balances[recipient].addUint256(amount);
+        // (matherr, newbalance) = _balances[recipient].addUint256(amount);
+        newbalance = _balances[dst] + amount;
         // error rarely happen
-        require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
+        // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
         _balances[dst] = newbalance;
 
         emit Transfer(src, dst, amount);
@@ -209,22 +212,22 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @dev emit a transfer even 
      * @param dst The address of the destination account
      * @param amount The number of tokens to transfer
-     * @return a boolean value indicating whether the operation succeeded.
      */
     function _mint(address dst, uint256 amount) internal virtual {
         require(dst != address(0), "ERC20: mint to the zero address");
 
-        MathError matherr;
-        uint256 result;
-        (matherr, result) = _totalSupply.addUint256(amount);
-        require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
+        // MathError matherr;
+        // (matherr, result) = _totalSupply.addUint256(amount);
+        // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
+        uint256 result = _totalSupply + amount;
         _totalSupply = result;
 
-        (matherr, result) = _balances[account].addUint256(amount);
-        require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
+        // (matherr, result) = _balances[account].addUint256(amount);
+        // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
+        result = _balances[dst] + amount;
         _balances[dst] = result;
 
-        emit Transfer(address(0), account, amount);
+        emit Transfer(address(0), dst, amount);
     }
 
     /**
@@ -232,23 +235,23 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @dev emit a transfer even 
      * @param src The address of the source account
      * @param amount The number of tokens to transfer
-     * @return a boolean value indicating whether the operation succeeded.
      */
     function _burn(address src, uint256 amount) internal virtual {
         require(src != address(0), "ERC20: burn from the zero address");
 
-        MathError matherr;
-        uint256 result;
-        (matherr, result) = _balances[account].subUint256(amount);
-        require(matherr == NO_ERROR, "ERC20: burn amount exceeds balance");
+        // MathError matherr;
+        // (matherr, result) = _balances[account].subUint256(amount);
+        // require(matherr == NO_ERROR, "ERC20: burn amount exceeds balance");
+        uint256 result = _balances[src] + amount;
         _balances[src] = result;
 
-        (matherr, result) = _totalSupply.subUint256(amount);
+        // (matherr, result) = _totalSupply.subUint256(amount);
         // This error will never happen because total supply is absolutely larger the one balance amount.
-        require(matherr == NO_ERROR, "ERC20: burn amount exceeds total supply");
+        // require(matherr == NO_ERROR, "ERC20: burn amount exceeds total supply");
+        result = _totalSupply - amount;
         _totalSupply = result;
 
-        emit Transfer(account, address(0), amount);
+        emit Transfer(src, address(0), amount);
     }
 
     /**
@@ -257,7 +260,6 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
      * @param owner The address of the source account
      * @param spender The number of tokens to transfer
      * @param amount The number of allowance granted from owner
-     * @return a boolean value indicating whether the operation succeeded.
      */
     function _approveInternal(address owner, address spender, uint256 amount) 
         internal  
@@ -273,17 +275,9 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     /**
      * @notice set the new deciamals
      * @param decimals_ The address of the source account
-     * @return a boolean value indicating whether the operation succeeded.
      * TODO actual value set to the decimals or wadray?
      */
     function _setupDecimals(uint8 decimals_) internal {
-        if (decimals_ > 18) {
-            _decimals = 27;
-            _decimals = ray;
-        }
-        else {
-            _decimals = decimals_;
-        }
-        
+        _decimals = decimals_;
     }
 }

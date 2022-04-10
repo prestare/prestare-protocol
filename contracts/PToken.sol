@@ -1,32 +1,38 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
-import {EIP20Implementation} from "./dependencies/EIP20Implementation.sol";
-import {SafeERC20} from "./dependencies/SafeERC20.sol";
-import {CounterInterface} from "./interfaces/CounterInterface.sol";
-import {PTokenInterface} from "./interfaces/PTokenInterface.sol";
+import { EIP20Interface } from "./dependencies/EIP20Interface.sol";
+import { EIP20Implementation } from "./dependencies/EIP20Implementation.sol";
+import { SafeERC20 } from "./dependencies/SafeERC20.sol";
+import { CounterInterface } from "./Interfaces/CounterInterface.sol";
+import { PTokenInterface } from "./Interfaces/PTokenInterface.sol"; 
+import { IncentivizedERC20 } from "./IncentivizedERC20.sol";
 // 关于WadRayMath的用法
-import "./dependencies/SafeMath.sol";
-import {Errors} from "./utils/ErrorList.sol";
-import {KoiosJudgement} from "./Koios.sol";
+import { SafeMath256 } from "./dependencies/SafeMath.sol";
+import { Errors } from "./utils/ErrorList.sol";
+import { KoiosJudgement } from "./Koios.sol";
+import { IncentiveController } from "./Interfaces/IncentiveController.sol";
 
 // TODO: is ptoken a abstract contract?????? No
 
 // TODO DISCUSS aToken use VersionedInitializable Contract to help initizalize contract
 // 
 contract PToken is 
-    EIP20Implementation("PTOKEN_IMPL", "PTOKEN", 0),
+    EIP20Implementation("PTOKEN_IMPL", "PTOKEN"),
     PTokenInterface 
 {
     // TODO use wadray directly?
-    using SafeMath for uint256;
+    using SafeMath256 for uint256;
+    using SafeERC20 for EIP20Interface;
     
     CounterInterface internal _counter;
     address internal _gasStation;
     address internal _underlyingAsset;
     // TODO Aave add incentivesController to this contract
 
+    string _name;
+    string _symbol;
+    uint8 _decimals;
     address internal _crt_pool;
 
     /**
@@ -39,24 +45,25 @@ contract PToken is
     
     bytes public constant EIP712_REVISION = bytes("1");
     bytes32 internal constant EIP712_DOMAIN =
-        keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
+        keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
     
     bytes32 public constant PERMIT_TYPEHASH =
-        keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
+        keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     
     /// @dev owner => next valid nonce to submit with permit()
     mapping(address => uint256) public _nonces;
 
     modifier onlyCounter {
-        require(msg.sender == address(_counter), Errors.message);
+        require(msg.sender == address(_counter), "Errors.message");
         _;
     }
 
     modifier onlyAdmin {
-        require(msg.sender == _admin, Errors.message);
+        require(msg.sender == _admin, "Errors.message");
         _;
     }
 
+    // TODO: 函数是否要加overiide
     /**
      * @notice Initializes the PToken 
      * @param counter The address of the counter where this pToken will be used
@@ -89,7 +96,7 @@ contract PToken is
         _gasStation = gasStation;
         _underlyingAsset = underlyingAsset;
         // 只允许admin改变，暂定
-        require(msg.sender == admin, "only admin may initialize the contract");
+        require(msg.sender == _admin, "only admin may initialize the contract");
         
         // 获取链id，用来区分不同 EVM 链的一个标识
         uint256 chainId;
@@ -140,14 +147,15 @@ contract PToken is
         uint256 lastBalance = super.balanceOf(user);
 
         // nomorlized
-        uint256 amountScaled = amount.tryRayDiv_(newindex);
-        require(amountScaled != 0, Errors);
+        (bool status, uint256 amountScaled) = amount.tryRayDiv_(newindex);
+        // TODO: check status
+        require(amountScaled != 0, "ERROR");
 
         // actual mint
         _mint(user, amountScaled);
 
         emit Transfer(address(0), user, amount);
-        emit Mint(user, amount, cumulativeindex);
+        emit Mint(user, amount, newindex);
 
         return lastBalance == 0;
     }
@@ -164,10 +172,10 @@ contract PToken is
             return ;
         }
         address gasStation = _gasStation;
-        _mint(gasStation, amount.rayDiv(index));
+        // _mint(gasStation, amount.rayDiv(index));
 
-        emit Transfer(address(0), treasury, amount);
-        emit Mint(treasury, amount, index);
+        emit Transfer(address(0), gasStation, amount);
+        emit Mint(gasStation, amount, index);
     }
 
     /**
@@ -184,14 +192,14 @@ contract PToken is
         uint256 amount,
         uint256 newIndex
     ) external override onlyCounter {
-        uint256 amountScaled = amount.Div(newIndex);
-        require(amountScaled != 0, Errors);
-        _burn(user, amountScaled);
+        // uint256 amountScaled = amount.Div(newIndex);
+        // require(amountScaled != 0, "ERROR");
+        // _burn(user, amountScaled);
 
         EIP20Interface(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
         emit Transfer(user, address(0), amount);
-        emit Burn(user, receiverOfUnderlying, amount, index);
+        emit Burn(user, receiverOfUnderlying, amount, newIndex);
     }
 
     /**
@@ -213,23 +221,24 @@ contract PToken is
         emit Transfer(from, to, value);
     }
 
-    /**
-     * @notice Transfer pToken to CRT pool
-     * Question 通过CRT清算的方法，如何将财产转化为稳定币存储到CRT中
-     * @param from The address getting liquidated, current owner of the pTokens
-     * @param value The amount of tokens getting transferred
-     */
-    function transferOnCRT(
-        address from,
-        uint256 value
-    ) external override onlyCounter {
-        address crt = _crt_pool;
+    // TODO:
+    // /**
+    //  * @notice Transfer pToken to CRT pool
+    //  * Question 通过CRT清算的方法，如何将财产转化为稳定币存储到CRT中
+    //  * @param from The address getting liquidated, current owner of the pTokens
+    //  * @param value The amount of tokens getting transferred
+    //  */
+    // function transferOnCRT(
+    //     address from,
+    //     uint256 value
+    // ) external override onlyCounter {
+    //     address crt = _crt_pool;
 
-        // TODO 如何转化传输
-        CRTInterface(crt)._transfer(from, crt, value, false);
+    //     // TODO 如何转化传输
+    //     CRTInterface(crt)._transfer(from, crt, value, false);
 
-        emit Transfer(from, to, value);
-    }
+    //     emit Transfer(from, to, value);
+    // }
 
     /**
      * @dev Calculates the balance of the user: principal balance + interest generated by the principal
@@ -239,10 +248,10 @@ contract PToken is
     function balanceOf(address user)
         public
         view
-        override(EIP20Interface)
+        override(EIP20Implementation, EIP20Interface)
         returns (uint256)
     {
-        return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
+        // return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
     }
 
     /**
@@ -276,12 +285,12 @@ contract PToken is
      * does that too.
      * @return the current total supply
      */
-    function totalSupply() public view override(IncentivizedERC20, EIPInterface) returns (uint256) {
+    function totalSupply() public view override(EIP20Interface, EIP20Implementation) returns (uint256) {
         uint256 currentSupplyScaled = super.totalSupply();
         if (currentSupplyScaled == 0) {
         return 0;
         }
-        return currentSupplyScaled.rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset));
+        // return currentSupplyScaled.rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
     }
 
     /**
@@ -313,20 +322,20 @@ contract PToken is
         return _counter;
     }
 
-    // TODO Add incentivesController like Aave do?
-    /**
-     * @dev For internal usage in the logic of the parent contract IncentivizedERC20
-     */
-    function _getIncentivesController() internal view override returns (IAaveIncentivesController) {
-        return _incentivesController;
-    }
+    // // TODO Add incentivesController like Aave do?
+    // /**
+    //  * @dev For internal usage in the logic of the parent contract IncentivizedERC20
+    //  */
+    // function _getIncentivesController() internal view override returns (IncentiveController) {
+    //     return _incentivesController;
+    // }
 
-    /**
-     * @dev Returns the address of the incentives controller contract
-     */
-    function getIncentivesController() external view override returns (IAaveIncentivesController) {
-        return _getIncentivesController();
-    }
+    // /**
+    //  * @dev Returns the address of the incentives controller contract
+    //  */
+    // function getIncentivesController() external view override returns (IncentiveController) {
+    //     return _getIncentivesController();
+    // }
 
     /**
      * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
@@ -341,7 +350,7 @@ contract PToken is
         onlyCounter
         returns (uint256)
     {
-        EIPInterface(_underlyingAsset).safeTransfer(target, amount);
+        EIP20Interface(_underlyingAsset).safeTransfer(target, amount);
         return amount;
     }
 
@@ -366,21 +375,22 @@ contract PToken is
         bytes32 r,
         bytes32 s
     ) external {
-        require(owner != address(0), 'INVALID_OWNER');
+        require(owner != address(0), "INVALID_OWNER");
         //solium-disable-next-line
-        require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+        require(block.timestamp <= deadline, "INVALID_EXPIRATION");
         uint256 currentValidNonce = _nonces[owner];
         bytes32 digest =
         keccak256(
             abi.encodePacked(
-            '\x19\x01',
+            "\x19\x01",
             DOMAIN_SEPARATOR,
             keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
             )
         );
-        require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
-        _nonces[owner] = currentValidNonce.add(1);
-        _approve(owner, spender, value);
+        require(owner == ecrecover(digest, v, r, s), "INVALID_SIGNATURE");
+        // _nonces[owner] = currentValidNonce.add(1);
+        _nonces[owner] = currentValidNonce + 1;
+        approve(spender, value);
     }
     /**
      * @notice Transfers the pTokens between two users. Validates the transfer
@@ -400,16 +410,21 @@ contract PToken is
         address underlyingAsset = _underlyingAsset;
         CounterInterface counter = _counter;
 
-        uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
+        // TODO:
+        uint256 index = 1;
+        // uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
 
-        uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
-        uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
+        // TODO
+        uint256 fromBalanceBefore = 1;
+        uint256 toBalanceBefore = 1;
+        // uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
+        // uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
 
-        super._transfer(from, to, amount.rayDiv(index));
+        // super._transfer(from, to, amount.rayDiv(index));
 
-        if (validate) {
-            counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
-        }
+        // if (validate) {
+        //     counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
+        // }
 
         emit BalanceTransfer(from, to, amount, index);
     }
@@ -424,7 +439,7 @@ contract PToken is
         address from,
         address to,
         uint256 amount
-    ) internal override {
+    ) internal {
         _transfer(from, to, amount, true);
     }
 }

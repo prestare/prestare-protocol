@@ -2,9 +2,13 @@ node_modules
 .env
 coverage
 coverage.json
-.gitignore
+deployment-contracts.json
+.eslintrc.js
 typechain
 
 #Hardhat files
 cache
 artifacts
+.eslintrc.js
+deployed-contracts.json
+hardhat.config.ts
