@@ -19,7 +19,7 @@ library SafeMath256 {
      *
      * _Available since v3.4._
      */
-    function tryAdd_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryAdd(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             uint256 c = a + b;
             if (c < a) return (false, 0);
@@ -32,7 +32,7 @@ library SafeMath256 {
      *
      * _Available since v3.4._
      */
-    function trySub_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function trySub(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (b > a) return (false, 0);
             return (true, a - b);
@@ -44,7 +44,7 @@ library SafeMath256 {
      *
      * _Available since v3.4._
      */
-    function tryMul_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryMul(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
             // benefit is lost if 'b' is also tested.
@@ -61,19 +61,19 @@ library SafeMath256 {
      *
      * _Available since v3.4._
      */
-    // function tryDiv_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-    //     unchecked {
-    //         if (b == 0) return (false, 0);
-    //         return (true, a / b);
-    //     }
-    // }
+    function tryDiv(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+        unchecked {
+            if (b == 0) return (false, 0);
+            return (true, a / b);
+        }
+    }
 
     /**
      * @dev Returns the remainder of dividing two unsigned integers, with a division by zero flag.
      *
      * _Available since v3.4._
      */
-    function tryMod_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
+    function tryMod(uint256 a, uint256 b) internal pure returns (bool, uint256) {
         unchecked {
             if (b == 0) return (false, 0);
             return (true, a % b);
@@ -90,7 +90,7 @@ library SafeMath256 {
      *
      * - Addition cannot overflow.
      */
-    function add_(uint256 a, uint256 b) internal pure returns (uint256) {
+    function add(uint256 a, uint256 b) internal pure returns (uint256) {
         return a + b;
     }
 
@@ -104,7 +104,7 @@ library SafeMath256 {
      *
      * - Subtraction cannot overflow.
      */
-    function sub_(uint256 a, uint256 b) internal pure returns (uint256) {
+    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
         return a - b;
     }
 
@@ -118,7 +118,7 @@ library SafeMath256 {
      *
      * - Multiplication cannot overflow.
      */
-    function mul_(uint256 a, uint256 b) internal pure returns (uint256) {
+    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
         return a * b;
     }
 
@@ -132,9 +132,9 @@ library SafeMath256 {
      *
      * - The divisor cannot be zero.
      */
-    // function div_(uint256 a, uint256 b) internal pure returns (uint256) {
-    //     return a / b;
-    // }
+    function div(uint256 a, uint256 b) internal pure returns (uint256) {
+        return a / b;
+    }
 
     /**
      * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
@@ -148,7 +148,7 @@ library SafeMath256 {
      *
      * - The divisor cannot be zero.
      */
-    function mod_(uint256 a, uint256 b) internal pure returns (uint256) {
+    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
         return a % b;
     }
 
@@ -165,7 +165,7 @@ library SafeMath256 {
      *
      * - Subtraction cannot overflow.
      */
-    function sub_(
+    function sub(
         uint256 a,
         uint256 b,
         string memory errorMessage
@@ -188,7 +188,7 @@ library SafeMath256 {
      *
      * - The divisor cannot be zero.
      */
-    function div_(
+    function div(
         uint256 a,
         uint256 b,
         string memory errorMessage
@@ -222,90 +222,6 @@ library SafeMath256 {
         unchecked {
             require(b > 0, errorMessage);
             return a % b;
-        }
-    }
-
-
-
-    /**
-    * for WAD and RAY 
-     */
-    uint256 internal constant WAD = 1e18;
-    uint256 internal constant RAY = 1e27;
-
-    uint256 internal constant halfWAD = WAD / 2;
-    uint256 internal constant halfRAY = RAY / 2;
-
-    /**
-    * @return One ray, 1e27
-    **/
-    function ray() internal pure returns (uint256) {
-    return RAY;
-    }
-
-    /**
-    * @return One wad, 1e18
-    **/
-
-    function wad() internal pure returns (uint256) {
-    return WAD;
-    }
-
-    /**
-   * @dev Multiplies two wad, rounding half up to the nearest wad
-   * @param a Wad
-   * @param b Wad
-   * @return The result of a*b, in wad
-   **/
-    function tryWadMul_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (a == 0 || b == 0) return (true, 0);
-            if (a <= (type(uint256).max - halfWAD) / b) return (false, 0);
-            return (true, a * b + halfWAD);
-        }
-    }
-
-    /**
-   * @dev Multiplies two ray, rounding half up to the nearest ray
-   * @param a Ray
-   * @param b Ray
-   * @return The result of a*b, in ray
-   **/
-    function tryRayMul_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (a == 0 || b == 0) return (true, 0);
-            if (a <= (type(uint256).max - halfRAY) / b) return (false, 0);
-            return (true, a * b + halfRAY);
-        }
-    }
-
-    /**
-   * @dev Divides two wad, rounding half up to the nearest wad
-   * @param a Wad
-   * @param b Wad
-   * @return The result of a/b, in wad
-   **/
-    function tryWadDiv_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            uint256 half = b / 2;
-            if (a <= (type(uint256).max - half) / WAD) return (false, 0);
-            return (true, (a * WAD + half) / b);
-        }
-    }
-
-    /**
-   * @dev Divides two ray, rounding half up to the nearest ray
-   * @param a Ray
-   * @param b Ray
-   * @return The result of a/b, in ray
-   **/
-    function tryRayDiv_(uint256 a, uint256 b) internal pure returns (bool, uint256) {
-        unchecked {
-            if (b == 0) return (false, 0);
-            uint256 half = b / 2;
-            if (a <= (type(uint256).max - half) / RAY) return (false, 0);
-            return (true, (a * RAY + half) / b);
         }
     }
 }

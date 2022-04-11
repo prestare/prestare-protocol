@@ -4,6 +4,8 @@ pragma solidity ^0.8.4;
 import {Context} from "./dependencies/utils/Context.sol";
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 import {IERC20Detailed} from "./dependencies/ERC20Detailed.sol";
+import {SafeMath256} from "./dependencies/SafeMath.sol";
+import {Error} from "./utils/Error.sol";
 
 import "hardhat/console.sol";
 
@@ -13,8 +15,7 @@ import "hardhat/console.sol";
  * @author Aave, inspired by the Openzeppelin ERC20 implementation
  **/
 abstract contract PTokenERC20 is Context, EIP20Interface, IERC20Detailed {
-    // using SafeMath for uint256;
-
+    using SafeMath256 for uint256;
 
     mapping(address => uint256) internal _balances;
 
@@ -76,7 +77,6 @@ abstract contract PTokenERC20 is Context, EIP20Interface, IERC20Detailed {
     * @return `true` if the transfer succeeds, `false` otherwise
     **/
     function transfer(address recipient, uint256 amount) public virtual override returns (bool) {
-        console.log("555");
         _transfer(_msgSender(), recipient, amount);
         emit Transfer(_msgSender(), recipient, amount);
         return true;
@@ -165,49 +165,37 @@ abstract contract PTokenERC20 is Context, EIP20Interface, IERC20Detailed {
 
     function _transfer(
         address sender,
-        address recipient,
+        address receiver,
         uint256 amount
     ) internal virtual {
-        console.log("pToken 2222");
-        require(sender != address(0), "ERC20: transfer from the zero address");
-        require(recipient != address(0), "ERC20: transfer to the zero address");
+        // TODO: 这种error是需要加在ErrorList中还是直接用string类型错误表示出来
+        require(sender != address(0), Error.PTOKENERC20_TRANSFER_FROM_ZERO_ADDRESS);
+        require(receiver != address(0), Error.PTOKENERC20_TRANSFER_TO_ZERO_ADDRESS);
 
-        _beforeTokenTransfer(sender, recipient, amount);
+        _beforeTokenTransfer(sender, receiver, amount);
 
-        uint256 oldSenderBalance = _balances[sender];
-        console.log(oldSenderBalance);
-        _balances[sender] = oldSenderBalance - amount;
-        // _balances[sender] = oldSenderBalance.sub(amount, "ERC20: transfer amount exceeds balance");
-        uint256 oldRecipientBalance = _balances[recipient];
-        _balances[recipient] = oldRecipientBalance + amount;
-        console.log("pToken 1111");
-        console.log(_balances[sender]);
-        console.log(_balances[recipient]);
-        // _balances[recipient] = _balances[recipient].add(amount);
+        (bool calStatusOne, uint256 newSenderBalance) = _balances[sender].trySub(amount);
+        require(calStatusOne, Error.PTOKENERC20_TRANSFER_AMOUNT_EXCEEDS_BALANCE);
+        _balances[sender] = newSenderBalance;
 
-        // if (address(_getIncentivesController()) != address(0)) {
-        // uint256 currentTotalSupply = _totalSupply;
-        // _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
-        // if (sender != recipient) {
-        //     _getIncentivesController().handleAction(recipient, currentTotalSupply, oldRecipientBalance);
-        // }
-        // }
+        (bool calStatusTwo, uint256 newReceiverBalance) = _balances[receiver].tryAdd(amount);
+        require(calStatusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
+        _balances[receiver] = newReceiverBalance;
     }
 
     function _mint(address account, uint256 amount) internal virtual {
-        require(account != address(0), "ERC20: mint to the zero address");
+        require(account != address(0), Error.PTOKENERC20_MINT_TO_ZERO_ADDRESS);
 
         _beforeTokenTransfer(address(0), account, amount);
 
-        uint256 oldTotalSupply = _totalSupply;
-        // _totalSupply = oldTotalSupply.add(amount);
+        (bool calStatusOne, uint256 newSupply) = _totalSupply.tryAdd(amount);
+        require(calStatusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
+        _totalSupply = newSupply;
 
-        uint256 oldAccountBalance = _balances[account];
-        // _balances[account] = oldAccountBalance.add(amount);
+        (bool calStatusTwo, uint256 newAccountBalance) = _balances[account].tryAdd(amount);
+        require(calStatusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
+        _balances[account] = newAccountBalance;
 
-        // if (address(_getIncentivesController()) != address(0)) {
-        // _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
-        // }
     }
 
     function _burn(address account, uint256 amount) internal virtual {

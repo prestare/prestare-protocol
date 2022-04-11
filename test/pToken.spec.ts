@@ -23,6 +23,7 @@ makeSuite('PToken: Transfer', (test: TestEnv) => {
         expect(name).to.be.equal('Prestare DAI');
 
         const fromBalance = await pDai.balanceOf(users[0].address);
+        console.log(`User 0's new balance: ${fromBalance}`);
         const toBalance = await pDai.balanceOf(users[1].address);
 
         expect(fromBalance.toString()).to.be.equal('0', "Error1");

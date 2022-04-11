@@ -2,6 +2,7 @@
 pragma solidity ^0.8.3;
 
 // TODO: check 0.8后版本的wadray 计算是否正确
+import {Error} from "./Error.sol";
 
 /**
  * @title WadRayMath library
@@ -109,14 +110,13 @@ library WadRayMath {
     **/
     function rayDiv(uint256 a, uint256 b) internal pure returns (uint256) {
 
-    // TODO: Error
-    require(b != 0, "ERROR");
-    uint256 halfB = b / 2;
+        require(b != 0, Error.RAY_DIVISION_BY_ZERO);
+        uint256 halfB = b / 2;
 
-    // TODO: Error
-    require(a <= (type(uint256).max - halfB) / RAY, "ERROR");
+        // TODO: Error
+        require(a <= (type(uint256).max - halfB) / RAY, Error.RAY_MULTIPLICATION_OVERFLOW);
 
-    return (a * RAY + halfB) / b;
+        return (a * RAY + halfB) / b;
     }
 
     /**

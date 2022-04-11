@@ -24,7 +24,7 @@ library functions {
     
     // TODO: whats the difference between a.trySub_(b) and trySub_(a, b)
     // TODO: check the warning: 是否会有人manipulate block time.
-    (bool status, uint256 timeDifference) = SafeMath256.trySub_(block.timestamp, lastUpdateTimestamp);
+    (bool status, uint256 timeDifference) = SafeMath256.trySub(block.timestamp, lastUpdateTimestamp);
 
     // TODO: Add an error here
     require(status == true, "TO BE ADDED ERROR");
@@ -32,7 +32,8 @@ library functions {
     // TODO: 这里是不是最好新写一个 mul 后 add的函数
     // TODO: timeDifference / SECONDS_PER_YEAR需不需要坚持
     uint256 deltaYear = timeDifference / SECONDS_PER_YEAR;
-    uint256 ray = SafeMath256.ray();
+    // uint256 ray = SafeMath256.ray();
+    uint256 ray;
     uint256 result = _mulThenAdd(rate, deltaYear, ray);
 
     return result;
@@ -53,14 +54,14 @@ library functions {
     **/
     function calculateCompoundedInterest(uint256 rate, uint40 lastUpdateTimestamp, uint256 currentTimestamp)  internal view returns (uint256) {
 
-    (bool status, uint256 timeDiff) = SafeMath256.trySub_(block.timestamp, lastUpdateTimestamp);
+    (bool status, uint256 timeDiff) = SafeMath256.trySub(block.timestamp, lastUpdateTimestamp);
 
     // TODO: Add an error here
     require(status == true, "TO BE ADDED ERROR");
 
-    if (timeDiff == 0) {
-        return SafeMath256.ray();
-    }
+    // if (timeDiff == 0) {
+    //     return SafeMath256.ray();
+    // }
 
     uint256 diffMinusOne = timeDiff - 1;
     uint256 diffMinusTwo = timeDiff > 2 ? timeDiff - 2 : 0;
@@ -69,17 +70,17 @@ library functions {
     uint256 basePowerTwo = ratePerSecond.rayMul(ratePerSecond);
     uint256 basePowerThree = basePowerTwo.rayMul(ratePerSecond);
 
-    uint256 secondTerm = timeDiff.mul_(diffMinusOne).mul_(basePowerTwo) / 2;
-    uint256 thirdTerm = timeDiff.mul_(diffMinusOne).mul_(diffMinusTwo).mul_(basePowerThree) / 6;
+    uint256 secondTerm = timeDiff.mul(diffMinusOne).mul(basePowerTwo) / 2;
+    uint256 thirdTerm = timeDiff.mul(diffMinusOne).mul(diffMinusTwo).mul(basePowerThree) / 6;
 
-    return WadRayMath.ray().add_(ratePerSecond.mul_(timeDiff)).add_(secondTerm).add_(thirdTerm);
+    return WadRayMath.ray().add(ratePerSecond.mul(timeDiff)).add(secondTerm).add(thirdTerm);
     }
 
     function _mulThenAdd(uint256 a, uint256 b, uint256 c) internal pure returns (uint256) {
-        (bool status1, uint256 tmp1) = SafeMath256.tryMul_(a, b);
+        (bool status1, uint256 tmp1) = SafeMath256.tryMul(a, b);
         require(status1 == true, "TO BE ADDED ERROR");
 
-        (bool status2, uint256 result) = SafeMath256.tryAdd_(tmp1, c);
+        (bool status2, uint256 result) = SafeMath256.tryAdd(tmp1, c);
         require(status2 == true, "TO BE ADDED ERROR");
 
         return result;

@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import { EIP20Interface } from "./dependencies/EIP20Interface.sol";
-import { EIP20Implementation } from "./dependencies/EIP20Implementation.sol";
-import { SafeERC20 } from "./dependencies/SafeERC20.sol";
-import { CounterInterface } from "./Interfaces/CounterInterface.sol";
-import { PTokenInterface } from "./Interfaces/PTokenInterface.sol"; 
-import { IncentivizedERC20 } from "./IncentivizedERC20.sol";
-// 关于WadRayMath的用法
-import { SafeMath256 } from "./dependencies/SafeMath.sol";
-import { Errors } from "./utils/ErrorList.sol";
-import { KoiosJudgement } from "./Koios.sol";
-import { IncentiveController } from "./Interfaces/IncentiveController.sol";
-import { PTokenERC20 } from "./PTokenERC20.sol";
+import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
+import {EIP20Implementation} from "./dependencies/EIP20Implementation.sol";
+import {SafeERC20} from "./dependencies/SafeERC20.sol";
+import {CounterInterface} from "./Interfaces/CounterInterface.sol";
+import {PTokenInterface} from "./Interfaces/PTokenInterface.sol"; 
+import {IncentivizedERC20} from "./IncentivizedERC20.sol";
+import {SafeMath256} from "./dependencies/SafeMath.sol";
+import {Error} from "./utils/Error.sol";
+import {KoiosJudgement} from "./Koios.sol";
+import {IncentiveController} from "./Interfaces/IncentiveController.sol";
+import {PTokenERC20} from "./PTokenERC20.sol";
+import {WadRayMath} from "./utils/WadRay.sol";
 
 import "hardhat/console.sol";
 
@@ -22,9 +22,9 @@ import "hardhat/console.sol";
 // 
 contract PToken is 
     PTokenERC20("PTOKEN_IMPL", "PTOKEN_IMPL", 0),
-    PTokenInterface 
-{
-    // TODO use wadray directly?
+    PTokenInterface {
+
+    using WadRayMath for uint256;
     using SafeMath256 for uint256;
     using SafeERC20 for EIP20Interface;
     
@@ -150,15 +150,12 @@ contract PToken is
         uint256 amount,
         uint256 newindex
     ) external override onlyCounter returns (bool) {
+
         uint256 lastBalance = super.balanceOf(user);
+        uint256 scaledAmount = amount.rayDiv(newindex);
 
-        // nomorlized
-        (bool status, uint256 amountScaled) = amount.tryRayDiv_(newindex);
-        // TODO: check status
-        require(amountScaled != 0, "ERROR");
-
-        // actual mint
-        _mint(user, amountScaled);
+        require(scaledAmount != 0, Error.PTOKEN_INVALID_MINT_AMOUNT);
+        _mint(user, amount);
 
         emit Transfer(address(0), user, amount);
         emit Mint(user, amount, newindex);
@@ -258,6 +255,8 @@ contract PToken is
         returns (uint256)
     {
         // return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
+        // TODO: hardcode here for the first test;
+        return super.balanceOf(user);
     }
 
     /**
@@ -413,26 +412,16 @@ contract PToken is
         uint256 amount,
         bool validate
     ) internal {
-        console.log("pToken 66666");
         address underlyingAsset = _underlyingAsset;
         CounterInterface counter = _counter;
 
-        // TODO:
-        uint256 index = 1; 
+        // TODO: calculate the lateast NI
+        // TODO: hardcode here
+        uint256 index = 1e27; 
+        uint256 amountToBeTransferred = amount.rayDiv(index);
         // uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
-
-        // TODO
-        // uint256 fromBalanceBefore = 1;
-        // uint256 toBalanceBefore = 1;
-        // uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
-        // uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
-
-        // super._transfer(from, to, amount.rayDiv(index));
-
-        // if (validate) {
-        //     counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
-        // }
-        super._transfer(from, to, amount);
+        // TODO: to check the validition of transfer(Koios)
+        super._transfer(from, to, amountToBeTransferred);
 
         emit BalanceTransfer(from, to, amount, index);
     }
