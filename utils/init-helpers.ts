@@ -19,7 +19,7 @@ import { BigNumber, BigNumberish, Signer } from 'ethers';
 import {
     // deployDefaultReserveInterestRateStrategy,
     // deployDelegationAwarePTokenImpl,
-    deployGenericPToken,
+    // deployGenericPToken,
     deployGenericPTokenImpl,
     deployTestInterestRateModel,
 } from './contracts-deployments';
@@ -95,7 +95,7 @@ export const initReservesByHelper = async (
 
     const pTokenImplementation = await deployGenericPTokenImpl(verify);
     pTokenImplementationAddress = pTokenImplementation.address;
-    rawInsertContractAddressInDb(`aTokenImpl`, pTokenImplementationAddress);
+    rawInsertContractAddressInDb(`pTokenImpl`, pTokenImplementationAddress);
 
     const delegatedAwareReserves = Object.entries(reservesParams).filter(
         ([_, { pTokenImpl }]) => pTokenImpl === eContractid.DelegationAwarePToken
@@ -168,7 +168,7 @@ export const initReservesByHelper = async (
             incentivesController: ZERO_ADDRESS,
             underlyingAssetName: reserveSymbols[i],
             pTokenName: `${pTokenNamePrefix} ${reserveSymbols[i]}`,
-            pTokenSymbol: `a${symbolPrefix}${reserveSymbols[i]}`,
+            pTokenSymbol: `p${symbolPrefix}${reserveSymbols[i]}`,
             params: '0x10'
         });
     }
@@ -180,14 +180,14 @@ export const initReservesByHelper = async (
     const configurator = await getCounterConfiguratorProxy();
     //await waitForTx(await addressProvider.setPoolAdmin(admin));
 
-    console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
+    // console.log(`- Reserves initialization in ${chunkedInitInputParams.length} txs`);
     for (let chunkIndex = 0; chunkIndex < chunkedInitInputParams.length; chunkIndex++) {
         // console.log(`***${chunkedInitInputParams[chunkIndex][0].pTokenName}`);
         const tx3 = await waitForTx(
             await configurator.batchInitReserve(chunkedInitInputParams[chunkIndex])
         );
-        console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
-        console.log('    * gasUsed', tx3.gasUsed.toString());
+        // console.log(`  - Reserve ready for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+        // console.log('    * gasUsed', tx3.gasUsed.toString());
         gasUsage = gasUsage.add(tx3.gasUsed);
     }
 
@@ -273,14 +273,14 @@ export const configureReservesByHelper = async (
         const chunkedSymbols = chunk(symbols, enableChunks);
         const chunkedInputParams = chunk(inputParams, enableChunks);
         
-        console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
+        // console.log(`- Configure reserves in ${chunkedInputParams.length} txs`);
         for (let chunkIndex = 0; chunkIndex < chunkedInputParams.length; chunkIndex++) {
             await waitForTx(
             await ptokenAndRatesDeployer.configureReserves(chunkedInputParams[chunkIndex], {
                 gasLimit: 12000000,
             })
             );
-            console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
+            // console.log(`  - Init for: ${chunkedSymbols[chunkIndex].join(', ')}`);
         }
         // Set deployer back as admin
         await waitForTx(await addressProvider.setCounterAdmin(admin));

@@ -47,10 +47,8 @@ contract PrestareDataProvider {
         TokenData[] memory pTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
             AssetsLib.AssetProfile memory reserveData = counter.getReserveData(reserves[i]);
-            console.log("9999999");
-            console.log(EIP20Interface(reserveData.pTokenAddress).symbol());
             pTokens[i] = TokenData({
-                symbol: EIP20Interface(reserveData.pTokenAddress).symbol(),
+                symbol: IERC20Detailed(reserveData.pTokenAddress).symbol(),
                 tokenAddress: reserveData.pTokenAddress
                 });
             }
@@ -70,8 +68,6 @@ contract PrestareDataProvider {
                 reservesTokens[i] = TokenData({symbol: "ETH", tokenAddress: reserves[i]});
                 continue;
             }
-            console.log("888888888");
-            console.log(reserves[0]);
             reservesTokens[i] = TokenData({
                 symbol: IERC20Detailed(reserves[i]).symbol(),
                 tokenAddress: reserves[i]

@@ -75,7 +75,8 @@ export const deployReserveLogicLibrary = async (verify?: boolean) =>
 // }
 
 export const deployCounterConfigurator = async (verify?: boolean) => {
-    const lendingPoolConfiguratorImpl = await new CounterConfigurator__factory(await getFirstSigner()).deploy();
+    const lendingPoolConfiguratorImpl = await new CounterConfigurator__factory(await getFirstSigner()
+).deploy();
     await insertContractAddressInDb(
         eContractid.CounterConfiguratorImpl,
         lendingPoolConfiguratorImpl.address
@@ -250,37 +251,37 @@ export const deployTestInterestRateModel = async (
 //         verify
 // );
 
-export const deployGenericPToken = async (
-    [poolAddress, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
-        tEthereumAddress,
-        tEthereumAddress,
-        tEthereumAddress,
-        tEthereumAddress,
-        string,
-        string
-    ],
-    verify: boolean
-) => {
-    const instance = await withSaveAndVerify(
-        await new PToken__factory(await getFirstSigner()).deploy(),
-        eContractid.PToken,
-        [],
-        verify
-    );
+// export const deployGenericPToken = async (
+//     [poolAddress, underlyingAssetAddress, treasuryAddress, incentivesController, name, symbol]: [
+//         tEthereumAddress,
+//         tEthereumAddress,
+//         tEthereumAddress,
+//         tEthereumAddress,
+//         string,
+//         string
+//     ],
+//     verify: boolean
+// ) => {
+//     const instance = await withSaveAndVerify(
+//         await new PToken__factory(await getFirstSigner()).deploy(),
+//         eContractid.PToken,
+//         [],
+//         verify
+//     );
 
-    await instance.initialize(
-        poolAddress,
-        treasuryAddress,
-        underlyingAssetAddress,
-        incentivesController,
-        '18',
-        name,
-        symbol,
-        '0x10'
-    );
+//     await instance.initialize(
+//         poolAddress,
+//         treasuryAddress,
+//         underlyingAssetAddress,
+//         incentivesController,
+//         '18',
+//         name,
+//         symbol,
+//         '0x10'
+//     );
 
-    return instance;
-};
+//     return instance;
+// };
 
 export const deployGenericPTokenImpl = async (verify: boolean) =>
     withSaveAndVerify(

@@ -112,42 +112,28 @@ export async function initializeMakeSuite() {
     // }
     testEnv.helpersContract = await getPrestareDataProvider();
     const allTokens = await testEnv.helpersContract.getAllPTokens();
-    console.log("5555555");
     const pDaiAddress = allTokens.find((pToken) => pToken.symbol === 'pDAI')?.tokenAddress;
     const pWEthAddress = allTokens.find((pToken) => pToken.symbol === 'pWETH')?.tokenAddress;
 
     const reservesTokens = await testEnv.helpersContract.getAllReservesTokens();
-    console.log(`pDaiAddress ${pDaiAddress}`);
-    console.log(`pWEthAddress ${pWEthAddress}`);
-
     const daiAddress = reservesTokens.find((token) => token.symbol === 'DAI')?.tokenAddress;
     const usdcAddress = reservesTokens.find((token) => token.symbol === 'USDC')?.tokenAddress;
-    const aaveAddress = reservesTokens.find((token) => token.symbol === 'AAVE')?.tokenAddress;
+    const prsAddress = reservesTokens.find((token) => token.symbol === 'PRS')?.tokenAddress;
     const wethAddress = reservesTokens.find((token) => token.symbol === 'WETH')?.tokenAddress;
-    console.log(`reservesTokens ${reservesTokens}`);
-    console.log(`daiAddress ${daiAddress}`);
-    console.log(`usdcAddress ${usdcAddress}`);
-    console.log(`wethAddress ${wethAddress}`);
 
     if (!pDaiAddress || !pWEthAddress) {
         process.exit(1);
     }
-    if (!daiAddress || !usdcAddress || !aaveAddress || !wethAddress) {
+    if (!daiAddress || !usdcAddress || !prsAddress || !wethAddress) {
         process.exit(1);
     }
 
-    console.log("***********");
     testEnv.pDai = await getPToken(pDaiAddress);
-    console.log("***********");
     testEnv.pWETH = await getPToken(pWEthAddress);
-    console.log("***********");
 
     testEnv.dai = await getMintableERC20(daiAddress);
-    console.log("***********");
     testEnv.usdc = await getMintableERC20(usdcAddress);
-    console.log("***********");
     testEnv.weth = await getWETHMocked(wethAddress);
-    console.log("***********");
     // testEnv.wethGateway = await getWETHGateway();
 }
 

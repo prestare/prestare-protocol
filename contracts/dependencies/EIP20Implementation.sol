@@ -5,6 +5,8 @@ import "./utils/Context.sol";
 import "./EIP20Interface.sol";
 import "../math/PMath.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Prestare Implementation of the EIP20 interface
  * @notice The implmentation of ERC20 is a slight different to the original version
@@ -51,21 +53,21 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function name() public view override returns (string memory) {
+    function name() public view returns (string memory) {
         return _name;
     }
 
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function symbol() public view override returns (string memory) {
+    function symbol() public view returns (string memory) {
         return _symbol;
     }
 
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function decimals() public view override returns (uint8) {
+    function decimals() public view returns (uint8) {
         return _decimals;
     }
 
@@ -96,7 +98,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     /**
      * @dev See detailed information in EIP20Interface
      */
-    function transferFrom(address src, address dst, uint256 amount) public override returns (bool) {
+    function transferFrom(address src, address dst, uint256 amount) public returns (bool) {
         address spender = _msgSender();
         
         _spendAllowance(src, spender, amount);
@@ -189,6 +191,8 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     function _transferInternal(address src, address dst, uint256 amount) 
         internal 
         virtual {
+        console.log(src);
+        console.log(dst);
         require(src != address(0), "ERC20: transfer from the zero address");
         require(dst != address(0), "ERC20: transfer to the zero address");
         
@@ -197,12 +201,15 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         // require(matherr == NO_ERROR, "ERC20: transfer amount exceeds balance");
         uint newbalance = _balances[src] - amount;
         _balances[src] = newbalance;
+        console.log("tranfer");
+        console.log(_balances[src]);
 
         // (matherr, newbalance) = _balances[recipient].addUint256(amount);
         newbalance = _balances[dst] + amount;
         // error rarely happen
         // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
         _balances[dst] = newbalance;
+        console.log(_balances[dst]);
 
         emit Transfer(src, dst, amount);
     }
@@ -216,16 +223,21 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     function _mint(address dst, uint256 amount) internal virtual {
         require(dst != address(0), "ERC20: mint to the zero address");
 
+        // console.log(amount);
+        // console.log(_totalSupply);
+
         // MathError matherr;
         // (matherr, result) = _totalSupply.addUint256(amount);
         // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
         uint256 result = _totalSupply + amount;
         _totalSupply = result;
+        // console.log(_totalSupply);
 
         // (matherr, result) = _balances[account].addUint256(amount);
         // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
         result = _balances[dst] + amount;
         _balances[dst] = result;
+        // console.log(_balances[dst]);
 
         emit Transfer(address(0), dst, amount);
     }
@@ -267,7 +279,7 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         require(owner != address(0), "ERC20: approve from the zero address");
         require(spender != address(0), "ERC20: approve to the zero address");
 
-        require(_balances[owner] >= amount, "ERC20: approve amount exceed the balance of owners");
+        // require(_balances[owner] >= amount, "ERC20: approve amount exceed the balance of owners");
         _allowances[owner][spender] = amount;
         emit Approval(owner, spender, amount);
     }

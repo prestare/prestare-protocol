@@ -21,24 +21,6 @@ interface EIP20Interface {
     event Approval(address indexed src, address indexed dst, uint256 amount);
 
     /**
-     * @notice Get the name of the Token
-     * @return Returns the name of this token
-     */
-    function name() external view returns (string memory);
-
-    /**
-     * @notice Get the symbol of this token
-     * @return Returns the symbol of this token, like PRS
-     */
-    function symbol() external view returns (string memory);
-
-    /**
-     * @notice Get the decimals ues in this token
-     * @return the number of decimals used to get its user representation.
-     */
-    function decimals() external view returns (uint8);
-
-    /**
      * @notice Get the total number of tokens in circulation
      * @return Returns the amount of tokens in existence.
      */
@@ -61,14 +43,14 @@ interface EIP20Interface {
      */
     function transfer(address dst, uint256 amount) external returns (bool);
 
-    /**
-      * @notice Transfer `amount` tokens from `src` to `dst`
-      * @param src The address of the source account
-      * @param dst The address of the destination account
-      * @param amount The number of tokens to transfer
-      * @return a boolean value indicating whether the operation succeeded.
-      */
-    function transferFrom(address src, address dst, uint256 amount) external returns (bool);
+    // /**
+    //   * @notice Transfer `amount` tokens from `src` to `dst`
+    //   * @param src The address of the source account
+    //   * @param dst The address of the destination account
+    //   * @param amount The number of tokens to transfer
+    //   * @return a boolean value indicating whether the operation succeeded.
+    //   */
+    // function transferFrom(address src, address dst, uint256 amount) external returns (bool);
 
     /**
       * @notice Approve `spender` to transfer up to `amount` from `src`

@@ -3,14 +3,14 @@ pragma solidity ^0.8.4;
 
 import {AssetsStorage} from "../../AssetsStorage.sol";
 import {Address} from "../../dependencies/Address.sol";
-import {AssetsLib} from "../..//DataType/TypeLib.sol";
+import {AssetsLib} from "../../DataType/TypeLib.sol";
 import {KoiosJudgement} from "../../Koios.sol";
 import {EIP20Interface} from "../../dependencies/EIP20Interface.sol";
 import {CounterInterface} from "../../Interfaces/CounterInterface.sol";
 import {CounterAddressProvider} from "../configuration/CounterAddressProvider.sol";
 import {ReserveLogic} from "../../ReserveLogic.sol";
 import {WadRayMath} from "../../utils/WadRay.sol";
-
+import {PTokenInterface} from "../../Interfaces/PTokenInterface.sol";
 
 import "hardhat/console.sol";
 
@@ -30,6 +30,7 @@ contract Counter is AssetsStorage, CounterInterface {
         // KoiosJudgement.DepositJudgement(assetAddr, amount);
 
         address pTokenAddr = assetData.pTokenAddress;
+        bool status = PTokenInterface(pTokenAddr).mint(provider, amount, assetData.liquidityIndex);
 
         // TODO: 更新池子状态
         // 更新资产的状态变量

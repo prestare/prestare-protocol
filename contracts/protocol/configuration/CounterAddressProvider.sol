@@ -5,6 +5,8 @@ import { Ownable } from "../../dependencies/Ownable.sol";
 import { CounterAddressProviderInterface } from "../../Interfaces/CounterAddressProviderInterface.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 
+import "hardhat/console.sol";
+
 contract CounterAddressProvider is Ownable, CounterAddressProviderInterface {
     string private _marketId;
     mapping(bytes32 => address) private _addresses;
@@ -32,7 +34,6 @@ contract CounterAddressProvider is Ownable, CounterAddressProviderInterface {
     **/
     function _updateImpl(bytes32 id, address newAddress) internal {
         address payable proxyAddress = payable(_addresses[id]);
-
         InitializableImmutableAdminUpgradeabilityProxy proxy = InitializableImmutableAdminUpgradeabilityProxy(proxyAddress);
         bytes memory params = abi.encodeWithSignature("initialize(address)", address(this));
 

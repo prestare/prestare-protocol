@@ -12,13 +12,16 @@ import { SafeMath256 } from "./dependencies/SafeMath.sol";
 import { Errors } from "./utils/ErrorList.sol";
 import { KoiosJudgement } from "./Koios.sol";
 import { IncentiveController } from "./Interfaces/IncentiveController.sol";
+import { PTokenERC20 } from "./PTokenERC20.sol";
+
+import "hardhat/console.sol";
 
 // TODO: is ptoken a abstract contract?????? No
 
 // TODO DISCUSS aToken use VersionedInitializable Contract to help initizalize contract
 // 
 contract PToken is 
-    EIP20Implementation("PTOKEN_IMPL", "PTOKEN"),
+    PTokenERC20("PTOKEN_IMPL", "PTOKEN_IMPL", 0),
     PTokenInterface 
 {
     // TODO use wadray directly?
@@ -30,9 +33,9 @@ contract PToken is
     address internal _underlyingAsset;
     // TODO Aave add incentivesController to this contract
 
-    string _name;
-    string _symbol;
-    uint8 _decimals;
+    // string _name;
+    // string _symbol;
+    // uint8 _decimals;
     address internal _crt_pool;
 
     /**
@@ -79,24 +82,27 @@ contract PToken is
         CounterInterface counter,
         address gasStation,
         address underlyingAsset,
-        address crt,
         uint8 pTokenDecimals,
         string calldata pTokenName,
         string calldata pTokenSymbol,
         bytes calldata params
     ) external override
     {  
+
         // TODO 后续可能在继承的EIP20中通过函数的方式设置。
-        _name = pTokenName;
-        _symbol = pTokenSymbol;
-        _decimals = pTokenDecimals;
-        _crt_pool = crt;
+        // _name = pTokenName;
+        // _symbol = pTokenSymbol;
+        // _decimals = pTokenDecimals;
+        _setName(pTokenName);
+        _setSymbol(pTokenSymbol);
+        _setDecimals(pTokenDecimals);
+        // _crt_pool = crt;
 
         _counter = counter;
         _gasStation = gasStation;
         _underlyingAsset = underlyingAsset;
         // 只允许admin改变，暂定
-        require(msg.sender == _admin, "only admin may initialize the contract");
+        // require(msg.sender == _admin, "only admin may initialize the contract");
         
         // 获取链id，用来区分不同 EVM 链的一个标识
         uint256 chainId;
@@ -123,7 +129,7 @@ contract PToken is
             address(counter),
             gasStation,
             underlyingAsset,
-            crt,
+            // crt,
             pTokenDecimals,
             pTokenName,
             pTokenSymbol,
@@ -248,7 +254,7 @@ contract PToken is
     function balanceOf(address user)
         public
         view
-        override(EIP20Implementation, EIP20Interface)
+        override(PTokenERC20, EIP20Interface)
         returns (uint256)
     {
         // return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
@@ -285,7 +291,7 @@ contract PToken is
      * does that too.
      * @return the current total supply
      */
-    function totalSupply() public view override(EIP20Interface, EIP20Implementation) returns (uint256) {
+    function totalSupply() public view override(PTokenERC20, EIP20Interface) returns (uint256) {
         uint256 currentSupplyScaled = super.totalSupply();
         if (currentSupplyScaled == 0) {
         return 0;
@@ -407,16 +413,17 @@ contract PToken is
         uint256 amount,
         bool validate
     ) internal {
+        console.log("pToken 66666");
         address underlyingAsset = _underlyingAsset;
         CounterInterface counter = _counter;
 
         // TODO:
-        uint256 index = 1;
+        uint256 index = 1; 
         // uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
 
         // TODO
-        uint256 fromBalanceBefore = 1;
-        uint256 toBalanceBefore = 1;
+        // uint256 fromBalanceBefore = 1;
+        // uint256 toBalanceBefore = 1;
         // uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
         // uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
 
@@ -425,6 +432,7 @@ contract PToken is
         // if (validate) {
         //     counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
         // }
+        super._transfer(from, to, amount);
 
         emit BalanceTransfer(from, to, amount, index);
     }
@@ -439,7 +447,7 @@ contract PToken is
         address from,
         address to,
         uint256 amount
-    ) internal {
+    ) internal override {
         _transfer(from, to, amount, true);
     }
 }

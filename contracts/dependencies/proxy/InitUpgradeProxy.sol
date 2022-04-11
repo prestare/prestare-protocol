@@ -24,11 +24,10 @@ contract InitializableUpgradeabilityProxy is BaseUpgradeabilityProxy {
         _setImplementation(_logic);
         if (_data.length > 0) {
             (bool success, ) = _logic.delegatecall(_data);
-            // console.log(success);
             // HardCode!!!
             // TODO:@zihao
-            require(true);
-            // require(success);
+            // require(true);
+            require(success);
         }
     }
 }

@@ -45,7 +45,9 @@ contract CounterConfigurator is CounterConfiguratorInterface {
     }
 
     function _initReserve(CounterInterface counter_, InitReserveInput calldata input) internal {
-        address pTokenProxyAddress =
+        // console.log("12131");
+        // console.log(input.pTokenImpl);
+        address pTokenProxyAddress = 
         _initTokenWithProxy(
             input.pTokenImpl,
             abi.encodeWithSelector(
@@ -53,14 +55,12 @@ contract CounterConfigurator is CounterConfiguratorInterface {
                 counter_,
                 input.treasury,
                 input.underlyingAsset,
-                IncentiveController(input.incentivesController),
                 input.underlyingAssetDecimals,
                 input.pTokenName,
                 input.pTokenSymbol,
                 input.params
             )
         );
-
         counter_.initReserve(
         input.underlyingAsset,
         pTokenProxyAddress,

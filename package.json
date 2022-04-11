@@ -4,7 +4,7 @@
   "description": "This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.",
   "main": "index.js",
   "scripts": {
-    "compile": "SKIP_LOAD=true hardhat compile",
+    "compile": "hardhat compile",
     "test": "npm run compile && TS_NODEX_TRANSPILE_ONLY=1 hardhat test ./test/*.spec.ts"
   },
   "repository": {
