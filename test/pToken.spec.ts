@@ -2,9 +2,12 @@ import { makeSuite, TestEnv } from './helper/make-suit';
 import { APPROVAL_AMOUNT_COUNTER } from '../utils/constants';
 import { convertToCurrencyDecimals } from '../utils/contracts-helpers';
 import { expect } from 'chai';
+import { ProtocolErrors } from "../utils/common";
 
 
 makeSuite('PToken: Transfer', (test: TestEnv) => {
+    const { WRONG_SENDER_BALANCE_AFTER_TRANSFER, WRONG_RECEIVER_BALANCE_AFTER_TRANSFER} = ProtocolErrors;
+
     it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
 
         const { users, counter, dai, pDai } = test;
@@ -26,7 +29,7 @@ makeSuite('PToken: Transfer', (test: TestEnv) => {
         console.log(`User 0's new balance: ${fromBalance}`);
         const toBalance = await pDai.balanceOf(users[1].address);
 
-        expect(fromBalance.toString()).to.be.equal('0', "Error1");
-        expect(toBalance.toString()).to.be.equal(amountDAItoDeposit.toString(), "Error2");
+        expect(fromBalance.toString()).to.be.equal('0', WRONG_SENDER_BALANCE_AFTER_TRANSFER);
+        expect(toBalance.toString()).to.be.equal(amountDAItoDeposit.toString(), WRONG_RECEIVER_BALANCE_AFTER_TRANSFER);
     })
 }) 

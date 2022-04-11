@@ -161,8 +161,8 @@ export enum ProtocolErrors {
     
     KOIOS_TRANSFER_NOT_ALLOWED = '1', // Transfer cannot be allowed
 
-    INVALID_FROM_BALANCE_AFTER_TRANSFER = 'Invalid from balance after transfer',
-    INVALID_TO_BALANCE_AFTER_TRANSFER = 'Invalid to balance after transfer',
+    WRONG_SENDER_BALANCE_AFTER_TRANSFER = 'Wrong sender balance after transfer',
+    WRONG_RECEIVER_BALANCE_AFTER_TRANSFER = 'Wrong receiver balance after transfer',
     
 }
 
