@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {AssetsLib} from "./DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {SafeMath256} from "./dependencies/SafeMath.sol";
 import {functions} from "./math/function.sol";
 import {BorrowInterface} from "./Interfaces/BorrowInterface.sol";
@@ -16,11 +16,11 @@ library AssetPoolProfile {
     // using SafeMath256 for uint256;
     // using WadRayMath for uint256;
 
-    // using AssetsConfiguration for AssetsLib.AssetConfigMapping;
+    // using AssetsConfiguration for PrestareCounterStorage.Mapping;
 
-    // // TODO: 根据TypeLib的数据进行初始化
+    // // TODO: 根据PrestareStorage的数据进行初始化
     // function init(
-    //     AssetsLib.AssetProfile storage asset, 
+    //     PrestareCounterStorage.CounterProfile storage asset, 
     //     address pTokenAddr
     //     ) external {
     //         reserve.liquidityIndex = uint128(WadRayMath.ray());
@@ -28,7 +28,7 @@ library AssetPoolProfile {
     //         reserve.pTokenAddress = pTokenAddr;
     //     }
 
-    // function updateState(AssetsLib.AssetProfile storage asset) internal {
+    // function updateState(PrestareCounterStorage.CounterProfile storage asset) internal {
     //     uint256 oldBorrowIndex = asset.borrowIndex;
     //     uint256 oldLiquidityIndex = asset.liquidityIndex;
     //     uint40 lastUpdateTimestamp = asset.lastUpdateTimestamp;
@@ -50,7 +50,7 @@ library AssetPoolProfile {
     // }
 
     // function _toVault(
-    //     AssetsLib.AssetProfile storage asset, 
+    //     PrestareCounterStorage.CounterProfile storage asset, 
     //     uint256 scaledBorrowedAmount,
     //     uint256 oldBorrowIndex,
     //     uint256 newLiquidityIndex, 
@@ -87,7 +87,7 @@ library AssetPoolProfile {
     // }
 
     // function updateRate(
-    //     AssetsLib.AssetProfile storage asset, 
+    //     PrestareCounterStorage.CounterProfile storage asset, 
     //     address assetAddress,
     //     address pTokenAddress,
     //     uint256 liquidityAdded, 
@@ -117,7 +117,7 @@ library AssetPoolProfile {
     // }
 
     // function _updateIndicators(
-    //     AssetsLib.AssetProfile storage asset, 
+    //     PrestareCounterStorage.CounterProfile storage asset, 
     //     uint256 liquidityIndex,
     //     uint256 borrowIndex,
     //     uint40 timestamp
@@ -153,12 +153,12 @@ library AssetPoolProfile {
     //     uint256 newBorrowRate;
     // }
 
-    // function calCumLiquidityIndex(AssetsLib.AssetProfile storage asset) internal {
+    // function calCumLiquidityIndex(PrestareCounterStorage.CounterProfile storage asset) internal {
 
     // }
 
 
-    // function _calPoolCumNormIncome(AssetsLib.AssetProfile storage asset) internal view returns (uint256) {
+    // function _calPoolCumNormIncome(PrestareCounterStorage.CounterProfile storage asset) internal view returns (uint256) {
         
     //     // TODO: 为什么要用uint40
     //     uint40 lastTimeStamp = asset.lastUpdateTimestamp;
@@ -177,7 +177,7 @@ library AssetPoolProfile {
     //     return result;
     // }
 
-    // function calTotalBorrowIndex(AssetsLib.AssetProfile storage asset) internal view returns (uint256) {
+    // function calTotalBorrowIndex(PrestareCounterStorage.CounterProfile storage asset) internal view returns (uint256) {
 
     //     uint40 lastTimeStamp = asset.lastUpdateTimestamp;
 

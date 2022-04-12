@@ -12,7 +12,7 @@ import {
 } from './common';
 import { getDb, HRE, waitForTx } from './misc-utils';
 
-import { getIErc20Detailed } from './contracts-getters';
+import { getEIP20Interface } from './contracts-getters';
 import { usingTenderly } from './tenderly-utils';
 
 
@@ -40,7 +40,7 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
 }
 
 export const convertToCurrencyDecimals = async (tokenAddress: tEthereumAddress, amount: string) => {
-    const token = await getIErc20Detailed(tokenAddress);
+    const token = await getEIP20Interface(tokenAddress);
     let decimals = (await token.decimals()).toString();
 
     return ethers.utils.parseUnits(amount, decimals);

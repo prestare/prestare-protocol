@@ -1,14 +1,25 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-library AssetsLib {
+
+struct BorrowSnapshot {
+  uint256 principal;
+  uint256 interestAccured;
+}
+
+struct MarketStorage {
+  mapping(address => BorrowSnapshot) accountBorrows; // Mapping of account addresses to outstanding borrow balances
+}
+
+// Storage By Counter
+library PrestareCounterStorage {
 
   // The reserve infomation which refer to the whitepaper
-  struct AssetProfile {
+  struct CounterProfile {
     //stores the reserve configuration
-    AssetConfigMapping configuration;
+    CounterConfigMapping configuration;
     //
-    AssetData _assetData;
+    CounterData _assetData;
 
     //the liquidity index. Expressed in ray
     uint128 liquidityIndex;
@@ -29,12 +40,12 @@ library AssetsLib {
     uint8 id;
   }
 
-  struct AssetData {
+  struct CounterData {
     // 记录scb
     uint256 scaledBorrowedAmount;
   }
 
-  struct AssetConfigMapping {
+  struct CounterConfigMapping {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus

@@ -2,15 +2,15 @@
 pragma solidity ^0.8.4;
 
 import {AssetsConfiguration} from "../AssetsConfiguration.sol";
-import {AssetsLib} from "../DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "../DataType/PrestareStorage.sol";
 import {CounterAddressProviderInterface} from "../Interfaces/CounterAddressProviderInterface.sol";
 import {CounterInterface} from "../Interfaces/CounterInterface.sol";
-import {IERC20Detailed} from "../dependencies/ERC20Detailed.sol";
+import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
 
 import "hardhat/console.sol";
 
 contract PrestareDataProvider {
-    using AssetsConfiguration for AssetsLib.AssetConfigMapping;
+    using AssetsConfiguration for PrestareCounterStorage.CounterConfigMapping;
 
     address constant MKR = 0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2;
     address constant ETH = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
@@ -46,9 +46,9 @@ contract PrestareDataProvider {
         address[] memory reserves = counter.getReservesList();        
         TokenData[] memory pTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            AssetsLib.AssetProfile memory reserveData = counter.getReserveData(reserves[i]);
+            PrestareCounterStorage.CounterProfile memory reserveData = counter.getReserveData(reserves[i]);
             pTokens[i] = TokenData({
-                symbol: IERC20Detailed(reserveData.pTokenAddress).symbol(),
+                symbol: EIP20Interface(reserveData.pTokenAddress).symbol(),
                 tokenAddress: reserveData.pTokenAddress
                 });
             }
@@ -69,7 +69,7 @@ contract PrestareDataProvider {
                 continue;
             }
             reservesTokens[i] = TokenData({
-                symbol: IERC20Detailed(reserves[i]).symbol(),
+                symbol: EIP20Interface(reserves[i]).symbol(),
                 tokenAddress: reserves[i]
             });
         }

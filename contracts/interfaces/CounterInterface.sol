@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-import {AssetsLib} from "./../DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "./../DataType/PrestareStorage.sol";
 
 interface CounterInterface {
     /**
@@ -57,7 +57,7 @@ interface CounterInterface {
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
    **/
-    function getReserveData(address asset) external view returns (AssetsLib.AssetProfile memory);
+    function getReserveData(address asset) external view returns (PrestareCounterStorage.CounterProfile memory);
 
     function getReservesList() external view returns (address[] memory);
 
@@ -71,5 +71,5 @@ interface CounterInterface {
     function getConfiguration(address asset)
         external
         view
-        returns (AssetsLib.AssetConfigMapping memory);
+        returns (PrestareCounterStorage.CounterConfigMapping memory);
 }

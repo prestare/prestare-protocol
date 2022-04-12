@@ -3,7 +3,6 @@ pragma solidity ^0.8.4;
 
 import {Context} from "./dependencies/utils/Context.sol";
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
-import {IERC20Detailed} from "./dependencies/ERC20Detailed.sol";
 import {SafeMath256} from "./dependencies/SafeMath.sol";
 import {Error} from "./utils/Error.sol";
 
@@ -14,7 +13,7 @@ import "hardhat/console.sol";
  * @notice Basic ERC20 implementation
  * @author Aave, inspired by the Openzeppelin ERC20 implementation
  **/
-abstract contract PTokenERC20 is Context, EIP20Interface, IERC20Detailed {
+abstract contract PTokenERC20 is Context, EIP20Interface {
     using SafeMath256 for uint256;
 
     mapping(address => uint256) internal _balances;

@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 // From Aave V2
 
-import {AssetsLib} from "./DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 
 library AssetsConfiguration {
     uint256 constant LTV_MASK =                   0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000; // prettier-ignore
@@ -23,7 +23,7 @@ library AssetsConfiguration {
    * @param self The reserve configuration
    * @return The reserve factor
    **/
-    function getReserveFactor(AssetsLib.AssetConfigMapping storage self) internal view returns(uint256) {
+    function getReserveFactor(PrestareCounterStorage.CounterConfigMapping storage self) internal view returns(uint256) {
         return (self.data & ~RESERVE_FACTOR_MASK >> RESERVE_FACTOR_START_BIT_POSITION);
     }
 
@@ -33,7 +33,7 @@ library AssetsConfiguration {
     * @param self The reserve configuration
     * @return The state flags representing active, frozen, borrowing enabled, stableRateBorrowing enabled
     **/
-    function getFlags(AssetsLib.AssetConfigMapping storage self)
+    function getFlags(PrestareCounterStorage.CounterConfigMapping storage self)
     internal
     view
     returns (

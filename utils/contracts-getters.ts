@@ -4,7 +4,7 @@ import {
 } from './common';
 import { HRE, getDb } from './misc-utils';
 
-import { IERC20Detailed__factory } from '../typechain/factories/IERC20Detailed__factory';
+import { EIP20Interface__factory } from '../typechain/factories/EIP20Interface__factory';
 import { CounterConfigurator__factory } from '../typechain/factories/CounterConfigurator__factory';
 import { CounterAddressProvider__factory } from '../typechain/factories/CounterAddressProvider__factory';
 import { PTokenAndRatesHelper__factory } from '../typechain/factories/PTokenAndRatesHelper__factory';
@@ -30,10 +30,10 @@ export const getMintableERC20 = async (address: tEthereumAddress) =>
         (await getDb().get(`${eContractid.MintableERC20}.${HRE.network.name}`).value()).address,
         await getFirstSigner()
     );
-export const getIErc20Detailed = async (address: tEthereumAddress) => 
-    await IERC20Detailed__factory.connect(
+export const getEIP20Interface = async (address: tEthereumAddress) => 
+    await EIP20Interface__factory.connect(
         address ||
-            (await getDb().get(`${eContractid.IERC20Detailed}.${HRE.network.name}`).value()).address,
+            (await getDb().get(`${eContractid.EIP20Interface}.${HRE.network.name}`).value()).address,
         await getFirstSigner()
 );
 

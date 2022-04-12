@@ -41,7 +41,7 @@ export enum eAvalancheNetwork {
 }
 
 export enum eContractid {
-    IERC20Detailed = 'IERC20Detailed',
+    EIP20Interface = 'EIP20Interface',
     Counter = 'Counter',
     PToken = 'PToken',
     MintableERC20 = 'MintableERC20',

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import { AssetsLib } from "../../DataType/TypeLib.sol";
+import { PrestareCounterStorage } from "../../DataType/PrestareStorage.sol";
 
 library AssetConfiguration {
     uint256 constant LTV_MASK =                   0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000; // prettier-ignore
@@ -28,7 +28,7 @@ library AssetConfiguration {
    * @param self The reserve configuration
    * @param ltv the new ltv
    **/
-    function setLtv(AssetsLib.AssetConfigMapping memory self, uint256 ltv) internal pure {
+    function setLtv(PrestareCounterStorage.CounterConfigMapping memory self, uint256 ltv) internal pure {
         require(ltv <= MAX_VALID_LTV, "Error");
 
         self.data = (self.data & LTV_MASK) | ltv;
@@ -39,7 +39,7 @@ library AssetConfiguration {
     * @param self The reserve configuration
     * @param threshold The new liquidation threshold
     **/
-    function setLiquidationThreshold(AssetsLib.AssetConfigMapping memory self, uint256 threshold)
+    function setLiquidationThreshold(PrestareCounterStorage.CounterConfigMapping memory self, uint256 threshold)
         internal
         pure
     {
@@ -55,7 +55,7 @@ library AssetConfiguration {
     * @param self The reserve configuration
     * @param bonus The new liquidation bonus
     **/
-    function setLiquidationBonus(AssetsLib.AssetConfigMapping memory self, uint256 bonus)
+    function setLiquidationBonus(PrestareCounterStorage.CounterConfigMapping memory self, uint256 bonus)
         internal
         pure
     {
@@ -71,7 +71,7 @@ library AssetConfiguration {
    * @param self The reserve configuration
    * @param decimals The decimals
    **/
-    function setDecimals(AssetsLib.AssetConfigMapping memory self, uint256 decimals)
+    function setDecimals(PrestareCounterStorage.CounterConfigMapping memory self, uint256 decimals)
         internal
         pure
     {
@@ -85,7 +85,7 @@ library AssetConfiguration {
    * @param self The reserve configuration
    * @param active The active state
    **/
-    function setActive(AssetsLib.AssetConfigMapping memory self, bool active) internal pure {
+    function setActive(PrestareCounterStorage.CounterConfigMapping memory self, bool active) internal pure {
         self.data =
         (self.data & ACTIVE_MASK) |
         (uint256(active ? 1 : 0) << IS_ACTIVE_START_BIT_POSITION);
@@ -96,7 +96,7 @@ library AssetConfiguration {
    * @param self The reserve configuration
    * @param frozen The frozen state
    **/
-    function setFrozen(AssetsLib.AssetConfigMapping memory self, bool frozen) internal pure {
+    function setFrozen(PrestareCounterStorage.CounterConfigMapping memory self, bool frozen) internal pure {
         self.data =
         (self.data & FROZEN_MASK) |
         (uint256(frozen ? 1 : 0) << IS_FROZEN_START_BIT_POSITION);

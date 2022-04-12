@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 // Koios: God of intellect and the axis of heaven around which the constellations revolved.
 
-import {AssetsLib} from "./DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
 
 library KoiosJudgement {
@@ -13,7 +13,7 @@ library KoiosJudgement {
     * @param asset The asset the user is depositing
     * @param amount The amount to be deposited
     */
-    function DepositJudgement(AssetsLib.AssetProfile storage asset, uint256 amount) external view {
+    function DepositJudgement(PrestareCounterStorage.CounterProfile storage asset, uint256 amount) external view {
 
         // (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
 
@@ -39,8 +39,8 @@ library KoiosJudgement {
     address assetAddr, 
     uint256 amount, 
     uint256 userBalance,
-    mapping(address => AssetsLib.AssetProfile) storage assetData,
-    AssetsLib.UserConfigurationMapping storage userConfig,
+    mapping(address => PrestareCounterStorage.CounterProfile) storage assetData,
+    PrestareCounterStorage.UserConfigurationMapping storage userConfig,
     mapping(uint256 => address) storage assets,
     uint256 assetNumber,
     address oracle
@@ -58,7 +58,7 @@ library KoiosJudgement {
     }
 
     function BorrowJudgement(
-        AssetsLib.AssetProfile storage asset,
+        PrestareCounterStorage.CounterProfile storage asset,
         address assetAddr, 
         uint256 borrowAmount,
         uint256 crtRequired,
@@ -74,7 +74,7 @@ library KoiosJudgement {
     }
 
     function RepayJudgement(
-        AssetsLib.AssetProfile storage asset, 
+        PrestareCounterStorage.CounterProfile storage asset, 
         address assetAddr, 
         uint256 amount,
         address debtor

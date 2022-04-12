@@ -7,7 +7,7 @@ import { CounterAddressProviderInterface } from "../../Interfaces/CounterAddress
 import { CounterInterface } from "../../Interfaces/CounterInterface.sol";
 import { InitialPToken } from "../../Interfaces/InitialPToken.sol"; 
 import { IncentiveController } from "../../Interfaces/IncentiveController.sol"; 
-import { AssetsLib } from "../../DataType/TypeLib.sol";
+import { PrestareCounterStorage } from "../../DataType/PrestareStorage.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 import { AssetConfiguration } from "../utils/AssetConfiguration.sol";
 
@@ -15,7 +15,7 @@ import "hardhat/console.sol";
 
 contract CounterConfigurator is CounterConfiguratorInterface {
     uint256 internal constant CONFIGURATOR_REVISION = 0x1;
-    using AssetConfiguration for AssetsLib.AssetConfigMapping;
+    using AssetConfiguration for PrestareCounterStorage.CounterConfigMapping;
 
     CounterAddressProviderInterface internal addressProvider;
     CounterInterface internal counter;
@@ -67,7 +67,7 @@ contract CounterConfigurator is CounterConfiguratorInterface {
         input.interestRateStrategyAddress
         );
 
-        AssetsLib.AssetConfigMapping memory currentConfig =
+        PrestareCounterStorage.CounterConfigMapping memory currentConfig =
         counter_.getConfiguration(input.underlyingAsset);
 
         currentConfig.setDecimals(input.underlyingAssetDecimals);
@@ -100,7 +100,7 @@ contract CounterConfigurator is CounterConfiguratorInterface {
         uint256 liquidationThreshold,
         uint256 liquidationBonus
     ) external onlyPoolAdmin {
-        AssetsLib.AssetConfigMapping memory currentConfig = counter.getConfiguration(asset);
+        PrestareCounterStorage.CounterConfigMapping memory currentConfig = counter.getConfiguration(asset);
         // console.log("0000");
         // console.log(asset);
         // console.log(ltv);

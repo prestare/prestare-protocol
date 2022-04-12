@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import {AssetsStorage} from "../../AssetsStorage.sol";
 import {Address} from "../../dependencies/Address.sol";
-import {AssetsLib} from "../../DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "../../DataType/PrestareStorage.sol";
 import {KoiosJudgement} from "../../Koios.sol";
 import {EIP20Interface} from "../../dependencies/EIP20Interface.sol";
 import {CounterInterface} from "../../Interfaces/CounterInterface.sol";
@@ -15,7 +15,7 @@ import {PTokenInterface} from "../../Interfaces/PTokenInterface.sol";
 import "hardhat/console.sol";
 
 contract Counter is AssetsStorage, CounterInterface {
-    using ReserveLogic for AssetsLib.AssetProfile;
+    using ReserveLogic for PrestareCounterStorage.CounterProfile;
 
     function initialize(CounterAddressProvider provider) public {
         _addressProvider = provider;
@@ -25,7 +25,7 @@ contract Counter is AssetsStorage, CounterInterface {
     // TODO： 设置函数调用权限或者状态
     function deposit (address assetAddr, uint256 amount, address provider) external override whenNotPaused {
 
-        AssetsLib.AssetProfile storage assetData = _assetData[assetAddr];
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
 
         // KoiosJudgement.DepositJudgement(assetAddr, amount);
 
@@ -47,7 +47,7 @@ contract Counter is AssetsStorage, CounterInterface {
 
     function withdraw (address assetAddr, uint256 amount, address to) external {
 
-        AssetsLib.AssetProfile storage assetData = _assetData[assetAddr];
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
         address pTokenAddr = assetData.pTokenAddress;
         // interface 要改
         uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
@@ -72,8 +72,8 @@ contract Counter is AssetsStorage, CounterInterface {
      */
     function borrow (address assetAddr, uint256 amount, address borrower, uint8 crtQuota) external {
         
-        AssetsLib.AssetProfile storage assetData = _assetData[assetAddr];
-        AssetsLib.UserConfigurationMapping storage userConfig = _userConfig[borrower];
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
+        PrestareCounterStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
         // mapping(uint8 => uint8) memory _crtValueMapping = assetData.crtValueMapping;
 
         address pTokenAddr = assetData.pTokenAddress;
@@ -106,7 +106,7 @@ contract Counter is AssetsStorage, CounterInterface {
 
     function repay(address assetAddr, uint256 repayAmount, address debtor) external {
 
-        AssetsLib.AssetProfile storage assetData = _assetData[assetAddr];
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
 
         // // TODO 1. 获取用户total 债务（1. conpound 链上存信息？ 2. aave 发债务token）
         uint256 debtBalance;
@@ -195,9 +195,9 @@ contract Counter is AssetsStorage, CounterInterface {
     }
 
     function _borrowCalulation(CalculateBorrowParams memory vars) internal {
-        AssetsLib.AssetProfile storage assetData = _assetData[vars.currency];
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[vars.currency];
 
-        AssetsLib.UserConfigurationMapping storage userConfig = _userConfig[vars.debtor];
+        PrestareCounterStorage.UserConfigurationMapping storage userConfig = _userConfig[vars.debtor];
 
         // TODO: 获取预言机价格
 
@@ -247,7 +247,7 @@ contract Counter is AssetsStorage, CounterInterface {
         external
         view
         override
-        returns (AssetsLib.AssetConfigMapping memory)
+        returns (PrestareCounterStorage.CounterConfigMapping memory)
     {
         return _assetData[asset].configuration;
     }
@@ -291,7 +291,7 @@ contract Counter is AssetsStorage, CounterInterface {
    * @return The state of the reserve
    **/
     function getReserveData(address asset) external view override
-        returns (AssetsLib.AssetProfile memory)
+        returns (PrestareCounterStorage.CounterProfile memory)
     {
         // console.log("124867");
         // console.log(_assetData[asset].pTokenAddress);

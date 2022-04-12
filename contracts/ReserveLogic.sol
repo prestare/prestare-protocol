@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {AssetsLib} from "./DataType/TypeLib.sol";
+import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {WadRayMath} from "./utils/WadRay.sol";
 
 
 library ReserveLogic {
 
-    using ReserveLogic for AssetsLib.AssetProfile;
+    using ReserveLogic for PrestareCounterStorage.CounterProfile;
 
     /**
    * @dev Emitted when the state of a reserve is updated
@@ -32,7 +32,7 @@ library ReserveLogic {
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
     function init(
-        AssetsLib.AssetProfile storage reserve,
+        PrestareCounterStorage.CounterProfile storage reserve,
         address pTokenAddress,
         address interestRateStrategyAddress
     ) external {

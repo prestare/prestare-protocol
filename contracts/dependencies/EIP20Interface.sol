@@ -21,6 +21,21 @@ interface EIP20Interface {
     event Approval(address indexed src, address indexed dst, uint256 amount);
 
     /**
+     * @return Returns the name of the token
+     */
+    function name() external view returns (string memory);
+
+    /**
+     * @return Returns the symbol of the token
+     */
+    function symbol() external view returns (string memory);
+
+    /**
+     * @return Returns the number of decimals the token uses
+     */
+    function decimals() external view returns (uint8);
+
+    /**
      * @notice Get the total number of tokens in circulation
      * @return Returns the amount of tokens in existence.
      */
