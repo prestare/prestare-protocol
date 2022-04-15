@@ -34,6 +34,7 @@ library ReserveLogic {
     function init(
         PrestareCounterStorage.CounterProfile storage reserve,
         address pTokenAddress,
+        address crtAddress,
         address interestRateStrategyAddress
     ) external {
         require(reserve.pTokenAddress == address(0), "Error");
@@ -41,6 +42,7 @@ library ReserveLogic {
         reserve.liquidityIndex = uint128(WadRayMath.ray());
         reserve.borrowIndex = uint128(WadRayMath.ray());
         reserve.pTokenAddress = pTokenAddress;
+        reserve.crtAddress = crtAddress;
         reserve.interestRateStrategyAddress = interestRateStrategyAddress;
     }
 }

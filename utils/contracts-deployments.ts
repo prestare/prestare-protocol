@@ -16,6 +16,7 @@ import { MockAggregator__factory } from '../typechain/factories/MockAggregator__
 import { TestInterestRateModel__factory } from '../typechain/factories/TestInterestRateModel__factory';
 import { CounterLibraryAddresses } from '../typechain/factories/Counter__factory';
 import { ReserveLogic__factory } from '../typechain/factories/ReserveLogic__factory';
+import { CreditToken__factory } from '../typechain/factories/CreditToken__factory';
 
 import { getFirstSigner } from './contracts-getters';
 import { 
@@ -287,6 +288,14 @@ export const deployGenericPTokenImpl = async (verify: boolean) =>
     withSaveAndVerify(
         await new PToken__factory(await getFirstSigner()).deploy(),
         eContractid.PToken,
+        [],
+        verify
+    );
+
+export const deployGenericCRTImpl = async (verify: boolean) =>
+    withSaveAndVerify(
+        await new CreditToken__factory(await getFirstSigner()).deploy(),
+        eContractid.CreditToken,
         [],
         verify
     );

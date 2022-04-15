@@ -191,8 +191,6 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
     function _transferInternal(address src, address dst, uint256 amount) 
         internal 
         virtual {
-        console.log(src);
-        console.log(dst);
         require(src != address(0), "ERC20: transfer from the zero address");
         require(dst != address(0), "ERC20: transfer to the zero address");
         
@@ -201,15 +199,12 @@ contract EIP20Implementation is Context, EIP20Interface, PMath {
         // require(matherr == NO_ERROR, "ERC20: transfer amount exceeds balance");
         uint newbalance = _balances[src] - amount;
         _balances[src] = newbalance;
-        console.log("tranfer");
-        console.log(_balances[src]);
 
         // (matherr, newbalance) = _balances[recipient].addUint256(amount);
         newbalance = _balances[dst] + amount;
         // error rarely happen
         // require(matherr == NO_ERROR, "ERC20: transfer amount overflow");
         _balances[dst] = newbalance;
-        console.log(_balances[dst]);
 
         emit Transfer(src, dst, amount);
     }

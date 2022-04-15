@@ -44,6 +44,7 @@ export enum eContractid {
     EIP20Interface = 'EIP20Interface',
     Counter = 'Counter',
     PToken = 'PToken',
+    CreditToken = 'CreditToken',
     MintableERC20 = 'MintableERC20',
     CounterAddressProvider = 'CounterAddressProvider',
     CounterAddressesProviderRegistry = 'CounterAddressesProviderRegistry',
@@ -138,6 +139,7 @@ export interface IReserveParams extends IReserveBorrowParams, IReserveCollateral
     pTokenImpl: eContractid;
     reserveFactor: string;
     strategy: IInterestRateStrategyParams;
+    crtDecimals: string;
 }
 
 export interface IInterestRateStrategyParams {

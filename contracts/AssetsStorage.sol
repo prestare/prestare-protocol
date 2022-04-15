@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
-import {MarketStorage} from "./DataType/PrestareStorage.sol";
+import {PrestareMarketStorage} from "./DataType/PrestareStorage.sol";
 import {CounterAddressProviderInterface} from "./Interfaces/CounterAddressProviderInterface.sol";
 import {ReserveLogic} from "./ReserveLogic.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
@@ -14,7 +14,13 @@ contract AssetsStorage {
 
     CounterAddressProviderInterface internal _addressProvider;
 
-    MarketStorage internal _marketStorage;
+    // User's balance for each asset
+    mapping(address => mapping(address => PrestareMarketStorage.UserBalanceByAsset)) _userDataByAsset;
+    // User's total balance 
+    mapping(address => PrestareMarketStorage.UserBalanceSummary) _userBalanceSummary;
+    
+    mapping(address => PrestareMarketStorage.CreditTokenStorage) internal _crt;
+    mapping(uint8 => address) _crtList;
 
     mapping(address => PrestareCounterStorage.CounterProfile) internal _assetData;
     mapping(address => PrestareCounterStorage.UserConfigurationMapping) internal _userConfig;

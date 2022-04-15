@@ -5,15 +5,20 @@ pragma experimental ABIEncoderV2;
 interface CounterConfiguratorInterface {
     struct InitReserveInput {
         address pTokenImpl;
+        address crtTokenImpl;
         uint8 underlyingAssetDecimals;
+        uint8 crtDecimals;
         address interestRateStrategyAddress;
         address underlyingAsset;
         address treasury;
         address incentivesController;
         string underlyingAssetName;
         string pTokenName;
+        string crtName;
         string pTokenSymbol;
+        string crtSymbol;
         bytes params;
+        bytes crtParams;
     }
 
     struct UpdatePTokenInput {

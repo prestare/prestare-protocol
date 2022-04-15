@@ -2,6 +2,8 @@
 pragma solidity ^0.8.4;
 
 import {PrestareCounterStorage} from "./../DataType/PrestareStorage.sol";
+import {PrestareMarketStorage} from "./../DataType/PrestareStorage.sol";
+
 
 interface CounterInterface {
     /**
@@ -46,9 +48,17 @@ interface CounterInterface {
         address onBehalfOf
     ) external;
 
+    function borrow(
+        address assetAddr,
+        uint256 amount,
+        address borrower,
+        uint8 crtQuota
+    ) external;
+
     function initReserve(
         address reserve,
-        address variableDebtAddress,
+        address pTokenAddress,
+        address crtAddress,
         address interestRateStrategyAddress
     ) external;
 
@@ -57,7 +67,11 @@ interface CounterInterface {
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
    **/
-    function getReserveData(address asset) external view returns (PrestareCounterStorage.CounterProfile memory);
+    function getCounterData(address asset) external view returns (PrestareCounterStorage.CounterProfile memory);
+
+    function getCRTData(address asset) external view returns (PrestareMarketStorage.CreditTokenStorage memory);
+
+    function getUserData(address user, address assetAddr) external view returns (PrestareMarketStorage.UserBalanceByAsset memory);
 
     function getReservesList() external view returns (address[] memory);
 

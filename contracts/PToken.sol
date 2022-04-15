@@ -111,12 +111,12 @@ contract PToken is
         }
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-            EIP712_DOMAIN,
-            keccak256(bytes(pTokenName)),
-            keccak256(EIP712_REVISION),
-            chainId,
-            address(this)
-        )
+                EIP712_DOMAIN,
+                keccak256(bytes(pTokenName)),
+                keccak256(EIP712_REVISION),
+                chainId,
+                address(this)
+            )
         );
         // Initialize the block number and borrow index
         // accrualBlockNumber = getBlockNumber();

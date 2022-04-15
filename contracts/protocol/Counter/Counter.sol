@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import {AssetsStorage} from "../../AssetsStorage.sol";
 import {Address} from "../../dependencies/Address.sol";
 import {PrestareCounterStorage} from "../../DataType/PrestareStorage.sol";
+import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
 import {KoiosJudgement} from "../../Koios.sol";
 import {EIP20Interface} from "../../dependencies/EIP20Interface.sol";
 import {CounterInterface} from "../../Interfaces/CounterInterface.sol";
@@ -11,10 +12,14 @@ import {CounterAddressProvider} from "../configuration/CounterAddressProvider.so
 import {ReserveLogic} from "../../ReserveLogic.sol";
 import {WadRayMath} from "../../utils/WadRay.sol";
 import {PTokenInterface} from "../../Interfaces/PTokenInterface.sol";
+import {CreditToken} from "../../CreditToken.sol";
+import {SafeMath256} from "../../dependencies/SafeMath.sol";
+import {Error} from "../../utils/Error.sol";
 
 import "hardhat/console.sol";
 
 contract Counter is AssetsStorage, CounterInterface {
+    using SafeMath256 for uint256;
     using ReserveLogic for PrestareCounterStorage.CounterProfile;
 
     function initialize(CounterAddressProvider provider) public {
@@ -70,22 +75,49 @@ contract Counter is AssetsStorage, CounterInterface {
     /**
     @param crtQuota CRT decay level. Default value is 10(consider all the crt user has).
      */
-    function borrow (address assetAddr, uint256 amount, address borrower, uint8 crtQuota) external {
+    function borrow (address assetAddr, uint256 amount, address borrower, uint8 crtQuota) external override {
         
         PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
-        PrestareCounterStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
+
+        _borrow(
+            BorrowParams(
+                assetAddr,
+                borrower,
+                amount,
+                assetData.pTokenAddress,
+                _assetData[assetAddr].crtAddress,
+                crtQuota
+            )
+        );
+    }
+
+    struct BorrowParams {
+        address assetAddress;
+        address borrower;
+        uint256 amount;
+        address pTokenAddress;
+        address crtAddress;
+        uint8 crtQuota;
+    }
+
+    function _borrow(BorrowParams memory vars) internal {
+        PrestareCounterStorage.CounterProfile storage assetData = _assetData[vars.assetAddress];
+        // PrestareCounterStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
         // mapping(uint8 => uint8) memory _crtValueMapping = assetData.crtValueMapping;
 
-        address pTokenAddr = assetData.pTokenAddress;
-        uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
-        // 用户的crtBalance怎么获取
-        uint256 crtBalance;
+        // uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
+        // get user's balance of CRT
+        console.log(vars.crtAddress);
+        console.log("11111");
+        uint256 crtBalance = CreditToken(vars.crtAddress).balanceOf(vars.borrower);
+        console.log("11111");
 
-        // 通过oracle 将用户的所有存款转为 usd单位 assetValueInUSD
-        uint256 assetValueInUSD;
+        // // 通过oracle 将用户的所有存款转为 usd单位 assetValueInUSD
+        // uint256 assetValueInUSD;
 
-        // // CRT used according to crtQuota
-        // uint256 crtRequired = 0;
+        // CRT required according to crtQuota provided by user
+        uint256 crtRequired;
+        // 这一段放入Koios中用来判断是否满足借款条件
         // for (uint8 i = 1; i <= crtQuota; i++) {
         //     // 数学方法待定
         //     // 0.1 要怎么表示
@@ -100,8 +132,20 @@ contract Counter is AssetsStorage, CounterInterface {
         // assetData.updateState();
         // assetData.updateInterestRates(assetAddr, pTokenAddr, 0, amount);
 
-        emit Borrow(assetAddr, borrower, amount);
+        // Update User's balance
+        PrestareMarketStorage.UserBalanceByAsset storage userBlance = _userDataByAsset[vars.borrower][vars.assetAddress];
+        uint256 lastTotalBorrow = userBlance.totalBorrows;
+        uint256 lastBorrowPrincipal = userBlance.principal;
 
+        (bool statusOne, uint256 newAccTotalBorrows) = lastTotalBorrow.tryAdd(vars.amount);
+        require(statusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
+        (bool statusTwo, uint256 newAccBorrowPrincipal) = lastBorrowPrincipal.tryAdd(vars.amount);
+        require(statusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
+
+        userBlance.totalBorrows = newAccTotalBorrows;
+        userBlance.principal = newAccBorrowPrincipal;
+
+        emit Borrow(vars.assetAddress, vars.borrower, vars.amount);
     }
 
     function repay(address assetAddr, uint256 repayAmount, address debtor) external {
@@ -253,20 +297,24 @@ contract Counter is AssetsStorage, CounterInterface {
     }
 
     /**
-   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * @dev Initializes a reserve, activating it, assigning an aToken and credit tokens and an
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract
    * @param asset The address of the underlying asset of the reserve
-   * @param pTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param pTokenAddress The address of the pToken that will be assigned to the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
+
+    // TODO: Whether all the counters can be assigned to a credit token address / Or the zero crtAddress
+    // can be set in the initial configuration for counters dont need crtAddress
     function initReserve(
         address asset,
         address pTokenAddress,
+        address crtAddress,
         address interestRateStrategyAddress
     ) external override onlyCounterConfigurator {
         require(Address.isContract(asset), "Error");
-        _assetData[asset].init(pTokenAddress, interestRateStrategyAddress);
+        _assetData[asset].init(pTokenAddress, crtAddress, interestRateStrategyAddress);
         _addReserveToList(asset);
     }
 
@@ -290,13 +338,20 @@ contract Counter is AssetsStorage, CounterInterface {
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
    **/
-    function getReserveData(address asset) external view override
+    function getCounterData(address asset) external view override
         returns (PrestareCounterStorage.CounterProfile memory)
     {
-        // console.log("124867");
-        // console.log(_assetData[asset].pTokenAddress);
         return _assetData[asset];
-        
+    }
+
+    function getCRTData(address asset) external view override returns (PrestareMarketStorage.CreditTokenStorage memory) {
+        return _crt[asset];
+    }
+
+    function getUserData(address user, address assetAddr) external view override 
+        returns (PrestareMarketStorage.UserBalanceByAsset memory)
+    {
+        return _userDataByAsset[user][assetAddr];
     }
 
     function _onlyCounterConfigurator() internal view {

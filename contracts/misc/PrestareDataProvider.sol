@@ -3,6 +3,7 @@ pragma solidity ^0.8.4;
 
 import {AssetsConfiguration} from "../AssetsConfiguration.sol";
 import {PrestareCounterStorage} from "../DataType/PrestareStorage.sol";
+import {PrestareMarketStorage} from "../DataType/PrestareStorage.sol";
 import {CounterAddressProviderInterface} from "../Interfaces/CounterAddressProviderInterface.sol";
 import {CounterInterface} from "../Interfaces/CounterInterface.sol";
 import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
@@ -41,12 +42,26 @@ contract PrestareDataProvider {
         address tokenAddress;
     }
 
+    function getCreditToken() external view returns (TokenData[] memory) {
+        CounterInterface counter = CounterInterface(ADDRESSES_PROVIDER.getCounter());
+        address[] memory reserves = counter.getReservesList();
+        TokenData[] memory creditTokens = new TokenData[](reserves.length);
+        for (uint256 i = 0; i < reserves.length; i++) {
+            PrestareMarketStorage.CreditTokenStorage memory crtData = counter.getCRTData(reserves[i]);
+            creditTokens[i] = TokenData({
+                symbol: EIP20Interface(crtData.crtAddress).symbol(), 
+                tokenAddress: crtData.crtAddress
+            });
+        }
+        return creditTokens;
+    }
+
     function getAllPTokens() external view returns (TokenData[] memory) {
         CounterInterface counter = CounterInterface(ADDRESSES_PROVIDER.getCounter());
         address[] memory reserves = counter.getReservesList();        
         TokenData[] memory pTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            PrestareCounterStorage.CounterProfile memory reserveData = counter.getReserveData(reserves[i]);
+            PrestareCounterStorage.CounterProfile memory reserveData = counter.getCounterData(reserves[i]);
             pTokens[i] = TokenData({
                 symbol: EIP20Interface(reserveData.pTokenAddress).symbol(),
                 tokenAddress: reserveData.pTokenAddress
@@ -60,10 +75,6 @@ contract PrestareDataProvider {
         address[] memory reserves = counter.getReservesList();
         TokenData[] memory reservesTokens = new TokenData[](reserves.length);
         for (uint256 i = 0; i < reserves.length; i++) {
-            if (reserves[i] == MKR) {
-                reservesTokens[i] = TokenData({symbol: "MKR", tokenAddress: reserves[i]});
-                continue;
-            }
             if (reserves[i] == ETH) {
                 reservesTokens[i] = TokenData({symbol: "ETH", tokenAddress: reserves[i]});
                 continue;
@@ -74,5 +85,12 @@ contract PrestareDataProvider {
             });
         }
         return reservesTokens;
+    }
+
+    function getUserBorrows(address user, address assetAddr) external view returns (uint256 borrowPrincipal, uint256 totalBorrows) {
+        CounterInterface counter = CounterInterface(ADDRESSES_PROVIDER.getCounter());
+        PrestareMarketStorage.UserBalanceByAsset memory userBorrows = counter.getUserData(user, assetAddr);
+
+        return (userBorrows.principal, userBorrows.totalBorrows);
     }
 }

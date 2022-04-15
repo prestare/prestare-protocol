@@ -2,13 +2,28 @@
 pragma solidity ^0.8.4;
 
 
-struct BorrowSnapshot {
-  uint256 principal;
-  uint256 interestAccured;
-}
+library PrestareMarketStorage {
 
-struct MarketStorage {
-  mapping(address => BorrowSnapshot) accountBorrows; // Mapping of account addresses to outstanding borrow balances
+  struct CreditTokenStorage {
+    uint id;
+    address crtAddress;
+  }
+
+  struct UserBalanceByAsset {
+    // principal amount borrowed by the user
+    uint256 principal;
+    // principal + interest accured by the user
+    uint256 totalBorrows;
+  }
+
+  struct UserBalanceSummary {
+    // total borrow balance in ETH
+    uint256 totalBorrowsInETH;
+  }
+
+  // struct MarketStorage {
+  //   mapping(address => BorrowSnapshot) accountBorrowSnapshot; // Mapping of account addresses to outstanding borrow balances
+  // }
 }
 
 // Storage By Counter
@@ -32,8 +47,10 @@ library PrestareCounterStorage {
     //the current stable borrow rate. Expressed in ray
     uint128 currentStableBorrowRate;
     uint40 lastUpdateTimestamp;
-    //tokens addresses
+    //tokens address
     address pTokenAddress;
+    // credit token address
+    address crtAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;
     //the id of the reserve. Represents the position in the list of the active reserves

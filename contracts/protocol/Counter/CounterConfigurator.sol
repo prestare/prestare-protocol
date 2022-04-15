@@ -6,6 +6,7 @@ import { CounterConfiguratorInterface } from "../../Interfaces/CounterConfigurat
 import { CounterAddressProviderInterface } from "../../Interfaces/CounterAddressProviderInterface.sol";
 import { CounterInterface } from "../../Interfaces/CounterInterface.sol";
 import { InitialPToken } from "../../Interfaces/InitialPToken.sol"; 
+import { InitialCRT } from "../../Interfaces/InitialCRT.sol"; 
 import { IncentiveController } from "../../Interfaces/IncentiveController.sol"; 
 import { PrestareCounterStorage } from "../../DataType/PrestareStorage.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
@@ -45,25 +46,39 @@ contract CounterConfigurator is CounterConfiguratorInterface {
     }
 
     function _initReserve(CounterInterface counter_, InitReserveInput calldata input) internal {
-        // console.log("12131");
-        // console.log(input.pTokenImpl);
         address pTokenProxyAddress = 
-        _initTokenWithProxy(
-            input.pTokenImpl,
-            abi.encodeWithSelector(
-                InitialPToken.initialize.selector,
-                counter_,
-                input.treasury,
-                input.underlyingAsset,
-                input.underlyingAssetDecimals,
-                input.pTokenName,
-                input.pTokenSymbol,
-                input.params
-            )
-        );
+            _initTokenWithProxy(
+                input.pTokenImpl,
+                abi.encodeWithSelector(
+                    InitialPToken.initialize.selector,
+                    counter_,
+                    input.treasury,
+                    input.underlyingAsset,
+                    input.underlyingAssetDecimals,
+                    input.pTokenName,
+                    input.pTokenSymbol,
+                    input.params
+                )
+            );
+        
+        address crtProxyAddress = 
+            _initTokenWithProxy(
+                input.crtTokenImpl,
+                abi.encodeWithSelector(
+                    InitialCRT.initialize.selector,
+                    counter_,
+                    input.crtDecimals,
+                    input.crtName,
+                    input.crtSymbol,
+                    input.crtParams
+                )
+            );
+        console.log("1244");
+        console.log(crtProxyAddress);
         counter_.initReserve(
         input.underlyingAsset,
         pTokenProxyAddress,
+        crtProxyAddress,
         input.interestRateStrategyAddress
         );
 

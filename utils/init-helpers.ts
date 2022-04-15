@@ -21,6 +21,7 @@ import {
     // deployDelegationAwarePTokenImpl,
     // deployGenericPToken,
     deployGenericPTokenImpl,
+    deployGenericCRTImpl,
     deployTestInterestRateModel,
 } from './contracts-deployments';
 import { ZERO_ADDRESS } from './constants';
@@ -49,19 +50,25 @@ export const initReservesByHelper = async (
     // Initialize variables for future reserves initialization
     let reserveTokens: string[] = [];
     let reserveInitDecimals: string[] = [];
+    let crtInitDecimals: string[] = [];;
     let reserveSymbols: string[] = [];
 
     let initInputParams: {
         pTokenImpl: string;
+        crtTokenImpl: string;
         underlyingAssetDecimals: BigNumberish;
+        crtDecimals: BigNumberish,
         interestRateStrategyAddress: string;
         underlyingAsset: string;
         treasury: string;
         incentivesController: string;
         underlyingAssetName: string;
         pTokenName: string;
+        crtName: string;
         pTokenSymbol: string;
+        crtSymbol: string;
         params: string;
+        crtParams: string;
     }[] = [];
 
     let strategyRates: [
@@ -75,8 +82,10 @@ export const initReservesByHelper = async (
     let strategyAddresses: Record<string, tEthereumAddress> = {};
     let strategyAddressPerAsset: Record<string, string> = {};
     let pTokenType: Record<string, string> = {};
-    let delegationAwareATokenImplementationAddress = '';
+    let delegationAwarePTokenImplementationAddress = '';
+    let delegationAwareCRTImplementationAddress = '';
     let pTokenImplementationAddress = '';
+    let crtImplementationAddress = '';
 
     // NOT WORKING ON MATIC, DEPLOYING INDIVIDUAL IMPLs INSTEAD
     // const tx1 = await waitForTx(
@@ -95,7 +104,12 @@ export const initReservesByHelper = async (
 
     const pTokenImplementation = await deployGenericPTokenImpl(verify);
     pTokenImplementationAddress = pTokenImplementation.address;
+
+    const crtImplementation = await deployGenericCRTImpl(verify);
+    crtImplementationAddress = crtImplementation.address;
+
     rawInsertContractAddressInDb(`pTokenImpl`, pTokenImplementationAddress);
+    rawInsertContractAddressInDb(`crtImpl`, crtImplementationAddress);
 
     const delegatedAwareReserves = Object.entries(reservesParams).filter(
         ([_, { pTokenImpl }]) => pTokenImpl === eContractid.DelegationAwarePToken
@@ -116,7 +130,7 @@ export const initReservesByHelper = async (
     ) as [string, IReserveParams][];
 
     for (let [symbol, params] of reserves) {
-        const { strategy, pTokenImpl, reserveDecimals } = params;
+        const { strategy, pTokenImpl, reserveDecimals, crtDecimals } = params;
         const {
             optimalUtilizationRate,
             baseVariableBorrowRate,
@@ -147,29 +161,42 @@ export const initReservesByHelper = async (
         }
     
         reserveInitDecimals.push(reserveDecimals);
+        crtInitDecimals.push(crtDecimals);
         reserveTokens.push(tokenAddresses[symbol]);
         reserveSymbols.push(symbol);
     }
 
+    // the type of crt is the same as ptoken
     for (let i = 0; i < reserveSymbols.length; i++) {
         let pTokenToUse: string;
+        let crtToUse: string;
         if (pTokenType[reserveSymbols[i]] === 'generic') {
             pTokenToUse = pTokenImplementationAddress;
+            console.log('init helper crt address');
+            console.log(crtImplementationAddress);
+            crtToUse = crtImplementationAddress;
         } else {
-            pTokenToUse = delegationAwareATokenImplementationAddress;
+            pTokenToUse = delegationAwarePTokenImplementationAddress;
+            crtToUse = delegationAwareCRTImplementationAddress
         }
     
         initInputParams.push({
             pTokenImpl: pTokenToUse,
+            //
+            crtTokenImpl: crtToUse,
             underlyingAssetDecimals: reserveInitDecimals[i],
+            crtDecimals: crtInitDecimals[i],
             interestRateStrategyAddress: strategyAddressPerAsset[reserveSymbols[i]],
             underlyingAsset: reserveTokens[i],
             treasury: treasuryAddress,
             incentivesController: ZERO_ADDRESS,
             underlyingAssetName: reserveSymbols[i],
             pTokenName: `${pTokenNamePrefix} ${reserveSymbols[i]}`,
+            crtName: 'Credit Token',
+            crtSymbol: 'CRT',
             pTokenSymbol: `p${symbolPrefix}${reserveSymbols[i]}`,
-            params: '0x10'
+            params: '0x10',
+            crtParams: '0x10',
         });
     }
 
