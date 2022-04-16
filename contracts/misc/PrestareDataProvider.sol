@@ -35,7 +35,7 @@ contract PrestareDataProvider {
     )
     {
         PrestareCounterStorage.CounterConfigMapping memory configuration =
-            CounterInterface(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
+            CounterInterface(ADDRESSES_PROVIDER.getCounter()).getConfiguration(asset);
 
         (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration
             .getParamsMemory();
