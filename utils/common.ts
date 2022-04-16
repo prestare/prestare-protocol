@@ -166,6 +166,10 @@ export enum ProtocolErrors {
     WRONG_SENDER_BALANCE_AFTER_TRANSFER = 'Wrong sender balance after transfer',
     WRONG_RECEIVER_BALANCE_AFTER_TRANSFER = 'Wrong receiver balance after transfer',
     
+    // configurator need
+    CALLER_NOT_POOL_ADMIN = '33', // 'The caller must be the pool admin'
+    LPC_RESERVE_LIQUIDITY_NOT_0 = '34', // 'The liquidity of the reserve needs to be 0'
+    RC_INVALID_RESERVE_FACTOR = '71',
 }
 
 // 定义tEthereumAddress 类型为string
