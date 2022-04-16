@@ -10,18 +10,21 @@ library AssetConfiguration {
     uint256 constant FROZEN_MASK =                0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFDFFFFFFFFFFFFFF; // prettier-ignore
     uint256 constant LIQUIDATION_THRESHOLD_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFF; // prettier-ignore
     uint256 constant LIQUIDATION_BONUS_MASK =     0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFF; // prettier-ignore
+    uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
 
     uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
     uint256 constant RESERVE_DECIMALS_START_BIT_POSITION = 48;
     uint256 constant IS_ACTIVE_START_BIT_POSITION = 56;
     uint256 constant IS_FROZEN_START_BIT_POSITION = 57;
     uint256 constant LIQUIDATION_BONUS_START_BIT_POSITION = 32;
-
+    uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
+    
     uint256 constant MAX_VALID_LTV = 65535;
     uint256 constant MAX_VALID_DECIMALS = 255;
     uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
     uint256 constant MAX_VALID_LIQUIDATION_BONUS = 65535;
 
+    uint256 constant MAX_VALID_RESERVE_FACTOR = 65535;
 
     /**
    * @dev Sets the Loan to Value of the reserve
@@ -100,5 +103,21 @@ library AssetConfiguration {
         self.data =
         (self.data & FROZEN_MASK) |
         (uint256(frozen ? 1 : 0) << IS_FROZEN_START_BIT_POSITION);
+    }
+
+    /**
+     * @dev Sets the reserve factor of the reserve
+     * @param self The reserve configuration
+     * @param reserveFactor The reserve factor
+     */
+    function setReserveFactor(PrestareCounterStorage.CounterConfigMapping memory self, uint256 reserveFactor)
+        internal
+        pure
+    {
+        require(reserveFactor <= MAX_VALID_RESERVE_FACTOR, "Errors");
+
+        self.data =
+        (self.data & RESERVE_FACTOR_MASK) |
+        (reserveFactor << RESERVE_FACTOR_START_BIT_POSITION);
     }
 }
