@@ -30,11 +30,20 @@ contract PrestareDataProvider {
         uint256 reserveFactor,
         bool usageAsCollateralEnabled,
         bool borrowingEnabled,
-        bool stableBorrowRateEnabled,
         bool isActive,
         bool isFrozen
     )
     {
+        PrestareCounterStorage.CounterConfigMapping memory configuration =
+            CounterInterface(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
+
+        (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration
+            .getParamsMemory();
+
+        (isActive, isFrozen, borrowingEnabled) = configuration
+            .getFlagsMemory();
+
+        usageAsCollateralEnabled = liquidationThreshold > 0;
     }
 
     struct TokenData {
