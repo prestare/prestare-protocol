@@ -187,6 +187,20 @@ contract CounterConfigurator is CounterConfiguratorInterface {
     //     emit ReserveFactorChanged(asset, reserveFactor);
     // }
     /**
+     * @dev Activates a reserve
+     * @param asset The address of the underlying asset of the reserve
+     */
+    function activateReserve(address asset) external onlyPoolAdmin {
+        PrestareCounterStorage.CounterConfigMapping memory currentConfig = counter.getConfiguration(asset);
+
+        currentConfig.setActive(true);
+        console.log("reactive");
+        counter.setConfiguration(asset, currentConfig.data);
+    
+        emit ReserveActivated(asset);
+    }
+
+    /**
      * @dev Deactivates a reserve
      * @param asset The address of the underlying asset of the reserve
      */

@@ -14,9 +14,17 @@ makeSuite('CounterConfigurator', (testEnv: TestEnv) => {
 
   it('Deactivates the ETH reserve', async () => {
     const { configurator, weth, helpersContract } = testEnv;
+    console.log(weth.address)
     await configurator.deactivateReserve(weth.address);
     const { isActive } = await helpersContract.getReserveConfigurationData(weth.address);
     expect(isActive).to.be.equal(false);
   });
 
+  it('Rectivates the ETH reserve', async () => {
+    const { configurator, weth, helpersContract } = testEnv;
+    await configurator.activateReserve(weth.address);
+
+    const { isActive } = await helpersContract.getReserveConfigurationData(weth.address);
+    expect(isActive).to.be.equal(true);
+  });
 });
