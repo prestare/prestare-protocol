@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {LendingRateOracleInterface} from "../../Interfaces/LendingRateOracle.sol";
+import {LendingRateOracleInterface} from "../../interfaces/LendingRateOracle.sol";
 import {Ownable} from "../../dependencies/Ownable.sol";
 
 contract LendingRateOracle is LendingRateOracleInterface, Ownable {

@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-import {TestRateModelInterface} from "./Interfaces/RateModel.sol";
-import {CounterAddressProviderInterface} from "./Interfaces/CounterAddressProviderInterface.sol";
+import {TestRateModelInterface} from "./interfaces/RateModel.sol";
+import {CounterAddressProviderInterface} from "./interfaces/CounterAddressProviderInterface.sol";
 import {WadRayMath} from "./utils/WadRay.sol";
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 

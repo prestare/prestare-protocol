@@ -4,8 +4,8 @@ pragma solidity ^0.8.4;
 import {AssetsConfiguration} from "../AssetsConfiguration.sol";
 import {PrestareCounterStorage} from "../DataType/PrestareStorage.sol";
 import {PrestareMarketStorage} from "../DataType/PrestareStorage.sol";
-import {CounterAddressProviderInterface} from "../Interfaces/CounterAddressProviderInterface.sol";
-import {CounterInterface} from "../Interfaces/CounterInterface.sol";
+import {CounterAddressProviderInterface} from "../interfaces/CounterAddressProviderInterface.sol";
+import {CounterInterface} from "../interfaces/CounterInterface.sol";
 import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
 
 import "hardhat/console.sol";

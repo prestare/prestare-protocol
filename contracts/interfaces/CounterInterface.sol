@@ -62,6 +62,8 @@ interface CounterInterface {
         address interestRateStrategyAddress
     ) external;
 
+    function validateTransfer(address aset, address sender, address receiver, uint256 amount) external;
+
     /**
    * @dev Returns the state and configuration of the reserve
    * @param asset The address of the underlying asset of the reserve

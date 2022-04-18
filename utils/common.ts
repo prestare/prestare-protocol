@@ -161,7 +161,7 @@ export interface iParamsPerCounter<T> {
  */ 
 export enum ProtocolErrors {
     
-    KOIOS_TRANSFER_NOT_ALLOWED = '1', // Transfer cannot be allowed
+    KOIOS_TRANSFER_NOT_ALLOWED = '10', // Transfer cannot be allowed
 
     WRONG_SENDER_BALANCE_AFTER_TRANSFER = 'Wrong sender balance after transfer',
     WRONG_RECEIVER_BALANCE_AFTER_TRANSFER = 'Wrong receiver balance after transfer',

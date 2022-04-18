@@ -5,6 +5,7 @@ pragma solidity ^0.8.4;
 
 import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
+import {Error} from "./utils/Error.sol";
 
 library KoiosJudgement {
     
@@ -85,4 +86,16 @@ library KoiosJudgement {
             require(amount > 0, "ERROR");
 
         }
+
+    function transferJudgment(
+        address sender,
+        mapping(address => PrestareCounterStorage.CounterProfile) storage _assetData,
+        PrestareCounterStorage.UserConfigurationMapping storage usersConfig,
+        mapping(uint256 => address) storage reserveList,
+        uint256 reservesCount
+    ) internal view {
+        // TODO: hardcode here
+        uint256 healthfactor = 1;
+        require(healthfactor > 1, Error.KOIOS_TRANSFER_NOT_ALLOWED);
+    }
 }

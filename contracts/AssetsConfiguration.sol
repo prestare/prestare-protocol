@@ -16,6 +16,9 @@ library AssetsConfiguration {
     uint256 constant STABLE_BORROWING_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF7FFFFFFFFFFFFFF; // prettier-ignore
     uint256 constant RESERVE_FACTOR_MASK =        0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFF; // prettier-ignore
 
+    uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
+    uint256 constant LIQUIDATION_BONUS_START_BIT_POSITION = 32;
+    uint256 constant RESERVE_DECIMALS_START_BIT_POSITION = 48;
     uint256 constant RESERVE_FACTOR_START_BIT_POSITION = 64;
 
     /**
@@ -27,6 +30,32 @@ library AssetsConfiguration {
         return (self.data & ~RESERVE_FACTOR_MASK >> RESERVE_FACTOR_START_BIT_POSITION);
     }
 
+    /**
+   * @dev Gets the configuration paramters of the reserve
+   * @param self The reserve configuration
+   * @return The state params representing ltv, liquidation threshold, liquidation bonus, the reserve decimals
+   **/
+    function getParams(PrestareCounterStorage.CounterConfigMapping storage self)
+    internal
+    view
+    returns (
+        uint256,
+        uint256,
+        uint256,
+        uint256,
+        uint256
+    )
+    {
+    uint256 dataLocal = self.data;
+
+    return (
+        dataLocal & ~LTV_MASK,
+        (dataLocal & ~LIQUIDATION_THRESHOLD_MASK) >> LIQUIDATION_THRESHOLD_START_BIT_POSITION,
+        (dataLocal & ~LIQUIDATION_BONUS_MASK) >> LIQUIDATION_BONUS_START_BIT_POSITION,
+        (dataLocal & ~DECIMALS_MASK) >> RESERVE_DECIMALS_START_BIT_POSITION,
+        (dataLocal & ~RESERVE_FACTOR_MASK) >> RESERVE_FACTOR_START_BIT_POSITION
+    );
+    }
 
     /**
     * @dev Gets the configuration flags of the reserve

@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import { Ownable } from "../../dependencies/Ownable.sol";
-import { CounterAddressProviderInterface } from "../../Interfaces/CounterAddressProviderInterface.sol";
+import { CounterAddressProviderInterface } from "../../interfaces/CounterAddressProviderInterface.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 
 import "hardhat/console.sol";

@@ -7,11 +7,11 @@ import {PrestareCounterStorage} from "../../DataType/PrestareStorage.sol";
 import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
 import {KoiosJudgement} from "../../Koios.sol";
 import {EIP20Interface} from "../../dependencies/EIP20Interface.sol";
-import {CounterInterface} from "../../Interfaces/CounterInterface.sol";
+import {CounterInterface} from "../../interfaces/CounterInterface.sol";
 import {CounterAddressProvider} from "../configuration/CounterAddressProvider.sol";
 import {ReserveLogic} from "../../ReserveLogic.sol";
 import {WadRayMath} from "../../utils/WadRay.sol";
-import {PTokenInterface} from "../../Interfaces/PTokenInterface.sol";
+import {PTokenInterface} from "../../interfaces/PTokenInterface.sol";
 import {CreditToken} from "../../CreditToken.sol";
 import {SafeMath256} from "../../dependencies/SafeMath.sol";
 import {Error} from "../../utils/Error.sol";
@@ -253,6 +253,30 @@ contract Counter is AssetsStorage, CounterInterface {
 
         // TODO: 发射事件
     }
+
+
+
+
+
+    function validateTransfer(
+        address asset, 
+        address sender,
+        address receiver,
+        uint256 amount
+    ) external override {
+        require(msg.sender == _assetData[asset].pTokenAddress, "Error");
+
+        KoiosJudgement.transferJudgment(
+            sender,
+            _assetData,
+            _userConfig[sender],
+            _reservesList,
+            _reservesCount
+        );
+    }
+
+
+
 
     /**
    * @dev Returns the list of the initialized reserves

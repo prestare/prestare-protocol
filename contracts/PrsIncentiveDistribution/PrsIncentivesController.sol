@@ -3,10 +3,10 @@ pragma solidity ^0.8.4;
 
 import {EIP20Interface} from "../dependencies/EIP20Interface.sol";
 import {SafeERC20} from "../dependencies/SafeERC20.sol";
-import {IScaledBalanceToken} from "../Interfaces/IScaledBalanceToken.sol";
+import {IScaledBalanceToken} from "../interfaces/IScaledBalanceToken.sol";
 import {DistributionTypes} from "../DataType/DistributionTypes.sol";
 import {PrsDistributionManager} from "./PrsDistributionManager.sol";
-import {IPrsIncentivesController} from "../Interfaces/IPrsIncentivesController.sol";
+import {IPrsIncentivesController} from "../interfaces/IPrsIncentivesController.sol";
 
 abstract contract PrsIncentiveController is 
     IPrsIncentivesController,

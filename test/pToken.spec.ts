@@ -10,7 +10,10 @@ import { count } from 'console';
 // without CRT
 
 makeSuite('PToken: Transfer', (test: TestEnv) => {
-    const { WRONG_SENDER_BALANCE_AFTER_TRANSFER, WRONG_RECEIVER_BALANCE_AFTER_TRANSFER} = ProtocolErrors;
+    const { WRONG_SENDER_BALANCE_AFTER_TRANSFER, 
+            WRONG_RECEIVER_BALANCE_AFTER_TRANSFER,
+            KOIOS_TRANSFER_NOT_ALLOWED
+    } = ProtocolErrors;
 
     it('User 0 deposits 1000 DAI, transfers to user 1', async () => {
 
@@ -21,6 +24,8 @@ makeSuite('PToken: Transfer', (test: TestEnv) => {
 
         //user 1 deposits 1000 DAI
         const amountDAItoDeposit = await convertToCurrencyDecimals(dai.address, '1000');
+        console.log('test');
+        console.log(amountDAItoDeposit);
 
         await counter.connect(users[0].signer).deposit(dai.address, amountDAItoDeposit, users[0].address);
         await pDai.connect(users[0].signer).transfer(users[1].address, amountDAItoDeposit);
@@ -37,7 +42,7 @@ makeSuite('PToken: Transfer', (test: TestEnv) => {
     })
 
     it('User 0 deposits 1 WETH and user 1 tries to borrow the WETH with the received DAI as collateral and with 0 CRT', async () => {
-        const { users, counter, weth, helpersContract, pWETH } = test;
+        const { users, counter, weth, helpersContract } = test;
 
         await weth.connect(users[0].signer).mint(await convertToCurrencyDecimals(weth.address, '1'));
         await weth.connect(users[0].signer).approve(counter.address, APPROVAL_AMOUNT_COUNTER);
@@ -52,5 +57,14 @@ makeSuite('PToken: Transfer', (test: TestEnv) => {
         const userBorrowPrincipal = await helpersContract.getUserBorrows(users[1].address, weth.address);
         expect(userBorrowPrincipal.borrowPrincipal.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
         expect(userBorrowPrincipal.totalBorrows.toString()).to.be.eq(ethers.utils.parseEther('0.1'));
+    })
+
+    it('User 1 tries to transfer all the collaterilized DAI to user 0(failed)', async () => {
+        const { users, counter, dai, pDai, weth} = test;
+
+        const pDaiToTransfer = await convertToCurrencyDecimals(dai.address, '1000');
+        console.log(pDaiToTransfer);
+        
+        await expect(pDai.connect(users[1].signer).transfer(users[0].address, pDaiToTransfer), KOIOS_TRANSFER_NOT_ALLOWED).to.be.revertedWith(KOIOS_TRANSFER_NOT_ALLOWED);
     })
 }) 
