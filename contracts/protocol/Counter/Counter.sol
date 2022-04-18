@@ -321,6 +321,20 @@ contract Counter is AssetsStorage, CounterInterface {
     }
 
     /**
+     * @dev Returns the state and configuration of the reserve
+     * @param asset The address of the underlying asset of the reserve
+     * @return The state of the reserve
+     */
+    function getReserveData(address asset)
+        external
+        view
+        override
+        returns (PrestareCounterStorage.CounterProfile memory)
+    {
+        return _assetData[asset];
+    }
+
+    /**
    * @dev Initializes a reserve, activating it, assigning an aToken and credit tokens and an
    * interest rate strategy
    * - Only callable by the LendingPoolConfigurator contract

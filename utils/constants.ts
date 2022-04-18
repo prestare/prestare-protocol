@@ -12,3 +12,5 @@ export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {
     WETH: oneEther.toFixed(),
     USD: '5848466240000000',
 };
+
+export const RAY = new BigNumber(10).exponentiatedBy(27).toFixed();

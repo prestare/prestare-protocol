@@ -11,6 +11,7 @@ import { IncentiveController } from "../../interfaces/IncentiveController.sol";
 import { PrestareCounterStorage } from "../../DataType/PrestareStorage.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 import { AssetConfiguration } from "../utils/AssetConfiguration.sol";
+import { EIP20Interface } from "../../dependencies/EIP20Interface.sol";
 
 import "hardhat/console.sol";
 
@@ -169,5 +170,60 @@ contract CounterConfigurator is CounterConfiguratorInterface {
         proxy.initialize(implementation, initParams);
 
         return address(proxy);
+    }
+
+    /**
+     * @dev Updates the reserve factor of a reserve
+     * @param asset The address of the underlying asset of the reserve
+     * @param reserveFactor The new reserve factor of the reserve
+     */
+    // function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
+    //     PrestareCounterStorage.CounterConfigMapping memory currentConfig = counter.getConfiguration(asset);
+
+    //     currentConfig.setReserveFactor(reserveFactor);
+
+    //     counter.setConfiguration(asset, currentConfig.data);
+
+    //     emit ReserveFactorChanged(asset, reserveFactor);
+    // }
+    /**
+     * @dev Activates a reserve
+     * @param asset The address of the underlying asset of the reserve
+     */
+    function activateReserve(address asset) external onlyPoolAdmin {
+        PrestareCounterStorage.CounterConfigMapping memory currentConfig = counter.getConfiguration(asset);
+
+        currentConfig.setActive(true);
+        console.log("reactive");
+        counter.setConfiguration(asset, currentConfig.data);
+    
+        emit ReserveActivated(asset);
+    }
+
+    /**
+     * @dev Deactivates a reserve
+     * @param asset The address of the underlying asset of the reserve
+     */
+    function deactivateReserve(address asset) external onlyPoolAdmin {
+        _checkNoLiquidity(asset);
+
+        PrestareCounterStorage.CounterConfigMapping memory currentConfig = counter.getConfiguration(asset);
+
+        currentConfig.setActive(false);
+
+        counter.setConfiguration(asset, currentConfig.data);
+
+        emit ReserveDeactivated(asset);
+    }
+
+    function _checkNoLiquidity(address asset) internal view {
+        PrestareCounterStorage.CounterProfile memory reserveData = counter.getReserveData(asset);
+
+        uint256 availableLiquidity = EIP20Interface(asset).balanceOf(reserveData.pTokenAddress);
+
+        require(
+            availableLiquidity == 0 && reserveData.currentLiquidityRate == 0,
+            "Errors"
+        );
     }
 }
