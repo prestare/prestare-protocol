@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-
 interface BalanceInterface {
     /**
     * @dev Returns the scaled balance of the user. The scaled balance is the sum of all the
