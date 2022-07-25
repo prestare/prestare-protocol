@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {PrestareMarketStorage} from "./DataType/PrestareStorage.sol";
-import {CounterAddressProviderInterface} from "./Interfaces/CounterAddressProviderInterface.sol";
+import {CounterAddressProviderInterface} from "./interfaces/CounterAddressProviderInterface.sol";
 import {ReserveLogic} from "./ReserveLogic.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
 

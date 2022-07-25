@@ -4,13 +4,13 @@ pragma solidity ^0.8.4;
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 import {EIP20Implementation} from "./dependencies/EIP20Implementation.sol";
 import {SafeERC20} from "./dependencies/SafeERC20.sol";
-import {CounterInterface} from "./Interfaces/CounterInterface.sol";
-import {PTokenInterface} from "./Interfaces/PTokenInterface.sol"; 
+import {CounterInterface} from "./interfaces/CounterInterface.sol";
+import {PTokenInterface} from "./interfaces/PTokenInterface.sol"; 
 import {IncentivizedERC20} from "./IncentivizedERC20.sol";
 import {SafeMath256} from "./dependencies/SafeMath.sol";
 import {Error} from "./utils/Error.sol";
 import {KoiosJudgement} from "./Koios.sol";
-import {IncentiveController} from "./Interfaces/IncentiveController.sol";
+import {IncentiveController} from "./interfaces/IncentiveController.sol";
 import {PTokenERC20} from "./PTokenERC20.sol";
 import {WadRayMath} from "./utils/WadRay.sol";
 

@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-import {PrestareCounterStorage} from "./../DataType/PrestareStorage.sol";
-import {PrestareMarketStorage} from "./../DataType/PrestareStorage.sol";
+import {PrestareCounterStorage, PrestareMarketStorage} from "../DataType/PrestareStorage.sol";
 
 
 interface CounterInterface {

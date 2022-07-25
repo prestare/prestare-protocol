@@ -4,8 +4,8 @@ pragma solidity ^0.8.4;
 import { Ownable } from "../dependencies/Ownable.sol";
 import { EIP20Interface } from "../dependencies/EIP20Interface.sol";
 
-import { PriceOracleGetterInterface } from "../Interfaces/PriceOracleGetterInterface.sol";
-import { ChainlinkAggregatorInterface } from "../Interfaces/ChainlinkAggregatorInterface.sol";
+import { PriceOracleGetterInterface } from "../interfaces/PriceOracleGetterInterface.sol";
+import { ChainlinkAggregatorInterface } from "../interfaces/ChainlinkAggregatorInterface.sol";
 import { SafeERC20 } from "../dependencies/SafeERC20.sol";
 
 /**

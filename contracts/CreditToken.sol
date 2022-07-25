@@ -5,8 +5,8 @@ import "hardhat/console.sol";
 
 import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
 import {CreditTokenERC20} from "./CreditTokenERC20.sol";
-import {CounterInterface} from "./Interfaces/CounterInterface.sol";
-import {CRTInterface} from "./Interfaces/CRTInterface.sol";
+import {CounterInterface} from "./interfaces/CounterInterface.sol";
+import {CRTInterface} from "./interfaces/CRTInterface.sol";
 
 
 contract CreditToken is

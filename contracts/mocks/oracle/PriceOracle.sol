@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PriceOracleInterface} from "../../Interfaces/PriceOracleInterface.sol";
+import {PriceOracleInterface} from "../../interfaces/PriceOracleInterface.sol";
 
 contract PriceOracle is PriceOracleInterface {
     mapping(address => uint256) prices;

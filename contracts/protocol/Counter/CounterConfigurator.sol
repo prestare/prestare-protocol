@@ -2,12 +2,12 @@
 pragma solidity ^0.8.4;
 pragma experimental ABIEncoderV2;
 
-import { CounterConfiguratorInterface } from "../../Interfaces/CounterConfiguratorInterface.sol";
-import { CounterAddressProviderInterface } from "../../Interfaces/CounterAddressProviderInterface.sol";
-import { CounterInterface } from "../../Interfaces/CounterInterface.sol";
-import { InitialPToken } from "../../Interfaces/InitialPToken.sol"; 
-import { InitialCRT } from "../../Interfaces/InitialCRT.sol"; 
-import { IncentiveController } from "../../Interfaces/IncentiveController.sol"; 
+import { CounterConfiguratorInterface } from "../../interfaces/CounterConfiguratorInterface.sol";
+import { CounterAddressProviderInterface } from "../../interfaces/CounterAddressProviderInterface.sol";
+import { CounterInterface } from "../../interfaces/CounterInterface.sol";
+import { InitialPToken } from "../../interfaces/InitialPToken.sol"; 
+import { InitialCRT } from "../../interfaces/InitialCRT.sol"; 
+import { IncentiveController } from "../../interfaces/IncentiveController.sol"; 
 import { PrestareCounterStorage } from "../../DataType/PrestareStorage.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 import { AssetConfiguration } from "../utils/AssetConfiguration.sol";

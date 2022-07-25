@@ -4,11 +4,11 @@ pragma solidity ^0.8.4;
 import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
 import {SafeMath256} from "./dependencies/SafeMath.sol";
 import {functions} from "./math/function.sol";
-import {BorrowInterface} from "./Interfaces/BorrowInterface.sol";
+import {BorrowInterface} from "./interfaces/BorrowInterface.sol";
 import {WadRayMath} from "./utils/WadRay.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
-import {PTokenInterface} from "./Interfaces/PTokenInterface.sol";
-import {TestRateModelInterface} from "./Interfaces/RateModel.sol";
+import {PTokenInterface} from "./interfaces/PTokenInterface.sol";
+import {TestRateModelInterface} from "./interfaces/RateModel.sol";
 
 // TODO: Math 模块检查
 
