@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.0;
 
-import "./utils/Context.sol";
+import "./Context.sol";
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -60,7 +60,7 @@ abstract contract Ownable is Context {
      * Can only be called by the current owner.
      */
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        require(newOwner != address(0), "Ownable: Zero address");
         _transferOwnership(newOwner);
     }
 
