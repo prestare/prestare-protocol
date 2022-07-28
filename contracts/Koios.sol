@@ -14,16 +14,17 @@ library KoiosJudgement {
     * @param asset The asset the user is depositing
     * @param amount The amount to be deposited
     */
-    function DepositJudgement(PrestareCounterStorage.CounterProfile storage asset, uint256 amount) external view {
+    function DepositJudgement(PrestareCounterStorage.CounterProfile calldata asset, uint256 amount) external view {
 
         // (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
 
         //1. 数量不能为0
         //2. Asset pool should be alive and should not be frozen
-        require(amount != 0, "ERROR");
+        require(amount != 0, "Amount = 0");
         // require(isAlive, "ERROR");
         // require(!isStuned, "ERROR");
     }
+
 
     /**
     * @dev Verify a withdraw action
