@@ -1,25 +1,44 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-import {AssetsStorage} from "../../AssetsStorage.sol";
-import {Address} from "../../dependencies/Address.sol";
+// dependencies file
+import {Address} from "../../dependencies/openzeppelin/contracts/Address.sol";
+import {IERC20} from "../../dependencies/openzeppelin/contracts/IERC20.sol";
+// import {SafeMath256} from "../../dependencies/openzeppelin/contracts/SafeMath.sol";
+
+// interfaces file
+import {ICounter} from "../../interfaces/ICounter.sol";
+import {IPToken} from "../../interfaces/IPToken.sol";
+
+// 
+import {CounterStorage} from "./CounterStorage.sol";
 import {PrestareCounterStorage} from "../../DataType/PrestareStorage.sol";
 import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
 import {KoiosJudgement} from "../../Koios.sol";
-import {EIP20Interface} from "../../dependencies/EIP20Interface.sol";
-import {CounterInterface} from "../../interfaces/CounterInterface.sol";
+
 import {CounterAddressProvider} from "../configuration/CounterAddressProvider.sol";
 import {ReserveLogic} from "../../ReserveLogic.sol";
 import {WadRayMath} from "../../utils/WadRay.sol";
-import {PTokenInterface} from "../../interfaces/PTokenInterface.sol";
 import {CreditToken} from "../../CreditToken.sol";
-import {SafeMath256} from "../../dependencies/SafeMath.sol";
+
 import {Error} from "../../utils/Error.sol";
 
 import "hardhat/console.sol";
-
-contract Counter is AssetsStorage, CounterInterface {
-    using SafeMath256 for uint256;
+/**
+ * @title Counter Contract
+ * @author Prestare
+ * @notice The bridge between User and Prestare Lending Market
+ * - What user can do?
+ *  # Deposit to provide liquidity
+ *  # Withdraw
+ *  # Borrow with or without CreditToken(CRT)
+ *  # Repay and Get CRT
+ *  # Liquidate positions
+ *  # Flash Loan(not yet)
+ * @dev 
+ */
+contract Counter is CounterStorage, ICounter {
+    // using SafeMath256 for uint256;
     using ReserveLogic for PrestareCounterStorage.CounterProfile;
 
     function initialize(CounterAddressProvider provider) public {
@@ -28,14 +47,19 @@ contract Counter is AssetsStorage, CounterInterface {
     }
     
     // TODO： 设置函数调用权限或者状态
-    function deposit (address assetAddr, uint256 amount, address provider) external override whenNotPaused {
+    // Inherit from ICounter
+    function deposit (address assetAddr, uint256 amount, address depositor) external override whenNotPaused {
 
         PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
 
-        // KoiosJudgement.DepositJudgement(assetAddr, amount);
-
+        KoiosJudgement.DepositJudgement(assetData, amount);
         address pTokenAddr = assetData.pTokenAddress;
-        bool status = PTokenInterface(pTokenAddr).mint(provider, amount, assetData.liquidityIndex);
+        assetData.AssetUpdate();
+        assetData.UpdateInterestRates(asset, pTokenAddr, amount, 0);
+
+        IERC20(asset).safeTransferFrom()
+
+        bool status = IPToken(pTokenAddr).mint(provider, amount, assetData.liquidityIndex);
 
         // TODO: 更新池子状态
         // 更新资产的状态变量
