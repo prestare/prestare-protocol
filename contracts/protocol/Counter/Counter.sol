@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 // dependencies file
 import {Address} from "../../dependencies/openzeppelin/contracts/Address.sol";
 import {IERC20} from "../../dependencies/openzeppelin/contracts/IERC20.sol";
+import {SafeERC20} from "../../dependencies/openzeppelin/contracts/SafeERC20.sol";
 // import {SafeMath256} from "../../dependencies/openzeppelin/contracts/SafeMath.sol";
 
 // interfaces file
@@ -12,8 +13,8 @@ import {IPToken} from "../../interfaces/IPToken.sol";
 
 // 
 import {CounterStorage} from "./CounterStorage.sol";
-import {PrestareCounterStorage} from "../../DataType/PrestareStorage.sol";
-import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
+import {AssetStorage} from "../../DataType/AssetStorage.sol";
+// import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
 import {KoiosJudgement} from "../../Koios.sol";
 
 import {CounterAddressProvider} from "../configuration/CounterAddressProvider.sol";
@@ -39,7 +40,8 @@ import "hardhat/console.sol";
  */
 contract Counter is CounterStorage, ICounter {
     // using SafeMath256 for uint256;
-    using ReserveLogic for PrestareCounterStorage.CounterProfile;
+    using ReserveLogic for AssetStorage.AssetProfile;
+    using SafeERC20 for IERC20;
 
     function initialize(CounterAddressProvider provider) public {
         _addressProvider = provider;
@@ -47,53 +49,56 @@ contract Counter is CounterStorage, ICounter {
     }
     
     // TODO： 设置函数调用权限或者状态
-    // Inherit from ICounter
+    // ICounter function
     function deposit (address assetAddr, uint256 amount, address depositor) external override whenNotPaused {
 
         PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
 
         KoiosJudgement.DepositJudgement(assetData, amount);
         address pTokenAddr = assetData.pTokenAddress;
-        assetData.AssetUpdate();
-        assetData.UpdateInterestRates(asset, pTokenAddr, amount, 0);
-
-        IERC20(asset).safeTransferFrom()
-
-        bool status = IPToken(pTokenAddr).mint(provider, amount, assetData.liquidityIndex);
-
-        // TODO: 更新池子状态
         // 更新资产的状态变量
-        // assetData.updateState();
+        assetData.AssetUpdate();
         // 更新资产的利率模型变量
-        // assetData.updateInterestRates(assetAddr, pTokenAddr, amount, 0);
+        assetData.UpdateInterestRates(assetAddr, pTokenAddr, amount, 0);
 
-        // msg.sender的权限问题
-        // msg.sender的封装
-        // EIP20Interface(assetAddr).safeTransferFrom(msg.sender, pTokenAddr, amount);
-
+        IERC20(asset).safeTransferFrom(msg.sender, pTokenAddr, amount);
+        
+        bool status = IPToken(pTokenAddr).mint(depositor, amount, assetData.liquidityIndex);
+        
         emit Deposit(assetAddr, msg.sender, provider, amount);
     }
 
-    function withdraw (address assetAddr, uint256 amount, address to) external {
+    // ICount function
+    function withdraw (address assetAddr, uint256 amount, address to) external returns (uint256) {
 
-        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
+        AssetStorage.AssetProfile storage assetData = _assetData[assetAddr];
         address pTokenAddr = assetData.pTokenAddress;
         // interface 要改
-        uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
+        uint256 userBalance = IPToken(pTokenAddr).balanceOf(msg.sender); 
         uint256 withdrawAmount = amount;
 
         if (amount == type(uint256).max) {
             withdrawAmount = userBalance;
         }
+        // todo check if user can withdraw amount of token
+        KoiosJudgement.WithdrawJudgement(
+            assetAddr, 
+            withdrawAmount,
+            userBalance,
+            _reserves,
+            _usersConfig[msg.sender],
+            _reservesList,
+            _reservesCount,
+            _addressesProvider.getPriceOracle()
+        );
 
-        // KoiosJudgement.WithdrawJudgement(assetAddr, withdrawAmount);
-
-        // assetData.updateState();
-        // assetData.updateInterestRates(assetAddr, pTokenAddr, 0, withdrawAmount);
+        assetData.updateState();
+        assetData.updateInterestRates(assetAddr, pTokenAddr, 0, withdrawAmount);
 
         // TODO: burn 掉相应数量的pToken(pToken part)
-
+        IPToken(pTokenAddr).burn(msg.sender, to. withdrawAmount, reserve.liquidity);
         emit Withdraw(assetAddr, msg.sender, to, withdrawAmount);
+        return withdrawAmount;
     }
 
     /**
