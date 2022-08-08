@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import { Ownable } from "../../dependencies/Ownable.sol";
+import { Ownable } from "../../dependencies/openzeppelin/contracts/Ownable.sol";
 import { CounterAddressProviderInterface } from "../../interfaces/CounterAddressProviderInterface.sol";
 import { InitializableImmutableAdminUpgradeabilityProxy } from "../utils/InitAdminUpgradeProxy.sol";
 

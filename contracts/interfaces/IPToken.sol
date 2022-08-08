@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import {IERC20} from '../dependencies/openzeppelin/contract/IERC20.sol';
+import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 import {InitialPToken} from './InitialPToken.sol';
 
@@ -11,6 +11,28 @@ import {InitialPToken} from './InitialPToken.sol';
  * @notice Define the basic interface for PTokne
  */
 interface IPToken is IERC20, IScaledBalanceToken, InitialPToken {
+    /**
+     * @dev Emitted after the mint action
+     * @param from The address performing the mint
+     * @param value The amount being
+     * @param newIndex The new liquidity index of the reserve
+     */
+    event Mint(address indexed from, uint256 value, uint256 newIndex);
+    
+    /**
+     * @dev Emitted after the burn action
+     * @param user The owner of the pTokens, getting them burned
+     * @param receiverOfUnderlying The address that will receive the underlying
+     * @param amount The amount being burned
+     * @param newIndex The new liquidity index of the reserve
+     */
+    event Burn(
+        address indexed user, 
+        address indexed receiverOfUnderlying, 
+        uint256 amount, 
+        uint256 newIndex
+    );
+
     /**
      * @dev Emitted when there have transfer action 
      * @param from The user whose tokens are being transferred

@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {Context} from "./dependencies/utils/Context.sol";
-import {EIP20Interface} from "./dependencies/EIP20Interface.sol";
-import {SafeMath256} from "./dependencies/SafeMath.sol";
+import {Context} from "./dependencies/openzeppelin/contracts/Context.sol";
+import {IERC20} from "./dependencies/openzeppelin/contracts/IERC20.sol";
+import {IPToken} from "./interface/IPToken.sol"; 
+// import {SafeMath256} from "./dependencies/openzeppelin/contracts/SafeMath.sol";
 import {Error} from "./utils/Error.sol";
 
 import "hardhat/console.sol";

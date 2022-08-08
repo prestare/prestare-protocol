@@ -2,7 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
-import {SafeMath256} from "./dependencies/SafeMath.sol";
+import {SafeMath256} from "./dependencies/openzeppelin/contracts/SafeMath.sol";
 import {functions} from "./math/function.sol";
 import {BorrowInterface} from "./interfaces/BorrowInterface.sol";
 import {WadRayMath} from "./utils/WadRay.sol";

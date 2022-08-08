@@ -7,7 +7,7 @@ import {SafeERC20} from "./dependencies/SafeERC20.sol";
 import {CounterInterface} from "./interfaces/CounterInterface.sol";
 import {PTokenInterface} from "./interfaces/PTokenInterface.sol"; 
 import {IncentivizedERC20} from "./IncentivizedERC20.sol";
-import {SafeMath256} from "./dependencies/SafeMath.sol";
+import {SafeMath256} from "./dependencies/openzeppelin/contracts/SafeMath.sol";
 import {Error} from "./utils/Error.sol";
 import {KoiosJudgement} from "./Koios.sol";
 import {IncentiveController} from "./interfaces/IncentiveController.sol";

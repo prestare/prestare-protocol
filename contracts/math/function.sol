@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 // Author: Aave
 
-import {SafeMath256} from "./../dependencies/SafeMath.sol";
+import {SafeMath256} from "./../dependencies/openzeppelin/contracts/SafeMath.sol";
 import {WadRayMath} from "./../utils/WadRay.sol";
 
 // TODO: math模块检查

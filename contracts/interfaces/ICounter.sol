@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicensed
 pragma solidity ^0.8.4;
 
-import {PrestareCounterStorage, PrestareMarketStorage} from "../DataType/PrestareStorage.sol";
+import {AssetStorage} from "../DataType/AssetStorage.sol";
 
 /**
  * @title ICounter
@@ -35,8 +35,8 @@ interface ICounter {
     /**
     * @dev Emitted on borrow()
     * @param asset The address of the underlying asset being borrowed
-    * @param user The address of the user initiating the borrow(), receiving the funds on borrow()
-    * @param to The address that will be getting the debt
+    * @param user The address of the user initiating the borrow(),
+    * @param to The address receving the fund from borrow()
     * @param amount The amount borrowed out
     * @param borrowRate The numeric rate at which the user has borrowed, expressed in ray
     */
@@ -87,14 +87,14 @@ interface ICounter {
     );
 
     /**
-   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying pTokens.
-   * - E.g. User deposits 100 USDC and gets in return 100 pUSDC
-   * @param assetAddr The address of the underlying asset to deposit
-   * @param amount The amount to be deposited
-   * @param to The address that will receive the pTokens, same as msg.sender if the user
-   *   wants to receive them on his own wallet, or a different address if the beneficiary of pTokens
-   *   is a different wallet
-   **/
+     * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying pTokens.
+     * - E.g. User deposits 100 USDC and gets in return 100 pUSDC
+     * @param assetAddr The address of the underlying asset to deposit
+     * @param amount The amount to be deposited
+     * @param depositor The address that will receive the pTokens, same as msg.sender if the user
+     *   wants to receive them on his own wallet, or a different address if the beneficiary of pTokens
+     *   is a different wallet
+    */
     function deposit(
         address assetAddr,
         uint256 amount,
@@ -103,6 +103,18 @@ interface ICounter {
 
     // AAVE V3 use EIP-2612 TO PRODUCE permit function, but fow now we dont apply permit function in our contracts.
 
+    /**
+     * @dev Withdraws an 'amount' of underlying asset from the reserve, burn the equivalent pToken 
+     * @param asset The address of the underlying asset to withdraw
+     * @param amount The underlying amount to be withdrawn
+     * @param to The address that receive the underlying
+     * @return The actual amount be withdrawm 
+     */
+    function withdraw(
+        address asset,
+        uint256 amount,
+        address to
+    ) external returns (uint256)
 
     function borrow(
         address assetAddr,
@@ -143,13 +155,13 @@ interface ICounter {
     function getConfiguration(address asset)
         external
         view
-        returns (PrestareCounterStorage.CounterConfigMapping memory);
+        returns (AssetStorage.CounterConfigMapping memory);
 
     /**
      * @dev Returns the state and configuration of the reserve
      * @param asset The address of the underlying asset of the reserve
      * @return The state of the reserve
      */
-    function getReserveData(address asset) external view returns (PrestareCounterStorage.CounterProfile memory);
+    function getReserveData(address asset) external view returns (AssetStorage.AssetProfile memory);
 
 }

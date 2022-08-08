@@ -104,10 +104,13 @@ contract Counter is CounterStorage, ICounter {
     /**
     @param crtQuota CRT decay level. Default value is 10(consider all the crt user has).
      */
-    function borrow (address assetAddr, uint256 amount, address borrower, uint8 crtQuota) external override {
-        
-        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
-
+    function borrow (
+        address assetAddr, 
+        uint256 amount, 
+        address borrower, 
+        uint8 crtQuota
+    ) external override {
+        AssetStorage.AssetProfile storage assetData = _assetData[assetAddr];
         _borrow(
             BorrowParams(
                 assetAddr,
@@ -120,20 +123,12 @@ contract Counter is CounterStorage, ICounter {
         );
     }
 
-    struct BorrowParams {
-        address assetAddress;
-        address borrower;
-        uint256 amount;
-        address pTokenAddress;
-        address crtAddress;
-        uint8 crtQuota;
-    }
 
     function _borrow(BorrowParams memory vars) internal {
-        PrestareCounterStorage.CounterProfile storage assetData = _assetData[vars.assetAddress];
-        // PrestareCounterStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
+        AssetStorage.AssetProfile storage assetData = _assetData[vars.assetAddress];
+        AssetStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
+        
         // mapping(uint8 => uint8) memory _crtValueMapping = assetData.crtValueMapping;
-
         // uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
         // get user's balance of CRT
         console.log(vars.crtAddress);
@@ -143,6 +138,22 @@ contract Counter is CounterStorage, ICounter {
 
         // // 通过oracle 将用户的所有存款转为 usd单位 assetValueInUSD
         // uint256 assetValueInUSD;
+        address oracle = _addressProvider.getPriceOracle();
+        uint256 priceByUSD = IPriceOracleGetter(oracle).getAssetPrice(vars.assetAddress);
+        uint256 amountInUSD = priceByETH * vars.amount / 10**assetData.configuration.getDecimals();
+
+        KoiosJudgement.BorrowJudgement(
+            vars.assetAddress,
+            assetData,
+            vars.borrower,
+            amountInUSD,
+            vars.interestRateMode,
+            _assetData,
+            userConfig,
+            _reservesList,
+            _reservesCount,
+            oralce
+        );
 
         // CRT required according to crtQuota provided by user
         uint256 crtRequired;
@@ -162,19 +173,36 @@ contract Counter is CounterStorage, ICounter {
         // assetData.updateInterestRates(assetAddr, pTokenAddr, 0, amount);
 
         // Update User's balance
-        PrestareMarketStorage.UserBalanceByAsset storage userBlance = _userDataByAsset[vars.borrower][vars.assetAddress];
-        uint256 lastTotalBorrow = userBlance.totalBorrows;
-        uint256 lastBorrowPrincipal = userBlance.principal;
+        reserve.updateState();
+        // PrestareMarketStorage.UserBalanceByAsset storage userBlance = _userDataByAsset[vars.borrower][vars.assetAddress];
+        // uint256 lastTotalBorrow = userBlance.totalBorrows;
+        // uint256 lastBorrowPrincipal = userBlance.principal;
 
-        (bool statusOne, uint256 newAccTotalBorrows) = lastTotalBorrow.tryAdd(vars.amount);
-        require(statusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
-        (bool statusTwo, uint256 newAccBorrowPrincipal) = lastBorrowPrincipal.tryAdd(vars.amount);
-        require(statusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
+        // (bool statusOne, uint256 newAccTotalBorrows) = lastTotalBorrow.tryAdd(vars.amount);
+        // require(statusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
+        // (bool statusTwo, uint256 newAccBorrowPrincipal) = lastBorrowPrincipal.tryAdd(vars.amount);
+        // require(statusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
 
-        userBlance.totalBorrows = newAccTotalBorrows;
-        userBlance.principal = newAccBorrowPrincipal;
+        // userBlance.totalBorrows = newAccTotalBorrows;
+        // userBlance.principal = newAccBorrowPrincipal;
+        // updata reserve interestRates
+        reserve.updateInterestRates(
+            vars.assetAddress, 
+            vars.pTokenAddress,
+            0,
+            vars.amount
+        );
 
-        emit Borrow(vars.assetAddress, vars.borrower, vars.amount);
+        IPToken(vars.pTokenAddress).transferUnderlyingTo(vars.borrower, vars.amount);
+
+        emit Borrow(
+            vars.assetAddress, 
+            vars.user, 
+            vars.borrower,
+            vars.amount,
+            vars.interestRateMode,
+            vars.referralCode
+        );
     }
 
     function repay(address assetAddr, uint256 repayAmount, address debtor) external {

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.3;
 
-import "../dependencies/SafeMath.sol"; 
+import "../dependencies/openzeppelin/contracts/SafeMath.sol"; 
 import "../utils/WadRay.sol";
 // import {ErrorReporter} from "../utils/ErrorList.sol";
 
