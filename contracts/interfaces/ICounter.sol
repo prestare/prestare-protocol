@@ -2,6 +2,7 @@
 pragma solidity ^0.8.4;
 
 import {AssetStorage} from "../DataType/AssetStorage.sol";
+import {MarketStorage} from "../DataType/MarketStorage.sol";
 
 /**
  * @title ICounter
@@ -69,21 +70,20 @@ interface ICounter {
     * @dev Emitted when a borrower is liquidated.
     * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
     * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
-    * @param user The address of the borrower getting liquidated
-    * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+    * @param debtor The address of the borrower getting liquidated
+    * @param liquiAmount The debt amount of borrowed `asset` the liquidator wants to cover
     * @param liquidatedCollateralAmount The amount of collateral received by the liquidator
     * @param liquidator The address of the liquidator
-    * @param receivePToken True if the liquidators wants to receive the collateral pTokens, `false` if he wants
-    * to receive the underlying collateral asset directly
+    * @param liquidationMode choose the liquidation way. 0: external liquidation, 1: internal liquidation, 2: flash loan
     **/
     event LiquidationCall(
         address indexed collateralAsset,
         address indexed debtAsset,
-        address indexed user,
-        uint256 debtToCover,
+        address indexed debtor,
+        uint256 liquiAmount,
         uint256 liquidatedCollateralAmount,
         address liquidator,
-        bool receivePToken
+        uint8 liquidationMode
     );
 
     /**
@@ -114,13 +114,49 @@ interface ICounter {
         address asset,
         uint256 amount,
         address to
-    ) external returns (uint256)
+    ) external returns (uint256);
 
+    /**
+     * @dev Allow users to borrow a `amount` of the reserve underlying asset
+     * @param assetAddr The address of the underlying asset to borrow
+     * @param amount The amount to be borrowed
+     * @param borrower The address of the borrower who receive the fund
+     * @param crtQuota The level of the Crt
+     */
     function borrow(
         address assetAddr,
         uint256 amount,
         address borrower,
         uint8 crtQuota
+    ) external;
+
+    /**
+     * @dev Rpays a borrowed `amount` on a specific reserve
+     * @param asset The address of the borrowed underlying
+     * @param amount The amount to repay
+     * @param borrower The address of the user who repay his debt
+     * @return The final amount repaid 
+     */
+    function repay(
+        address asset,
+        uint256 amount,
+        address borrower
+    ) external returns (uint256);
+
+    /**
+     * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+     * @param collateralCurrency The address of the underlying asset used as collateral, to receive as result of the liquidation
+     * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+     * @param debtor The address of the borrower getting liquidated
+     * @param LiquiAmount The debt amount of borrowed `asset` the liquidator wants to cover
+     * @param liquidationMode choose the liquidation way. 0: external liquidation, 1: internal liquidation, 2: flash loan
+     */
+    function liquidationCall(
+        address collateralCurrency, 
+        address debtAsset, 
+        address debtor, 
+        uint256 LiquiAmount, 
+        uint8 liquidationMode
     ) external;
 
     function initReserve(
@@ -137,11 +173,11 @@ interface ICounter {
    * @param asset The address of the underlying asset of the reserve
    * @return The state of the reserve
    **/
-    function getCounterData(address asset) external view returns (PrestareCounterStorage.CounterProfile memory);
+    function getCounterAssetData(address asset) external view returns (AssetStorage.AssetProfile memory);
 
-    function getCRTData(address asset) external view returns (PrestareMarketStorage.CreditTokenStorage memory);
+    function getCRTData(address asset) external view returns (MarketStorage.CreditTokenStorage memory);
 
-    function getUserData(address user, address assetAddr) external view returns (PrestareMarketStorage.UserBalanceByAsset memory);
+    function getUserData(address user, address assetAddr) external view returns (MarketStorage.UserBalanceByAsset memory);
 
     function getReservesList() external view returns (address[] memory);
 
@@ -156,12 +192,5 @@ interface ICounter {
         external
         view
         returns (AssetStorage.CounterConfigMapping memory);
-
-    /**
-     * @dev Returns the state and configuration of the reserve
-     * @param asset The address of the underlying asset of the reserve
-     * @return The state of the reserve
-     */
-    function getReserveData(address asset) external view returns (AssetStorage.AssetProfile memory);
 
 }

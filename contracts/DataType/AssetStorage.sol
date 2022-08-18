@@ -11,6 +11,8 @@ library AssetStorage {
     uint128 ExchangeRate;
     // the current interest since last timestamp.
     uint128 currentInterest;
+    // cumulated varibale borrow index.
+    uint128 variableBorrowIndex;
     // the current borrow rate
     uint128 currentBorrowRate;
     // the newest timestamp that the para been updated
@@ -18,6 +20,7 @@ library AssetStorage {
 
     // related token address
     address pTokenAddress;
+    address pdebtTokenAddress;
     // the interested rate model
     address interestRateModelAddress;
 

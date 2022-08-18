@@ -43,6 +43,12 @@ contract Counter is CounterStorage, ICounter {
     using ReserveLogic for AssetStorage.AssetProfile;
     using SafeERC20 for IERC20;
 
+    uint256 public constant REVISION = 0x1;
+
+    function getRevision() internal pure override returns (uint256) {
+        return LENDINGPOOL_REVISION;
+    }
+    
     function initialize(CounterAddressProvider provider) public {
         _addressProvider = provider;
         _maxNumberOfReserves = 128;
@@ -95,6 +101,9 @@ contract Counter is CounterStorage, ICounter {
         assetData.updateState();
         assetData.updateInterestRates(assetAddr, pTokenAddr, 0, withdrawAmount);
 
+        // TODO: release CRT
+
+
         // TODO: burn 掉相应数量的pToken(pToken part)
         IPToken(pTokenAddr).burn(msg.sender, to. withdrawAmount, reserve.liquidity);
         emit Withdraw(assetAddr, msg.sender, to, withdrawAmount);
@@ -123,97 +132,22 @@ contract Counter is CounterStorage, ICounter {
         );
     }
 
+    function repay(address assetAddr, uint256 amount, address borrower) external override {
 
-    function _borrow(BorrowParams memory vars) internal {
-        AssetStorage.AssetProfile storage assetData = _assetData[vars.assetAddress];
-        AssetStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
-        
-        // mapping(uint8 => uint8) memory _crtValueMapping = assetData.crtValueMapping;
-        // uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
-        // get user's balance of CRT
-        console.log(vars.crtAddress);
-        console.log("11111");
-        uint256 crtBalance = CreditToken(vars.crtAddress).balanceOf(vars.borrower);
-        console.log("11111");
-
-        // // 通过oracle 将用户的所有存款转为 usd单位 assetValueInUSD
-        // uint256 assetValueInUSD;
-        address oracle = _addressProvider.getPriceOracle();
-        uint256 priceByUSD = IPriceOracleGetter(oracle).getAssetPrice(vars.assetAddress);
-        uint256 amountInUSD = priceByETH * vars.amount / 10**assetData.configuration.getDecimals();
-
-        KoiosJudgement.BorrowJudgement(
-            vars.assetAddress,
-            assetData,
-            vars.borrower,
-            amountInUSD,
-            vars.interestRateMode,
-            _assetData,
-            userConfig,
-            _reservesList,
-            _reservesCount,
-            oralce
-        );
-
-        // CRT required according to crtQuota provided by user
-        uint256 crtRequired;
-        // 这一段放入Koios中用来判断是否满足借款条件
-        // for (uint8 i = 1; i <= crtQuota; i++) {
-        //     // 数学方法待定
-        //     // 0.1 要怎么表示
-        //     uint256 addedValue = assetValueInUSD * 0.1 / _crtValueMapping[i];
-        //     crtRequired += addedValue;
-        // }
-        // KoiosJudgement.BorrowJudgement(assetData, assetAddr, amount, crtRequired, crtBalance);
-
-        // TODO: 将CRT Staking Pool中对应的CRT 锁住 怎么锁？  加一个locked value
-        // TODO: 借款成功后把 额度发给用户
-
-        // assetData.updateState();
-        // assetData.updateInterestRates(assetAddr, pTokenAddr, 0, amount);
-
-        // Update User's balance
-        reserve.updateState();
-        // PrestareMarketStorage.UserBalanceByAsset storage userBlance = _userDataByAsset[vars.borrower][vars.assetAddress];
-        // uint256 lastTotalBorrow = userBlance.totalBorrows;
-        // uint256 lastBorrowPrincipal = userBlance.principal;
-
-        // (bool statusOne, uint256 newAccTotalBorrows) = lastTotalBorrow.tryAdd(vars.amount);
-        // require(statusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
-        // (bool statusTwo, uint256 newAccBorrowPrincipal) = lastBorrowPrincipal.tryAdd(vars.amount);
-        // require(statusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
-
-        // userBlance.totalBorrows = newAccTotalBorrows;
-        // userBlance.principal = newAccBorrowPrincipal;
-        // updata reserve interestRates
-        reserve.updateInterestRates(
-            vars.assetAddress, 
-            vars.pTokenAddress,
-            0,
-            vars.amount
-        );
-
-        IPToken(vars.pTokenAddress).transferUnderlyingTo(vars.borrower, vars.amount);
-
-        emit Borrow(
-            vars.assetAddress, 
-            vars.user, 
-            vars.borrower,
-            vars.amount,
-            vars.interestRateMode,
-            vars.referralCode
-        );
-    }
-
-    function repay(address assetAddr, uint256 repayAmount, address debtor) external {
-
-        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
+        AssetStorage.AssetProfile storage assetData = _assetData[assetAddr];
 
         // // TODO 1. 获取用户total 债务（1. conpound 链上存信息？ 2. aave 发债务token）
         uint256 debtBalance;
         uint256 principal;
-        // (uint256 debtBalance, uint256 principal) = getdebtBalance(debtor);
+        (uint256 debtBalance, uint256 principal) = Helper.getdebtBalance(borrower);
 
+        KoiosJudgement.RepayJudgement(
+            assetData,
+            amount,
+            borrower,
+            debtBalance,
+            principal
+        );
         
         //      2. 调整债务；
         // 如果 还款额 a. 小于 b. 等于 c. 大于 借款额
@@ -232,9 +166,10 @@ contract Counter is CounterStorage, ICounter {
             // 计算还款利息
             uint256 repaidInterest = repayAmount - principal;
             // @chen zihao crt.mint()
+            // crt.mint();
             // 更新用户债务信息
-
         }
+
         else {
             if (repayAmount > principal) {
                 uint256 repaidInterest = repayAmount - principal;
@@ -247,24 +182,31 @@ contract Counter is CounterStorage, ICounter {
         }
         // KoiosJudgement.RepayJudgement(assetData, assetAddr, repayAmount, debtor);
 
-        // assetData.updateState();
-        // address pTokenAddr = assetData.pTokenAddress;
-        // assetData.updateInterestRates(assetAddr, pTokenAddr, repayAmount, 0);
+        assetData.updateState();
+        
+        IDebtToken(assetData.pdebtTokenAddress).burn(borrower, repayAmount, assetData.variableBorrowIndex);
+        address pTokenAddr = assetData.pTokenAddress;
+        assetData.updateInterestRates(assetAddr, pTokenAddr, repayAmount, 0);
+        
+        IERC20(assetAddr).safeTransferForm(msg.sender, pToken, repayAmount);
+        IPToken(pTokenAddr).handleRepayment(msg.sender, repayAmount);
 
         emit Repay(assetAddr, debtor, repayAmount);
     }
 
 
-    /** 
-    * @param liquidationMode choose the liquidation way. 0: external liquidation, 1: internal liquidation, 2: flash loan
-    */
-    function liquidationCall(address collateralCurrency, address debtAsset, address debtor, uint256 amount, uint8 liquidationMode) external {
-
+    function liquidationCall(
+        address collateralCurrency, 
+        address debtAsset, 
+        address debtor, 
+        uint256 LiquiAmount, 
+        uint8 liquidationMode
+    ) external override {
         if (liquidationMode == 0) {
-            externalLiquidation(collateralCurrency, debtAsset, debtor, amount);
+            externalLiquidation(collateralCurrency, debtAsset, debtor, LiquiAmount);
         } 
         else if (liquidationMode == 1) {
-            internalLiquidation(collateralCurrency, debtAsset, debtor, amount);
+            internalLiquidation(collateralCurrency, debtAsset, debtor, LiquiAmount);
         }
         else if (liquidationMode == 2) {
 
@@ -274,16 +216,120 @@ contract Counter is CounterStorage, ICounter {
         }
     }
 
-    function externalLiquidation(address collateralCurrency, address debtAsset, address debtor, uint256 amount) internal {
+    function externalLiquidation(
+        address collateralCurrency, 
+        address debtCurrency, 
+        address debtor, 
+        uint256 LiquiAmount
+    ) internal returns (bool, string memory){
+        AssetStorage.AssetProfile storage collateralAsset = _assetData[collateralCurrency];
+        AssetStorage.AssetProfile storage debtAsset = _assetData[debtCurrency];
+        AssetStorage.CounterConfigMapping storage userConfig = userConfig[debtor];
+        // update debt asset state
+        debtAsset.updateState();
 
+        // todo check how to pass oracle address
+        uint256 healthFactor = GenericLogic.calculateUserAccountData(
+            _assetData,
+            userConfig,
+            debtor,
+            oracle
+        );
+        
+        DebtAmount = Helpers.getUserCurrentDebt(debtor, debtAsset);
+
+        (bool success, bytes memory err) = KoiosJudgement.LiquidationJudgement(
+            collateralAsset,
+            debtAsset,
+            userConfig,
+            healthFactor,
+            DebtAmount
+        );
+
+        if (success != true) {
+            return (success, err);
+        }
+
+        IPToken collateralPToken = IPToken(collateralAsset.pTokenAddress);
+        uint256 userCollateralBalance = collateralPToken.balanceOf(debtor);
+
+        uint256 actualDebtToLiquidate = LiquiAmount > DebtAmount 
+            ? DebtAmount
+            : LiquiAmount;
+        
+        (
+            uint256 maxCollateralToLiquidate, 
+            uint256 debtAmountNeed
+        ) = _calculateAvailableCollateralToLiquidate(
+            collateralAsset,
+            debtAsset,
+            collateralCurrency,
+            debtCurrency,
+            actualDebtToLiquidate,
+            userCollateralBalance
+        );
+        // If debtAmountNeeded < actualDebtToLiquidate, there isn't enough
+        // collateral to cover the actual amount that is being liquidated, hence we liquidate
+        // a smaller amount
+        if (debtAmountNeed < actualDebtToLiquidate) {
+            actualDebtToLiquidate = debtAmountNeed;
+        }
+        
+        debtAsset.updateState();
+
+        // 检查此次清算是否偿还所有的债务
+        if (DebtAmount >= actualDebtToLiquidate) {
+            IDebtToken(debtAsset.pdebtTokenAddress).burn(
+                user,
+                actualDebtToLiquidate,
+                debtAsset.variableBorrowIndex
+            );
+        } else {
+            if (DebtAmount > 0) {
+                IDebtToken(debtAsset.pdebtTokenAddress).burn(
+                    user,
+                    DebtAmount,
+                    debtAsset.variableBorrowIndex
+                );
+            }
+        }
+
+        debtAsset.updateInterestRates(
+            debtCurrency,
+            debtAsset.pTokenAddress,
+            actualDebtToLiquidate,
+        );
+
+        uint256 liquidatorPreviousATokenBalance = IERC20(collateralPToken).balanceOf(msg.sender);
+        collateralPToken.transferOnLiquidation(debt, msg.sender, maxCollateralToLiquidate);
+
+        collateralPToken.burn(
+            debtor,
+            msg.sender,
+            maxCollateralToLiquidate,
+            collateralAsset.ExchangeRate
+        );
+
+        IERC20(debtAsset).safeTransferFrom(
+            msg.sender, 
+            debtAsset.pTokenAddress,
+            actualDebtToLiquidate
+        );
+
+        emit liquidationCall(
+            collateralAsset, 
+            debtAsset, 
+            debtor, 
+            actualDebtToLiquidate, 
+            maxCollateralToLiquidate,
+            msg.sender,
+            liquidationMode
+        );
     }
 
     function internalLiquidation(address collateralCurrency, address debtAsset, address debtor, uint256 amount) internal {
-
+         
     }
-
-
-
 
     struct CalculateBorrowParams {
         address currency;
@@ -333,7 +379,25 @@ contract Counter is CounterStorage, ICounter {
     }
 
 
+    function getAssetData(address asset) 
+      external 
+      view 
+      override
+      returns (AssetStorage.AssetProfile memory) 
+    {
+        return _assetData[asset];
+    }
 
+    function getCRTData(address asset) external view returns (MarketStorage.CreditTokenStorage memory);
+
+    function getUserData(address user, address assetAddr)
+      external 
+      view 
+      override
+      returns (MarketStorage.UserBalanceByAsset memory) 
+    {
+        return _userDataByAsset[user][assetAddr];
+    }
 
     /**
    * @dev Returns the list of the initialized reserves
@@ -426,6 +490,87 @@ contract Counter is CounterStorage, ICounter {
 
             _reservesCount = reservesCount + 1;
         }
+    }
+
+    function _borrow(BorrowParams memory vars) internal {
+        AssetStorage.AssetProfile storage assetData = _assetData[vars.assetAddress];
+        AssetStorage.UserConfigurationMapping storage userConfig = _userConfig[borrower];
+        
+        // mapping(uint8 => uint8) memory _crtValueMapping = assetData.crtValueMapping;
+        // uint256 userBalance = EIP20Interface(pTokenAddr).balanceOf(msg.sender); 
+        // get user's balance of CRT
+        console.log(vars.crtAddress);
+        console.log("11111");
+        uint256 crtBalance = CreditToken(vars.crtAddress).balanceOf(vars.borrower);
+        console.log("11111");
+
+        // // 通过oracle 将用户的所有存款转为 usd单位 assetValueInUSD
+        // uint256 assetValueInUSD;
+        address oracle = _addressProvider.getPriceOracle();
+        uint256 priceByUSD = IPriceOracleGetter(oracle).getAssetPrice(vars.assetAddress);
+        uint256 amountInUSD = priceByETH * vars.amount / 10**assetData.configuration.getDecimals();
+
+        KoiosJudgement.BorrowJudgement(
+            vars.assetAddress,
+            assetData,
+            vars.borrower,
+            amountInUSD,
+            vars.interestRateMode,
+            _assetData,
+            userConfig,
+            _reservesList,
+            _reservesCount,
+            oralce
+        );
+
+        // CRT required according to crtQuota provided by user
+        uint256 crtRequired;
+        // 这一段放入Koios中用来判断是否满足借款条件
+        // for (uint8 i = 1; i <= crtQuota; i++) {
+        //     // 数学方法待定
+        //     // 0.1 要怎么表示
+        //     uint256 addedValue = assetValueInUSD * 0.1 / _crtValueMapping[i];
+        //     crtRequired += addedValue;
+        // }
+        // KoiosJudgement.BorrowJudgement(assetData, assetAddr, amount, crtRequired, crtBalance);
+
+        // TODO: 将CRT Staking Pool中对应的CRT 锁住 怎么锁？  加一个locked value
+        // TODO: 借款成功后把 额度发给用户
+
+        // assetData.updateState();
+        // assetData.updateInterestRates(assetAddr, pTokenAddr, 0, amount);
+
+        // Update User's balance
+        reserve.updateState();
+        // PrestareMarketStorage.UserBalanceByAsset storage userBlance = _userDataByAsset[vars.borrower][vars.assetAddress];
+        // uint256 lastTotalBorrow = userBlance.totalBorrows;
+        // uint256 lastBorrowPrincipal = userBlance.principal;
+
+        // (bool statusOne, uint256 newAccTotalBorrows) = lastTotalBorrow.tryAdd(vars.amount);
+        // require(statusOne, Error.SAFEMATH_ADDITION_OVERFLOW);
+        // (bool statusTwo, uint256 newAccBorrowPrincipal) = lastBorrowPrincipal.tryAdd(vars.amount);
+        // require(statusTwo, Error.SAFEMATH_ADDITION_OVERFLOW);
+
+        // userBlance.totalBorrows = newAccTotalBorrows;
+        // userBlance.principal = newAccBorrowPrincipal;
+        // updata reserve interestRates
+        reserve.updateInterestRates(
+            vars.assetAddress, 
+            vars.pTokenAddress,
+            0,
+            vars.amount
+        );
+
+        IPToken(vars.pTokenAddress).transferUnderlyingTo(vars.borrower, vars.amount);
+
+        emit Borrow(
+            vars.assetAddress, 
+            vars.user, 
+            vars.borrower,
+            vars.amount,
+            vars.interestRateMode,
+            vars.referralCode
+        );
     }
 
     /**
