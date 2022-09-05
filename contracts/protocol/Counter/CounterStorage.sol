@@ -5,15 +5,16 @@ import {AssetStorage} from "../../DataType/AssetStorage.sol";
 import {MarketStorage} from "../../DataType/MarketStorage.sol";
 // import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
 import {CounterAddressProviderInterface} from "../../interfaces/CounterAddressProviderInterface.sol";
-import {ReserveLogic} from "../../ReserveLogic.sol";
-import {AssetsConfiguration} from "../../AssetsConfiguration.sol";
-
+import {AssetPoolLogic} from "../libraries/AssetPoolLogic.sol";
+import {AssetsConfiguration} from "../libraries/configuration/AssetsConfiguration.sol";
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 
 contract CounterStorage {
-    using ReserveLogic for AssetStorage.AssetProfile;
+    using AssetPoolLogic for AssetStorage.AssetProfile;
     using AssetsConfiguration for AssetStorage.CounterConfigMapping;
-
-    CounterAddressProviderInterface internal _addressProvider;
+    using UserConfiguration for DataTypes.UserConfigurationMap;
+    
+    ICounterAddressProvider internal _addressProvider;
 
     // User's balance for each asset
     mapping(address => mapping(address => MarketStorage.UserBalanceByAsset)) _userDataByAsset;

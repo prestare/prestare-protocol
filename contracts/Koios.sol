@@ -3,27 +3,33 @@ pragma solidity ^0.8.4;
 
 // Koios: God of intellect and the axis of heaven around which the constellations revolved.
 
-import {AssetStorage} from "./DataType/PrestareStorage.sol";
+import {AssetStorage} from "./DataType/AssetStorage.sol";
+import {AssetLogic} from "./protocol/libraries/AssetLogic.sol";
 import {KoiosLib} from "./DataType/KoiosLib.sol";
 import {AssetsConfiguration} from "./AssetsConfiguration.sol";
 import {Error} from "./utils/Error.sol";
 
-library KoiosJudgement {
-    
+library Koios {
+    using AssetLogic for AssetStorage.AssetProfile;
+    using AssetsConfiguration for AssetStorage.CounterConfigMapping;
+
+    uint256 public constant REBALANCE_UP_LIQUIDITY_RATE_THRESHOLD = 4000;
+    uint256 public constant REBALANCE_UP_USAGE_RATIO_THRESHOLD = 0.95 * 1e27; //usage ratio of 95%
+
     /**
     * @dev Verify a deposit action
     * @param asset The asset the user is depositing
     * @param amount The amount to be deposited
     */
-    function DepositJudgement(AssetStorage.CounterProfile calldata asset, uint256 amount) external view {
+    function depositJudgement(AssetStorage.AssetProfile calldata asset, uint256 amount) external view {
 
-        // (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
+        (bool isAlive, bool isStuned, ,) = asset.AssetsConfiguration.getFlags();
 
         //1. 数量不能为0
-        //2. Asset pool should be alive and should not be frozen
         require(amount != 0, "Amount = 0");
-        // require(isAlive, "ERROR");
-        // require(!isStuned, "ERROR");
+        //2. Asset pool should be alive and should not be frozen
+        require(isAlive, Errors.VL_NO_ACTIVE_RESERVE);
+        require(!isStuned, Errors.VL_RESERVE_FROZEN);
     }
 
 
@@ -58,7 +64,7 @@ library KoiosJudgement {
         require(isAlive, "ERROR Toekn not active");
 
         // TODO: 检查针对用户是否可以赎回 比如赎回的话是否会低于清算值
-        _checkBalanceDecrease()
+        _checkBalanceDecrease();
 
     }
 
@@ -129,7 +135,7 @@ library KoiosJudgement {
         }
         KoiosLib.balanceDecreaseAllowedLocalVars memory vars;
 
-        (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset].configuration.getParams()
+        (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset].configuration.getParams();
         
     }
 }

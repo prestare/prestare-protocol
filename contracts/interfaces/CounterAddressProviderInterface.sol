@@ -8,7 +8,7 @@ pragma solidity ^0.8.4;
  * - Owned by the Aave Governance
  * @author Aave
  **/
-interface CounterAddressProviderInterface {
+interface ICounterAddressProvider {
     event MarketIdSet(string newMarketId);
     event CounterUpdated(address indexed newAddress);
     event ConfigurationAdminUpdated(address indexed newAddress);

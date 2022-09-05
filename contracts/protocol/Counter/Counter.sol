@@ -15,10 +15,10 @@ import {IPToken} from "../../interfaces/IPToken.sol";
 import {CounterStorage} from "./CounterStorage.sol";
 import {AssetStorage} from "../../DataType/AssetStorage.sol";
 // import {PrestareMarketStorage} from "../../DataType/PrestareStorage.sol";
-import {KoiosJudgement} from "../../Koios.sol";
+import {Koios} from "../../Koios.sol";
 
 import {CounterAddressProvider} from "../configuration/CounterAddressProvider.sol";
-import {ReserveLogic} from "../../ReserveLogic.sol";
+import {AssetPoolProfile} from "../../AssetPoolProfile.sol";
 import {WadRayMath} from "../../utils/WadRay.sol";
 import {CreditToken} from "../../CreditToken.sol";
 
@@ -40,15 +40,17 @@ import "hardhat/console.sol";
  */
 contract Counter is CounterStorage, ICounter {
     // using SafeMath256 for uint256;
-    using ReserveLogic for AssetStorage.AssetProfile;
     using SafeERC20 for IERC20;
+    using WadRayMath for uint256;
+    using PercentageMath for uint256;
 
     uint256 public constant REVISION = 0x1;
 
+    
     function getRevision() internal pure override returns (uint256) {
         return LENDINGPOOL_REVISION;
     }
-    
+
     function initialize(CounterAddressProvider provider) public {
         _addressProvider = provider;
         _maxNumberOfReserves = 128;
@@ -58,18 +60,19 @@ contract Counter is CounterStorage, ICounter {
     // ICounter function
     function deposit (address assetAddr, uint256 amount, address depositor) external override whenNotPaused {
 
-        PrestareCounterStorage.CounterProfile storage assetData = _assetData[assetAddr];
+        AseetStorage.AssetProfile storage assetData = _assetData[assetAddr];
 
-        KoiosJudgement.DepositJudgement(assetData, amount);
+        Koios.depositJudgement(assetData, amount);
+
         address pTokenAddr = assetData.pTokenAddress;
         // 更新资产的状态变量
-        assetData.AssetUpdate();
+        assetData.assetUpdate();
         // 更新资产的利率模型变量
         assetData.UpdateInterestRates(assetAddr, pTokenAddr, amount, 0);
 
         IERC20(asset).safeTransferFrom(msg.sender, pTokenAddr, amount);
         
-        bool status = IPToken(pTokenAddr).mint(depositor, amount, assetData.liquidityIndex);
+        bool status = IPToken(pTokenAddr).mint(depositor, amount, assetData.ExchangeRate);
         
         emit Deposit(assetAddr, msg.sender, provider, amount);
     }
@@ -87,7 +90,7 @@ contract Counter is CounterStorage, ICounter {
             withdrawAmount = userBalance;
         }
         // todo check if user can withdraw amount of token
-        KoiosJudgement.WithdrawJudgement(
+        Koios.WithdrawJudgement(
             assetAddr, 
             withdrawAmount,
             userBalance,
@@ -141,7 +144,7 @@ contract Counter is CounterStorage, ICounter {
         uint256 principal;
         (uint256 debtBalance, uint256 principal) = Helper.getdebtBalance(borrower);
 
-        KoiosJudgement.RepayJudgement(
+        Koios.RepayJudgement(
             assetData,
             amount,
             borrower,
@@ -180,7 +183,7 @@ contract Counter is CounterStorage, ICounter {
                 // 更新用户债务信息
             }
         }
-        // KoiosJudgement.RepayJudgement(assetData, assetAddr, repayAmount, debtor);
+        // Koios.RepayJudgement(assetData, assetAddr, repayAmount, debtor);
 
         assetData.updateState();
         
@@ -238,7 +241,7 @@ contract Counter is CounterStorage, ICounter {
         
         DebtAmount = Helpers.getUserCurrentDebt(debtor, debtAsset);
 
-        (bool success, bytes memory err) = KoiosJudgement.LiquidationJudgement(
+        (bool success, bytes memory err) = Koios.LiquidationJudgement(
             collateralAsset,
             debtAsset,
             userConfig,
@@ -369,7 +372,7 @@ contract Counter is CounterStorage, ICounter {
     ) external override {
         require(msg.sender == _assetData[asset].pTokenAddress, "Error");
 
-        KoiosJudgement.transferJudgment(
+        Koios.transferJudgment(
             sender,
             _assetData,
             _userConfig[sender],
@@ -510,7 +513,7 @@ contract Counter is CounterStorage, ICounter {
         uint256 priceByUSD = IPriceOracleGetter(oracle).getAssetPrice(vars.assetAddress);
         uint256 amountInUSD = priceByETH * vars.amount / 10**assetData.configuration.getDecimals();
 
-        KoiosJudgement.BorrowJudgement(
+        Koios.BorrowJudgement(
             vars.assetAddress,
             assetData,
             vars.borrower,
@@ -532,7 +535,7 @@ contract Counter is CounterStorage, ICounter {
         //     uint256 addedValue = assetValueInUSD * 0.1 / _crtValueMapping[i];
         //     crtRequired += addedValue;
         // }
-        // KoiosJudgement.BorrowJudgement(assetData, assetAddr, amount, crtRequired, crtBalance);
+        // Koios.BorrowJudgement(assetData, assetAddr, amount, crtRequired, crtBalance);
 
         // TODO: 将CRT Staking Pool中对应的CRT 锁住 怎么锁？  加一个locked value
         // TODO: 借款成功后把 额度发给用户

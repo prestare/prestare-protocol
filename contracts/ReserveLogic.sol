@@ -1,27 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
-import {PrestareCounterStorage} from "./DataType/PrestareStorage.sol";
+import {AssetStorage} from "./DataType/AssetStorage.sol";
 import {WadRayMath} from "./utils/WadRay.sol";
 
 
 library ReserveLogic {
 
-    using ReserveLogic for PrestareCounterStorage.CounterProfile;
+    using ReserveLogic for AssetStorage.AssetProfile;
 
     /**
    * @dev Emitted when the state of a reserve is updated
    * @param asset The address of the underlying asset of the reserve
    * @param liquidityRate The new liquidity rate
    * @param variableBorrowRate The new variable borrow rate
-   * @param liquidityIndex The new liquidity index
+   * @param ExchangeRate The new liquidity index
    * @param variableBorrowIndex The new variable borrow index
    **/
     event ReserveDataUpdated(
         address indexed asset,
         uint256 liquidityRate,
         uint256 variableBorrowRate,
-        uint256 liquidityIndex,
+        uint256 ExchangeRate,
         uint256 variableBorrowIndex
     );
     
@@ -32,14 +32,14 @@ library ReserveLogic {
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
     function init(
-        PrestareCounterStorage.CounterProfile storage reserve,
+        AssetStorage.CounterProfile storage reserve,
         address pTokenAddress,
         address crtAddress,
         address interestRateStrategyAddress
     ) external {
         require(reserve.pTokenAddress == address(0), "Error");
 
-        reserve.liquidityIndex = uint128(WadRayMath.ray());
+        reserve.ExchangeRate = uint128(WadRayMath.ray());
         reserve.borrowIndex = uint128(WadRayMath.ray());
         reserve.pTokenAddress = pTokenAddress;
         reserve.crtAddress = crtAddress;

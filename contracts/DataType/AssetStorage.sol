@@ -8,7 +8,7 @@ library AssetStorage {
     //stores the reserve configuration
     CounterConfigMapping configuration;
     // aToken to collateral exchange rate, Expressed in ray
-    uint128 ExchangeRate;
+    uint128 exchangeRate;
     // the current interest since last timestamp.
     uint128 currentInterest;
     // cumulated varibale borrow index.
@@ -27,7 +27,7 @@ library AssetStorage {
     // CounterData _assetData;
 
     // //the liquidity index. Expressed in ray
-    // uint128 liquidityIndex;
+    // uint128 ExchangeRate;
     // //borrow index. Expressed in ray
     // uint128 borrowIndex;
     // //the current supply rate. Expressed in ray
@@ -52,7 +52,7 @@ library AssetStorage {
     uint256 scaledBorrowedAmount;
   }
 
-  struct CounterConfigMapping {
+  struct CounterConfigMap {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus
@@ -66,7 +66,7 @@ library AssetStorage {
     uint256 data;
   }
 
-  struct UserConfigurationMapping {
+  struct UserConfigurationMap {
     uint256 data;
   }
 
