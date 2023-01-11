@@ -1,0 +1,22 @@
+{
+  "name": "prestare-protocol",
+  "version": "0.0.1",
+  "description": "Prestare Protocol",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prestare/prestare-protocol.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prestare/prestare-protocol/issues"
+  },
+  "homepage": "https://github.com/prestare/prestare-protocol#readme",
+  "devDependencies": {
+    "hardhat": "^2.12.5"
+  }
+}
