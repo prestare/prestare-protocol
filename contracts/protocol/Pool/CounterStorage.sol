@@ -13,9 +13,6 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  * @dev It defines the storage layout of the Counter contract.
  */
 contract CounterStorage {
-  using ReserveLogic for DataTypes.ReserveData;
-  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
-  using UserConfiguration for DataTypes.UserConfigurationMap;
 
   // Map of reserves and their data (underlyingAssetOfReserve => reserveData)
   mapping(address => DataTypes.ReserveData) internal _reserves;

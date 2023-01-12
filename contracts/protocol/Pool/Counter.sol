@@ -1,13 +1,21 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ICounter} from '../../interfaces/ICounter.sol';
+import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
+import {IPToken} from '../../interfaces/IPToken.sol';
 import {CounterStorage} from './CounterStorage.sol';
 
+import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
+import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
+
+import {Errors} from '../libraries/helpers/Errors.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
+// import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
+import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title Prestare Counter contract
@@ -27,8 +35,10 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
 contract Counter is ICounter, CounterStorage {
   using ReserveLogic for DataTypes.ReserveData;
+  using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
+  using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  ILendingPoolAddressesProvider public immutable _addressesProvider;
+  ICounterAddressesProvider public immutable _addressesProvider;
 
   modifier whenNotPaused() {
     _whenNotPaused();
@@ -46,21 +56,27 @@ contract Counter is ICounter, CounterStorage {
 
   function _onlyLendingPoolConfigurator() internal view {
     require(
-      _addressesProvider.getLendingPoolConfigurator() == msg.sender,
+      _addressesProvider.getCounterConfigurator() == msg.sender,
       Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
     );
   }
 
-    /**
+  /**
+   * @dev Constructor.
+   * @param provider The address of the PoolAddressesProvider contract
+   */
+  constructor(ICounterAddressesProvider provider) {
+    _addressesProvider = provider;
+  }
+
+  /**
    * @dev Function is invoked by the proxy contract when the Counter contract is added to the
    * CounterAddressesProvider of the market.
    * - Caching the address of the CounterAddressesProvider in order to reduce gas consumption
    *   on subsequent operations
    * @param provider The address of the CounterAddressesProvider
    **/
-  function initialize(ILendingPoolAddressesProvider provider) public {
-    _addressesProvider = provider;
-    _maxStableRateBorrowSizePercent = 2500;
+  function initialize(ICounterAddressesProvider provider) public {
     _flashLoanPremiumTotal = 9;
     _maxNumberOfReserves = 128;
   }
@@ -86,14 +102,14 @@ contract Counter is ICounter, CounterStorage {
 
     ValidationLogic.validateDeposit(reserve, amount);
 
-    address aToken = reserve.aTokenAddress;
+    address pToken = reserve.aTokenAddress;
 
     reserve.updateState();
-    reserve.updateInterestRates(asset, aToken, amount, 0);
+    reserve.updateInterestRates(asset, pToken, amount, 0);
 
-    IERC20(asset).safeTransferFrom(msg.sender, aToken, amount);
+    IERC20(asset).transferFrom(msg.sender, pToken, amount);
 
-    bool isFirstDeposit = IAToken(aToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
+    bool isFirstDeposit = IPToken(pToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
