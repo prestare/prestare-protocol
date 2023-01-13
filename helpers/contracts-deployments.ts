@@ -1,6 +1,7 @@
 import { Contract, Signer} from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { eContractid } from './types';
+import { getDb } from './utils';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
@@ -17,6 +18,13 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
       console.log(`\n******`);
       console.log();
     }
+
+    await getDb()
+    .set(`${contractId}.${currentNetwork}`, {
+      address: contractInstance.address,
+      deployer: contractInstance.deployTransaction.from,
+    })
+    .write();
 };
 
 export const deployCounterAddressesProvider = async (
