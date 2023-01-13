@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
+import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
@@ -186,4 +187,45 @@ library ValidationLogic {
       Errors.VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF
     );
   }
+
+  /**
+   * @dev Validates the action of setting an asset as collateral
+   * @param reserve The state of the reserve that the user is enabling or disabling as collateral
+   * @param reserveAddress The address of the reserve
+   * @param reservesData The data of all the reserves
+   * @param userConfig The state of the user for the specific reserve
+   * @param reserves The addresses of all the active reserves
+   * @param oracle The price oracle
+   */
+  function validateSetUseReserveAsCollateral(
+    DataTypes.ReserveData storage reserve,
+    address reserveAddress,
+    bool useAsCollateral,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
+    address oracle
+  ) external view {
+    uint256 underlyingBalance = IERC20(reserve.pTokenAddress).balanceOf(msg.sender);
+
+    require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
+
+    require(
+      useAsCollateral ||
+        GenericLogic.balanceDecreaseAllowed(
+          reserveAddress,
+          msg.sender,
+          underlyingBalance,
+          reservesData,
+          userConfig,
+          reserves,
+          reservesCount,
+          oracle
+        ),
+      Errors.VL_DEPOSIT_ALREADY_IN_USE
+    );
+  }
+
+  
 }

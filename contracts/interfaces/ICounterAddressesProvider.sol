@@ -27,17 +27,17 @@ interface ICounterAddressesProvider {
 
   function setAddress(bytes32 id, address newAddress) external;
 
-  function setAddressAsProxy(bytes32 id, address impl) external;
+  // function setAddressAsProxy(bytes32 id, address impl) external;
 
   function getAddress(bytes32 id) external view returns (address);
 
   function getCounter() external view returns (address);
 
-  function setCounterImpl(address pool) external;
+  // function setCounterImpl(address pool) external;
 
   function getCounterConfigurator() external view returns (address);
 
-  function setCounterConfiguratorImpl(address configurator) external;
+  // function setCounterConfiguratorImpl(address configurator) external;
 
   function getCounterCollateralManager() external view returns (address);
 
@@ -55,7 +55,7 @@ interface ICounterAddressesProvider {
 
   function setPriceOracle(address priceOracle) external;
 
-  function getLendingRateOracle() external view returns (address);
+  function getCounterOracle() external view returns (address);
 
-  function setLendingRateOracle(address lendingRateOracle) external;
+  function setCounterOracle(address lendingRateOracle) external;
 }

@@ -47,8 +47,8 @@ contract Counter is ICounter, CounterStorage {
     _;
   }
 
-  modifier onlyLendingPoolConfigurator() {
-    _onlyLendingPoolConfigurator();
+  modifier onlyCounterConfigurator() {
+    _onlyCounterConfigurator();
     _;
   }
 
@@ -56,7 +56,7 @@ contract Counter is ICounter, CounterStorage {
     require(!_paused, Errors.LP_IS_PAUSED);
   }
 
-  function _onlyLendingPoolConfigurator() internal view {
+  function _onlyCounterConfigurator() internal view {
     require(
       _addressesProvider.getCounterConfigurator() == msg.sender,
       Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
@@ -417,5 +417,232 @@ contract Counter is ICounter, CounterStorage {
     emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
 
     return paybackAmount;
+  }
+
+  /**
+   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
+   * @param asset The address of the underlying asset deposited
+   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
+   **/
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
+    external
+    override
+    whenNotPaused
+  {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    ValidationLogic.validateSetUseReserveAsCollateral(
+      reserve,
+      asset,
+      useAsCollateral,
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, useAsCollateral);
+
+    if (useAsCollateral) {
+      emit ReserveUsedAsCollateralEnabled(asset, msg.sender);
+    } else {
+      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+    }
+  }
+
+    /**
+   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
+   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
+   **/
+  function liquidationCall(
+    address collateralAsset,
+    address debtAsset,
+    address user,
+    uint256 debtToCover,
+    bool receiveAToken
+  ) external override whenNotPaused {
+    address collateralManager = _addressesProvider.getCounterCollateralManager();
+
+    //solium-disable-next-line
+    (bool success, bytes memory result) =
+      collateralManager.delegatecall(
+        abi.encodeWithSignature(
+          'liquidationCall(address,address,address,uint256,bool)',
+          collateralAsset,
+          debtAsset,
+          user,
+          debtToCover,
+          receiveAToken
+        )
+      );
+
+    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
+
+    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+
+    require(returnCode == 0, string(abi.encodePacked(returnMessage)));
+  }
+
+  /**
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The state of the reserve
+   **/
+  function getReserveData(address asset)
+    external
+    view
+    override
+    returns (DataTypes.ReserveData memory)
+  {
+    return _reserves[asset];
+  }
+
+  /**
+   * @dev Returns the user account data across all the reserves
+   * @param user The address of the user
+   * @return totalCollateralETH the total collateral in ETH of the user
+   * @return totalDebtETH the total debt in ETH of the user
+   * @return availableBorrowsETH the borrowing power left of the user
+   * @return currentLiquidationThreshold the liquidation threshold of the user
+   * @return ltv the loan to value of the user
+   * @return healthFactor the current health factor of the user
+   **/
+  function getUserAccountData(address user)
+    external
+    view
+    override
+    returns (
+      uint256 totalCollateralETH,
+      uint256 totalDebtETH,
+      uint256 availableBorrowsETH,
+      uint256 currentLiquidationThreshold,
+      uint256 ltv,
+      uint256 healthFactor
+    )
+  {
+    (
+      totalCollateralETH,
+      totalDebtETH,
+      ltv,
+      currentLiquidationThreshold,
+      healthFactor
+    ) = GenericLogic.calculateUserAccountData(
+      user,
+      _reserves,
+      _usersConfig[user],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    availableBorrowsETH = GenericLogic.calculateAvailableBorrowsETH(
+      totalCollateralETH,
+      totalDebtETH,
+      ltv
+    );
+  }
+
+  /**
+   * @dev Returns the configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The configuration of the reserve
+   **/
+  function getConfiguration(address asset)
+    external
+    view
+    override
+    returns (DataTypes.ReserveConfigurationMap memory)
+  {
+    return _reserves[asset].configuration;
+  }
+
+  /**
+   * @dev Returns the configuration of the user across all the reserves
+   * @param user The user address
+   * @return The configuration of the user
+   **/
+  function getUserConfiguration(address user)
+    external
+    view
+    override
+    returns (DataTypes.UserConfigurationMap memory)
+  {
+    return _usersConfig[user];
+  }
+
+/**
+   * @dev Returns if the LendingPool is paused
+   */
+  function paused() external view override returns (bool) {
+    return _paused;
+  }
+
+  /**
+   * @dev Returns the list of the initialized reserves
+   **/
+  function getReservesList() external view override returns (address[] memory) {
+    address[] memory _activeReserves = new address[](_reservesCount);
+
+    for (uint256 i = 0; i < _reservesCount; i++) {
+      _activeReserves[i] = _reservesList[i];
+    }
+    return _activeReserves;
+  }
+
+  /**
+   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
+   **/
+  function getAddressesProvider() external view override returns (ICounterAddressesProvider) {
+    return _addressesProvider;
+  }
+
+  /**
+   * @dev Updates the address of the interest rate strategy contract
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param rateStrategyAddress The address of the interest rate strategy contract
+   **/
+  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
+    external
+    override
+    onlyCounterConfigurator
+  {
+    _reserves[asset].interestRateStrategyAddress = rateStrategyAddress;
+  }
+
+  /**
+   * @dev Sets the configuration bitmap of the reserve as a whole
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param configuration The new configuration bitmap
+   **/
+  function setConfiguration(address asset, uint256 configuration)
+    external
+    override
+    onlyCounterConfigurator
+  {
+    _reserves[asset].configuration.data = configuration;
+  }
+
+  /**
+   * @dev Set the _pause state of a reserve
+   * - Only callable by the LendingPoolConfigurator contract
+   * @param val `true` to pause the reserve, `false` to un-pause it
+   */
+  function setPause(bool val) external override onlyCounterConfigurator {
+    _paused = val;
+    if (_paused) {
+      emit Paused();
+    } else {
+      emit Unpaused();
+    }
   }
 }

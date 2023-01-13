@@ -245,49 +245,32 @@ interface ICounter {
     address onBehalfOf
   ) external returns (uint256);
 
-  // /**
-  //  * @dev Allows a borrower to swap his debt between stable and variable mode, or viceversa
-  //  * @param asset The address of the underlying asset borrowed
-  //  * @param rateMode The rate mode that the user wants to swap to
-  //  **/
-  // function swapBorrowRateMode(address asset, uint256 rateMode) external;
 
-  // /**
-  //  * @dev Rebalances the stable interest rate of a user to the current stable rate defined on the reserve.
-  //  * - Users can be rebalanced if the following conditions are satisfied:
-  //  *     1. Usage ratio is above 95%
-  //  *     2. the current deposit APY is below REBALANCE_UP_THRESHOLD * maxVariableBorrowRate, which means that too much has been
-  //  *        borrowed at a stable rate and depositors are not earning enough
-  //  * @param asset The address of the underlying asset borrowed
-  //  * @param user The address of the user to be rebalanced
-  //  **/
-  // function rebalanceStableBorrowRate(address asset, address user) external;
+  /**
+   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
+   * @param asset The address of the underlying asset deposited
+   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
+   **/
+  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external;
 
-  // /**
-  //  * @dev Allows depositors to enable/disable a specific deposited asset as collateral
-  //  * @param asset The address of the underlying asset deposited
-  //  * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
-  //  **/
-  // function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external;
-
-  // /**
-  //  * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
-  //  * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
-  //  *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
-  //  * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
-  //  * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
-  //  * @param user The address of the borrower getting liquidated
-  //  * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-  //  * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
-  //  * to receive the underlying collateral asset directly
-  //  **/
-  // function liquidationCall(
-  //   address collateralAsset,
-  //   address debtAsset,
-  //   address user,
-  //   uint256 debtToCover,
-  //   bool receiveAToken
-  // ) external;
+  /**
+   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
+   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
+   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param user The address of the borrower getting liquidated
+   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
+   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * to receive the underlying collateral asset directly
+   **/
+  function liquidationCall(
+    address collateralAsset,
+    address debtAsset,
+    address user,
+    uint256 debtToCover,
+    bool receiveAToken
+  ) external;
 
   // /**
   //  * @dev Allows smartcontracts to access the liquidity of the pool within one transaction,
@@ -316,98 +299,67 @@ interface ICounter {
   //   uint16 referralCode
   // ) external;
 
-  // /**
-  //  * @dev Returns the user account data across all the reserves
-  //  * @param user The address of the user
-  //  * @return totalCollateralETH the total collateral in ETH of the user
-  //  * @return totalDebtETH the total debt in ETH of the user
-  //  * @return availableBorrowsETH the borrowing power left of the user
-  //  * @return currentLiquidationThreshold the liquidation threshold of the user
-  //  * @return ltv the loan to value of the user
-  //  * @return healthFactor the current health factor of the user
-  //  **/
-  // function getUserAccountData(address user)
-  //   external
-  //   view
-  //   returns (
-  //     uint256 totalCollateralETH,
-  //     uint256 totalDebtETH,
-  //     uint256 availableBorrowsETH,
-  //     uint256 currentLiquidationThreshold,
-  //     uint256 ltv,
-  //     uint256 healthFactor
-  //   );
+  /**
+   * @dev Returns the user account data across all the reserves
+   * @param user The address of the user
+   * @return totalCollateralETH the total collateral in ETH of the user
+   * @return totalDebtETH the total debt in ETH of the user
+   * @return availableBorrowsETH the borrowing power left of the user
+   * @return currentLiquidationThreshold the liquidation threshold of the user
+   * @return ltv the loan to value of the user
+   * @return healthFactor the current health factor of the user
+   **/
+  function getUserAccountData(address user)
+    external
+    view
+    returns (
+      uint256 totalCollateralETH,
+      uint256 totalDebtETH,
+      uint256 availableBorrowsETH,
+      uint256 currentLiquidationThreshold,
+      uint256 ltv,
+      uint256 healthFactor
+    );
 
-  // function initReserve(
-  //   address reserve,
-  //   address aTokenAddress,
-  //   address stableDebtAddress,
-  //   address variableDebtAddress,
-  //   address interestRateStrategyAddress
-  // ) external;
+  function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
+    external;
 
-  // function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
-  //   external;
+  function setConfiguration(address reserve, uint256 configuration) external;
 
-  // function setConfiguration(address reserve, uint256 configuration) external;
+  /**
+   * @dev Returns the configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The configuration of the reserve
+   **/
+  function getConfiguration(address asset)
+    external
+    view
+    returns (DataTypes.ReserveConfigurationMap memory);
 
-  // /**
-  //  * @dev Returns the configuration of the reserve
-  //  * @param asset The address of the underlying asset of the reserve
-  //  * @return The configuration of the reserve
-  //  **/
-  // function getConfiguration(address asset)
-  //   external
-  //   view
-  //   returns (DataTypes.ReserveConfigurationMap memory);
+  /**
+   * @dev Returns the configuration of the user across all the reserves
+   * @param user The user address
+   * @return The configuration of the user
+   **/
+  function getUserConfiguration(address user)
+    external
+    view
+    returns (DataTypes.UserConfigurationMap memory);
 
-  // /**
-  //  * @dev Returns the configuration of the user across all the reserves
-  //  * @param user The user address
-  //  * @return The configuration of the user
-  //  **/
-  // function getUserConfiguration(address user)
-  //   external
-  //   view
-  //   returns (DataTypes.UserConfigurationMap memory);
+  /**
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @return The state of the reserve
+   **/
+  function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
 
-  // /**
-  //  * @dev Returns the normalized income normalized income of the reserve
-  //  * @param asset The address of the underlying asset of the reserve
-  //  * @return The reserve's normalized income
-  //  */
-  // function getReserveNormalizedIncome(address asset) external view returns (uint256);
+  function getReservesList() external view returns (address[] memory);
 
-  // /**
-  //  * @dev Returns the normalized variable debt per unit of asset
-  //  * @param asset The address of the underlying asset of the reserve
-  //  * @return The reserve normalized variable debt
-  //  */
-  // function getReserveNormalizedVariableDebt(address asset) external view returns (uint256);
+  function getAddressesProvider() external view returns (ICounterAddressesProvider);
 
-  // /**
-  //  * @dev Returns the state and configuration of the reserve
-  //  * @param asset The address of the underlying asset of the reserve
-  //  * @return The state of the reserve
-  //  **/
-  // function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
+  function setPause(bool val) external;
 
-  // function finalizeTransfer(
-  //   address asset,
-  //   address from,
-  //   address to,
-  //   uint256 amount,
-  //   uint256 balanceFromAfter,
-  //   uint256 balanceToBefore
-  // ) external;
-
-  // function getReservesList() external view returns (address[] memory);
-
-  // function getAddressesProvider() external view returns (ICounterAddressesProvider);
-
-  // function setPause(bool val) external;
-
-  // function paused() external view returns (bool);
+  function paused() external view returns (bool);
 }
 
 
