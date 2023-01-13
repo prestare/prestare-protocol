@@ -40,8 +40,6 @@ contract Counter is ICounter, CounterStorage {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  ICounterAddressesProvider public immutable _addressesProvider;
-
   modifier whenNotPaused() {
     _whenNotPaused();
     _;

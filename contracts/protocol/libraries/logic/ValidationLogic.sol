@@ -227,5 +227,56 @@ library ValidationLogic {
     );
   }
 
-  
+    /**
+   * @dev Validates the liquidation action
+   * @param collateralReserve The reserve data of the collateral
+   * @param principalReserve The reserve data of the principal
+   * @param userConfig The user configuration
+   * @param userHealthFactor The user's health factor
+   * @param userVariableDebt Total variable debt balance of the user
+   **/
+  function validateLiquidationCall(
+    DataTypes.ReserveData storage collateralReserve,
+    DataTypes.ReserveData storage principalReserve,
+    DataTypes.UserConfigurationMap storage userConfig,
+    uint256 userHealthFactor,
+    uint256 userVariableDebt
+  ) internal view returns (uint256, string memory) {
+    if (
+      !collateralReserve.configuration.getActive() || !principalReserve.configuration.getActive()
+    ) {
+      return (
+        uint256(Errors.CollateralManagerErrors.NO_ACTIVE_RESERVE),
+        Errors.VL_NO_ACTIVE_RESERVE
+      );
+    }
+
+    if (userHealthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD) {
+      return (
+        uint256(Errors.CollateralManagerErrors.HEALTH_FACTOR_ABOVE_THRESHOLD),
+        Errors.LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD
+      );
+    }
+
+    bool isCollateralEnabled =
+      collateralReserve.configuration.getLiquidationThreshold() > 0 &&
+        userConfig.isUsingAsCollateral(collateralReserve.id);
+
+    //if collateral isn't enabled as collateral by user, it cannot be liquidated
+    if (!isCollateralEnabled) {
+      return (
+        uint256(Errors.CollateralManagerErrors.COLLATERAL_CANNOT_BE_LIQUIDATED),
+        Errors.LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED
+      );
+    }
+
+    if (userVariableDebt == 0) {
+      return (
+        uint256(Errors.CollateralManagerErrors.CURRRENCY_NOT_BORROWED),
+        Errors.LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER
+      );
+    }
+
+    return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
+  }
 }

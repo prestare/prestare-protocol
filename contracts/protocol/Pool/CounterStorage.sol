@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
+import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
+
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
@@ -13,6 +15,8 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  * @dev It defines the storage layout of the Counter contract.
  */
 contract CounterStorage {
+
+  ICounterAddressesProvider public _addressesProvider;
 
   // Map of reserves and their data (underlyingAssetOfReserve => reserveData)
   mapping(address => DataTypes.ReserveData) internal _reserves;
