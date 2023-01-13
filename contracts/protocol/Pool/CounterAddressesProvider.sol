@@ -4,7 +4,7 @@ pragma solidity ^0.8.10;
 import {Ownable} from '../../CRT/openzeppelin/Ownable.sol';
 import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
 
-contract LendingPoolAddressesProvider is Ownable, ICounterAddressesProvider {
+contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
     string private _marketId;
     mapping(bytes32 => address) private _addresses;
 
