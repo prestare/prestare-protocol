@@ -2,6 +2,8 @@
 pragma solidity ^0.8.10;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Address} from '@openzeppelin/contracts/utils/Address.sol';
+
 import {ICounter} from '../../interfaces/ICounter.sol';
 import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
 import {IPriceOracleGetter} from '../../interfaces/IPriceOracleGetter.sol';
@@ -641,6 +643,45 @@ contract Counter is ICounter, CounterStorage {
       emit Paused();
     } else {
       emit Unpaused();
+    }
+  }
+
+    /**
+   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * interest rate strategy
+   * - Only callable by the CounterConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
+   **/
+  function initReserve(
+    address asset,
+    address aTokenAddress,
+    address variableDebtAddress,
+    address interestRateStrategyAddress
+  ) external override onlyCounterConfigurator {
+    require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
+    _reserves[asset].init(
+      aTokenAddress,
+      variableDebtAddress,
+      interestRateStrategyAddress
+    );
+    _addReserveToList(asset);
+  }
+
+  function _addReserveToList(address asset) internal {
+    uint256 reservesCount = _reservesCount;
+
+    require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
+
+    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
+
+    if (!reserveAlreadyAdded) {
+      _reserves[asset].id = uint8(reservesCount);
+      _reservesList[reservesCount] = asset;
+
+      _reservesCount = reservesCount + 1;
     }
   }
 }

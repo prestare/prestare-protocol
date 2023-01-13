@@ -39,6 +39,27 @@ library ReserveLogic {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
+   * @dev Initializes a reserve
+   * @param reserve The reserve object
+   * @param pTokenAddress The address of the overlying atoken contract
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
+   **/
+  function init(
+    DataTypes.ReserveData storage reserve,
+    address pTokenAddress,
+    address variableDebtTokenAddress,
+    address interestRateStrategyAddress
+  ) external {
+    require(reserve.pTokenAddress == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
+
+    reserve.liquidityIndex = uint128(WadRayMath.ray());
+    reserve.variableBorrowIndex = uint128(WadRayMath.ray());
+    reserve.pTokenAddress = pTokenAddress;
+    reserve.variableDebtTokenAddress = variableDebtTokenAddress;
+    reserve.interestRateStrategyAddress = interestRateStrategyAddress;
+  }
+
+  /**
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/

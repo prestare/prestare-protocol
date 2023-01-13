@@ -321,6 +321,13 @@ interface ICounter {
       uint256 healthFactor
     );
 
+  function initReserve(
+    address reserve,
+    address aTokenAddress,
+    address variableDebtAddress,
+    address interestRateStrategyAddress
+  ) external;
+
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
     external;
 
