@@ -14,6 +14,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
 
 import {Errors} from '../libraries/helpers/Errors.sol';
+import {Helpers} from '../libraries/helpers/Helpers.sol';
 import {CRTLogic} from '../libraries/logic/CRTLogic.sol';
 import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
@@ -318,5 +319,103 @@ contract Counter is ICounter, CounterStorage {
       reserve.currentVariableBorrowRate,
       vars.referralCode
     );
+  }
+
+  /**
+   * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
+   * - E.g. User repays 100 USDC, burning 100 variable/stable debt tokens of the `onBehalfOf` address
+   * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param amount The amount to repay
+   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
+   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
+   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
+   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
+   * other borrower whose debt should be removed
+   * @return The final amount repaid
+   **/
+  function repay(
+    address asset,
+    uint256 amount,
+    uint256 rateMode,
+    address onBehalfOf
+  ) external override whenNotPaused returns (uint256) {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    uint256 variableDebt = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
+
+    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
+
+    ValidationLogic.validateRepay(
+      reserve,
+      amount,
+      interestRateMode,
+      onBehalfOf,
+      variableDebt
+    );
+
+    uint256 paybackAmount = variableDebt;
+
+    if (amount < paybackAmount) {
+      paybackAmount = amount;
+    }
+    
+    // CRT 
+    address oracle = _addressesProvider.getPriceOracle();
+    uint256 paybackamountInETH =
+      IPriceOracleGetter(oracle).getAssetPrice(asset) * paybackAmount / (
+        10**reserve.configuration.getDecimals()
+      );
+    
+    DataTypes.UserAccountVars memory userStatVar;
+    (
+      userStatVar.userCollateralBalanceETH,
+      userStatVar.userBorrowBalanceETH,
+      userStatVar.currentLtv,
+      userStatVar.currentLiquidationThreshold,
+      userStatVar.healthFactor
+    ) = GenericLogic.calculateUserAccountData(
+      onBehalfOf,
+      _reserves,
+      _usersConfig[onBehalfOf],
+      _reservesList,
+      _reservesCount,
+      oracle
+    );
+
+    uint unlockCRT = CRTLogic.calculateCRTRepay(
+      msg.sender,
+      reserve,
+      paybackAmount,
+      paybackamountInETH,
+      userStatVar,
+      _crtaddress
+    );
+
+    if (unlockCRT != 0) {
+      ICRT(_crtaddress).unlockCRT(msg.sender, unlockCRT);
+    }
+
+    reserve.updateState();
+
+    IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
+        onBehalfOf,
+        paybackAmount,
+        reserve.variableBorrowIndex
+      );
+
+    address pToken = reserve.pTokenAddress;
+    reserve.updateInterestRates(asset, pToken, paybackAmount, 0);
+
+    if (variableDebt - paybackAmount == 0) {
+      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
+    }
+
+    IERC20(asset).transferFrom(msg.sender, pToken, paybackAmount);
+
+    IPToken(pToken).handleRepayment(msg.sender, paybackAmount);
+
+    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+
+    return paybackAmount;
   }
 }

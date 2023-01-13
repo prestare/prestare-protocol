@@ -43,6 +43,7 @@ library CRTLogic {
         uint256 additionalAmount;
         uint256 crtamount;
     }
+
     function calculateCRTBorrow(
         address userAddress,
         DataTypes.ReserveData storage reserve,
@@ -63,43 +64,32 @@ library CRTLogic {
         return vars.crtamount;
     }
 
-    // function calculateCRTRepay(
-    //     address userAddress,
-    //     DataTypes.ReserveData storage reserve,
-    //     uint256 amount,
-    //     uint256 amountInETH,
-    //     mapping(address => DataTypes.ReserveData) storage reservesData,
-    //     DataTypes.UserConfigurationMap storage userConfig,
-    //     mapping(uint256 => address) storage reserves,
-    //     uint256 reservesCount,
-    //     address oracle,
-    //     address crtaddress
-    // ) external returns (uint) {
-    //     (
-    //         uint userCollateralBalanceETH,
-    //         uint userBorrowBalanceETH,
-    //         uint currentLtv,
-    //         ,
-    //     ) = GenericLogic.calculateUserAccountData(
-    //         userAddress,
-    //         reservesData,
-    //         userConfig,
-    //         reserves,
-    //         reservesCount,
-    //         oracle
-    //     );
-        
-    //     uint newdebt = userBorrowBalanceETH - amountInETH;
-    //     uint newltv = newdebt / userCollateralBalanceETH;
-    //     uint cf = reserve.configuration.getReserveFactor();
-
-    //     uint oldcrtvalue = calculateCRTValue(currentLtv, cf);
-    //     uint newcrtvalue = calculateCRTValue(newltv, cf);
-    //     uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
-    //     uint idleCRTValue = userlockBalance * newcrtvalue - (oldcrtvalue);
-    //     // todo it need more validation? like check the user health factor?
-    //     return idleCRTValue;
+    // struct CrtRepayVars {
+    //     uint256 cf;
+    //     uint256 collateralNotBeBorrowed;
+    //     uint256 crtltv;
+    //     uint256 additionalAmount;
+    //     uint256 crtamount;
     // }
+    function calculateCRTRepay(
+        address userAddress,
+        DataTypes.ReserveData storage reserve,
+        uint256 amount,
+        uint256 amountInETH,
+        DataTypes.UserAccountVars memory userStateVars,
+        address crtaddress
+    ) external returns (uint) {
+        uint newdebt = userStateVars.userBorrowBalanceETH - amountInETH;
+        uint newltv = newdebt / userStateVars.userCollateralBalanceETH;
+        uint cf = reserve.configuration.getReserveFactor();
+
+        uint oldcrtvalue = calculateCRTValue(userStateVars.currentLtv, cf);
+        uint newcrtvalue = calculateCRTValue(newltv, cf);
+        uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
+        uint idleCRTValue = userlockBalance * newcrtvalue - (oldcrtvalue);
+        // todo it need more validation? like check the user health factor?
+        return idleCRTValue;
+    }
 
     function calculateCRTDecay(uint256 ltv, uint256 cf, uint256 additional_amount) internal returns (uint) {
 
