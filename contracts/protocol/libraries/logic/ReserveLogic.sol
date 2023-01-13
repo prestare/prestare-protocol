@@ -179,7 +179,7 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      IPToken(reserve.aTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      IPToken(reserve.pTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
     }
   }
   

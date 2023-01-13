@@ -19,7 +19,7 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 /**
  * @title Prestare Counter contract
- * @dev Main point of interaction with an Prestare protocol's market
+ * @dev Main point of User interaction in Prestare protocol
  * - Users can:
  *   # Deposit
  *   # Withdraw
@@ -27,9 +27,6 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
  *   # Repay
  *   # Liquidate positions
  *   # Execute Flash Loans
- * - To be covered by a proxy contract, owned by the CounterAddressesProvider of the specific market
- * - All admin functions are callable by the CounterConfigurator contract defined also in the
- *   CounterAddressesProvider
  * @author Prestare
  **/
 
@@ -102,7 +99,7 @@ contract Counter is ICounter, CounterStorage {
 
     ValidationLogic.validateDeposit(reserve, amount);
 
-    address pToken = reserve.aTokenAddress;
+    address pToken = reserve.pTokenAddress;
 
     reserve.updateState();
     reserve.updateInterestRates(asset, pToken, amount, 0);
@@ -117,6 +114,58 @@ contract Counter is ICounter, CounterStorage {
     }
 
     emit Deposit(asset, msg.sender, onBehalfOf, amount, referralCode);
+  }
+
+  /**
+   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent pTokens owned
+   * @param asset The address of the underlying asset to withdraw
+   * @param amount The underlying amount to be withdrawn
+   *   - If the value is type(uint256).max which mean withdraw the whole pToken balance
+   * @param to Address that will receive the underlying
+   * @return The final amount withdrawn
+   **/
+  function withdraw(
+    address asset,
+    uint256 amount,
+    address to
+  ) external override whenNotPaused returns (uint256) {
+    DataTypes.ReserveData storage reserve = _reserves[asset];
+
+    address pToken = reserve.pTokenAddress;
+
+    uint256 userBalance = IPToken(pToken).balanceOf(msg.sender);
+
+    uint256 amountToWithdraw = amount;
+
+    if (amount == type(uint256).max) {
+      amountToWithdraw = userBalance;
+    }
+
+    ValidationLogic.validateWithdraw(
+      asset,
+      amountToWithdraw,
+      userBalance,
+      _reserves,
+      _usersConfig[msg.sender],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    reserve.updateState();
+
+    reserve.updateInterestRates(asset, pToken, 0, amountToWithdraw);
+
+    if (amountToWithdraw == userBalance) {
+      _usersConfig[msg.sender].setUsingAsCollateral(reserve.id, false);
+      emit ReserveUsedAsCollateralDisabled(asset, msg.sender);
+    }
+
+    IPToken(pToken).burn(msg.sender, to, amountToWithdraw, reserve.liquidityIndex);
+
+    emit Withdraw(asset, msg.sender, to, amountToWithdraw);
+
+    return amountToWithdraw;
   }
 
 }
