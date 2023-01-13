@@ -4,7 +4,16 @@ import '@typechain/hardhat';
 import '@typechain/ethers-v5';
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.17",
+  solidity: {
+    version:"0.8.17",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 100000,
+      },
+    }
+  }
+  
 };
 
 export default config;

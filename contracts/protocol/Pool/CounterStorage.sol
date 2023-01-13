@@ -32,6 +32,6 @@ contract CounterStorage {
 
   uint256 internal _maxNumberOfReserves;
 
-  uint256 internal _crtaddress;
+  address internal _crtaddress;
 
 }
