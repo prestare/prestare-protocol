@@ -39,6 +39,61 @@ library ReserveLogic {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   /**
+   * @dev Returns the ongoing normalized income for the reserve
+   * A value of 1e27 means there is no income. As time passes, the income is accrued
+   * A value of 2*1e27 means for each unit of asset one unit of income has been accrued
+   * @param reserve The reserve object
+   * @return the normalized income. expressed in ray
+   **/
+  function getNormalizedIncome(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
+    uint40 timestamp = reserve.lastUpdateTimestamp;
+
+    //solium-disable-next-line
+    if (timestamp == uint40(block.timestamp)) {
+      //if the index was updated in the same block, no need to perform any calculation
+      return reserve.liquidityIndex;
+    }
+
+    uint256 cumulated =
+      MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
+        reserve.liquidityIndex
+      );
+
+    return cumulated;
+  }
+
+  /**
+   * @dev Returns the ongoing normalized variable debt for the reserve
+   * A value of 1e27 means there is no debt. As time passes, the income is accrued
+   * A value of 2*1e27 means that for each unit of debt, one unit worth of interest has been accumulated
+   * @param reserve The reserve object
+   * @return The normalized variable debt. expressed in ray
+   **/
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve)
+    internal
+    view
+    returns (uint256)
+  {
+    uint40 timestamp = reserve.lastUpdateTimestamp;
+
+    //solium-disable-next-line
+    if (timestamp == uint40(block.timestamp)) {
+      //if the index was updated in the same block, no need to perform any calculation
+      return reserve.variableBorrowIndex;
+    }
+
+    uint256 cumulated =
+      MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp).rayMul(
+        reserve.variableBorrowIndex
+      );
+
+    return cumulated;
+  }
+  /**
    * @dev Initializes a reserve
    * @param reserve The reserve object
    * @param pTokenAddress The address of the overlying atoken contract

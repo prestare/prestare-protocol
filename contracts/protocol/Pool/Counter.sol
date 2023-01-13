@@ -578,7 +578,36 @@ contract Counter is ICounter, CounterStorage {
     return _usersConfig[user];
   }
 
-/**
+  /**
+   * @dev Returns the normalized income per unit of asset
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve's normalized income
+   */
+  function getReserveNormalizedIncome(address asset)
+    external
+    view
+    virtual
+    override
+    returns (uint256)
+  {
+    return _reserves[asset].getNormalizedIncome();
+  }
+
+  /**
+   * @dev Returns the normalized variable debt per unit of asset
+   * @param asset The address of the underlying asset of the reserve
+   * @return The reserve normalized variable debt
+   */
+  function getReserveNormalizedVariableDebt(address asset)
+    external
+    view
+    override
+    returns (uint256)
+  {
+    return _reserves[asset].getNormalizedDebt();
+  }
+
+  /**
    * @dev Returns if the LendingPool is paused
    */
   function paused() external view override returns (bool) {
@@ -643,6 +672,52 @@ contract Counter is ICounter, CounterStorage {
       emit Paused();
     } else {
       emit Unpaused();
+    }
+  }
+
+    /**
+   * @dev Validates and finalizes an aToken transfer
+   * - Only callable by the overlying aToken of the `asset`
+   * @param asset The address of the underlying asset of the aToken
+   * @param from The user from which the aTokens are transferred
+   * @param to The user receiving the aTokens
+   * @param amount The amount being transferred/withdrawn
+   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
+   * @param balanceToBefore The aToken balance of the `to` user before the transfer
+   */
+  function finalizeTransfer(
+    address asset,
+    address from,
+    address to,
+    uint256 amount,
+    uint256 balanceFromBefore,
+    uint256 balanceToBefore
+  ) external override whenNotPaused {
+    require(msg.sender == _reserves[asset].pTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
+
+    ValidationLogic.validateTransfer(
+      from,
+      _reserves,
+      _usersConfig[from],
+      _reservesList,
+      _reservesCount,
+      _addressesProvider.getPriceOracle()
+    );
+
+    uint256 reserveId = _reserves[asset].id;
+
+    if (from != to) {
+      if (balanceFromBefore - amount == 0) {
+        DataTypes.UserConfigurationMap storage fromConfig = _usersConfig[from];
+        fromConfig.setUsingAsCollateral(reserveId, false);
+        emit ReserveUsedAsCollateralDisabled(asset, from);
+      }
+
+      if (balanceToBefore == 0 && amount != 0) {
+        DataTypes.UserConfigurationMap storage toConfig = _usersConfig[to];
+        toConfig.setUsingAsCollateral(reserveId, true);
+        emit ReserveUsedAsCollateralEnabled(asset, to);
+      }
     }
   }
 

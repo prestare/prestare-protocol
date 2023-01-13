@@ -279,4 +279,36 @@ library ValidationLogic {
 
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);
   }
+
+  /**
+   * @dev Validates an aToken transfer
+   * @param from The user from which the aTokens are being transferred
+   * @param reservesData The state of all the reserves
+   * @param userConfig The state of the user for the specific reserve
+   * @param reserves The addresses of all the active reserves
+   * @param oracle The price oracle
+   */
+  function validateTransfer(
+    address from,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    DataTypes.UserConfigurationMap storage userConfig,
+    mapping(uint256 => address) storage reserves,
+    uint256 reservesCount,
+    address oracle
+  ) internal view {
+    (, , , , uint256 healthFactor) =
+      GenericLogic.calculateUserAccountData(
+        from,
+        reservesData,
+        userConfig,
+        reserves,
+        reservesCount,
+        oracle
+      );
+
+    require(
+      healthFactor >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
+      Errors.VL_TRANSFER_NOT_ALLOWED
+    );
+  }
 }
