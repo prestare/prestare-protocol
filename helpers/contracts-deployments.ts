@@ -1,65 +1,48 @@
-import { Contract, Signer} from 'ethers';
+import { Contract, Signer, ethers} from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { ContractName } from './types';
+import { ContractName, TokenContractName } from './types';
 import { getDb } from './utils';
+import { deployAndSave, registerContractInJsonDb } from './contracts-helpers';
+import { Prestare } from './types';
+import { getReservesConfigByPool } from './contracts-helpers';
+import {MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
+
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
-    const currentNetwork = hre.network.name;
-    const FORK = process.env.FORK;
-    if (FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
-      console.log(`*** ${contractId} ***\n`);
-      console.log(`Network: ${currentNetwork}`);
-      console.log(`tx: ${contractInstance.deployTransaction.hash}`);
-      console.log(`contract address: ${contractInstance.address}`);
-      console.log(`deployer address: ${contractInstance.deployTransaction.from}`);
-      console.log(`gas price: ${contractInstance.deployTransaction.gasPrice}`);
-      console.log(`gas used: ${contractInstance.deployTransaction.gasLimit}`);
-      console.log(`\n******`);
-      console.log();
-    }
-
-    await getDb()
-    .set(`${contractId}.${currentNetwork}`, {
-      address: contractInstance.address,
-      deployer: contractInstance.deployTransaction.from,
-    })
-    .write();
-};
 
 export const deployCounterAddressesProvider = async (
     marketId: string, 
     admin: Signer
     ): Promise<Contract> => {
-    const CounterAddressesProvider = await hre.ethers.getContractFactory('CounterAddressesProvider');
-    const contract = await CounterAddressesProvider.connect(admin).deploy(marketId);
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.CounterAddressesProvider, contract);
-    return contract
+    const ContractFac = await hre.ethers.getContractFactory('CounterAddressesProvider');
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(marketId),
+      ContractName.CounterAddressesProvider
+    )
 }
 
 export const deployReserveLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("ReserveLogic");
-    const contract = await ContractFac.connect(admin).deploy();
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.ReserveLogic, contract);
-    return contract;
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      ContractName.ReserveLogic
+    )
 };
 
 export const deployGenericLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("GenericLogic");
-    const contract = await ContractFac.connect(admin).deploy();
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.GenericLogic, contract);
-    return contract;
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      ContractName.GenericLogic
+    )
 }
 
 export const deployCRTLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("CRTLogic");
-    const contract = await ContractFac.connect(admin).deploy();
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.CRTLogic, contract);
-    return contract;
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      ContractName.CRTLogic
+    )
 }
 
 export const deployValidationLogic =async (admin: Signer, CRTLogic: Contract, genericLogic: Contract) => {
@@ -69,10 +52,10 @@ export const deployValidationLogic =async (admin: Signer, CRTLogic: Contract, ge
         GenericLogic: genericLogic.address,
       },
     });
-    const contract = await ContractFac.connect(admin).deploy();
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.ValidationLogic, contract);
-    return contract;
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      ContractName.ValidationLogic
+    )
 }
 
 export const deployPrestareLib = async (admin: Signer) => {
@@ -97,16 +80,45 @@ export const deployCounter =async (admin: Signer) => {
       ValidationLogic: libraries.validationLogic,
     },
   });
-  const contract = await ContractFac.connect(admin).deploy();
-  await contract.deployed();
-  await registerContractInJsonDb(ContractName.Counter, contract);
-  return contract;
+  return deployAndSave(
+    await ContractFac.connect(admin).deploy(),
+    ContractName.Counter
+  )
 }
 
 export const deployCounterConfigurator =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("CounterConfigurator");
-    const contract = await ContractFac.connect(admin).deploy();
-    await contract.deployed();
-    await registerContractInJsonDb(ContractName.CounterConfigurator, contract);
-    return contract;
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      ContractName.CounterConfigurator
+    )
+}
+
+export const deployAllMockTokens = async (admin: Signer) => {
+    const tokens: { [symbol: string]: Contract | MintableERC20} = {};
+
+    const protocolConfig = getReservesConfigByPool(Prestare.MainnetFork);
+
+    for (const tokenSymbol of Object.keys(TokenContractName)) {
+        let decimals = '18';
+        let configData = (<any>protocolConfig)[tokenSymbol];
+
+        tokens[tokenSymbol] = await deployMintableERC20(
+          [tokenSymbol, tokenSymbol, configData ? configData.reserveDecimals : decimals],
+          admin
+        )
+        await registerContractInJsonDb(tokenSymbol.toUpperCase(), tokens[tokenSymbol]);
+    }
+    return tokens
+}
+
+export const deployMintableERC20 =async (
+  args:[string, string, string],
+  admin: Signer
+): Promise<Contract> => {
+    const ContractFac = await hre.ethers.getContractFactory("MintableERC20");
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(...args),
+      ContractName.MintableERC20
+    )
 }
