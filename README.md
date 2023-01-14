@@ -1,13 +1,12 @@
-# Sample Hardhat Project
-
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
-
-Try running some of the following tasks:
-
+# Prestare
+复制主链状态，开启自己的私链节点
 ```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
 npx hardhat node
-npx hardhat run scripts/deploy.ts
 ```
+
+当开启自己的私链节点后，可以部署合约
+```
+npx hardhat run .\scripts\deploy.ts --network localhost
+```
+
+
