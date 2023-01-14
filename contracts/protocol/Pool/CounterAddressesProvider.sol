@@ -55,9 +55,13 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
         return _addresses[id];
     }
 
+    function setCounter(address counter) external override onlyOwner {
+        _addresses[COUNTER] = counter;
+        emit CounterUpdated(counter);
+    }
     /**
-    * @dev Returns the address of the LendingPool proxy
-    * @return The LendingPool proxy address
+    * @dev Returns the address of the Counter
+    * @return The Counter proxy address
     **/
     function getCounter() external view override returns (address) {
         return getAddress(COUNTER);

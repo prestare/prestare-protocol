@@ -67,9 +67,9 @@ contract Counter is ICounter, CounterStorage {
    * @dev Constructor.
    * @param provider The address of the PoolAddressesProvider contract
    */
-  constructor(ICounterAddressesProvider provider) {
-    _addressesProvider = provider;
-  }
+  // constructor(ICounterAddressesProvider provider) {
+  //   _addressesProvider = provider;
+  // }
 
   /**
    * @dev Function is invoked by the proxy contract when the Counter contract is added to the
@@ -79,6 +79,7 @@ contract Counter is ICounter, CounterStorage {
    * @param provider The address of the CounterAddressesProvider
    **/
   function initialize(ICounterAddressesProvider provider) public {
+    _addressesProvider = provider;
     _flashLoanPremiumTotal = 9;
     _maxNumberOfReserves = 128;
   }

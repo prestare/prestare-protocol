@@ -33,6 +33,8 @@ interface ICounterAddressesProvider {
 
   function getCounter() external view returns (address);
 
+  function setCounter(address Counter) external;
+
   // function setCounterImpl(address pool) external;
 
   function getCounterConfigurator() external view returns (address);

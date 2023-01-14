@@ -37,3 +37,68 @@ export const deployCounterAddressesProvider = async (
     await registerContractInJsonDb(eContractid.CounterAddressesProvider, contract);
     return contract
 }
+
+export const deployReserveLogic =async (admin: Signer) => {
+    const ContractFac = await hre.ethers.getContractFactory("ReserveLogic");
+    const contract = await ContractFac.connect(admin).deploy();
+    await contract.deployed();
+    await registerContractInJsonDb(eContractid.ReserveLogic, contract);
+    return contract;
+};
+
+export const deployGenericLogic =async (admin: Signer) => {
+    const ContractFac = await hre.ethers.getContractFactory("GenericLogic");
+    const contract = await ContractFac.connect(admin).deploy();
+    await contract.deployed();
+    await registerContractInJsonDb(eContractid.GenericLogic, contract);
+    return contract;
+}
+
+export const deployCRTLogic =async (admin: Signer) => {
+    const ContractFac = await hre.ethers.getContractFactory("CRTLogic");
+    const contract = await ContractFac.connect(admin).deploy();
+    await contract.deployed();
+    await registerContractInJsonDb(eContractid.CRTLogic, contract);
+    return contract;
+}
+
+export const deployValidationLogic =async (admin: Signer, CRTLogic: Contract, genericLogic: Contract) => {
+    const ContractFac = await hre.ethers.getContractFactory("ValidationLogic", {
+      libraries:{
+        CRTLogic: CRTLogic.address,
+        GenericLogic: genericLogic.address,
+      },
+    });
+    const contract = await ContractFac.connect(admin).deploy();
+    await contract.deployed();
+    await registerContractInJsonDb(eContractid.ValidationLogic, contract);
+    return contract;
+}
+
+export const deployPrestareLib = async (admin: Signer) => {
+  const reserveLogic = await deployReserveLogic(admin);
+  const genericLogic = await deployGenericLogic(admin);
+  const CRTLogic = await deployCRTLogic(admin);
+  const validationLogic = await deployValidationLogic(admin, CRTLogic, genericLogic);
+  return {
+    "reserveLogic": reserveLogic.address,
+    "genericLogic": genericLogic.address,
+    "CRTLogic": CRTLogic.address,
+    "validationLogic": validationLogic.address,
+  }
+}
+
+export const deployCounter =async (admin: Signer) => {
+  const libraries = await deployPrestareLib(admin);
+  const ContractFac = await hre.ethers.getContractFactory("Counter", {
+    libraries: {
+      ReserveLogic: libraries.reserveLogic,
+      CRTLogic: libraries.CRTLogic,
+      ValidationLogic: libraries.validationLogic,
+    },
+  });
+  const contract = await ContractFac.connect(admin).deploy();
+  await contract.deployed();
+  await registerContractInJsonDb(eContractid.Counter, contract);
+  return contract;
+}

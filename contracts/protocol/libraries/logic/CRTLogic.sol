@@ -3,7 +3,6 @@ pragma solidity ^0.8.10;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {ReserveLogic} from './ReserveLogic.sol';
-import {GenericLogic} from './GenericLogic.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
