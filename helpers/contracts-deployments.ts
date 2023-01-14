@@ -112,7 +112,7 @@ export const deployAllMockTokens = async (admin: Signer) => {
     return tokens
 }
 
-export const deployMintableERC20 =async (
+export const deployMintableERC20 = async (
   args:[string, string, string],
   admin: Signer
 ): Promise<Contract> => {
@@ -121,4 +121,46 @@ export const deployMintableERC20 =async (
       await ContractFac.connect(admin).deploy(...args),
       ContractName.MintableERC20
     )
+}
+
+export const deployPriceOracle = async (admin:Signer) => {
+  const ContractFac = await hre.ethers.getContractFactory("PriceOracle");
+  return deployAndSave(
+    await ContractFac.connect(admin).deploy(),
+    ContractName.PriceOracle
+  )
+}
+
+export const deployMockAggregator = async (price: string) => {
+  const ContractFac = await hre.ethers.getContractFactory("MockAggregator");
+  return deployAndSave(
+    await ContractFac.deploy(price),
+    ContractName.MockAggregator
+  )
+};
+
+export const deployAllMockAggregators = async (
+  initialPrices: { [symbol: string]: string}
+) => {
+  const aggregators: { [tokenSymbol: string]: string } = {};
+  for (const tokenContractName of Object.keys(initialPrices)) {
+    if (tokenContractName !== 'ETH') {
+      const priceIndex = Object.keys(initialPrices).findIndex(
+        (value) => value === tokenContractName
+      );
+      const [, price] = (Object.entries(initialPrices) as [string, string][])[priceIndex];
+      aggregators[tokenContractName] = (await deployMockAggregator(price)).address;
+    }
+  }
+  return aggregators;
+};
+
+export const deployPrestareOracle = async (
+  args: [string[], string[], string, string, string],
+) => {
+  const ContractFac = await hre.ethers.getContractFactory("PrestareOracle");
+  return deployAndSave(
+    await ContractFac.deploy(...args),
+    ContractName.PrestareOracle
+  )
 }

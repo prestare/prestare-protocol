@@ -1,6 +1,6 @@
 import { MainnetFork } from "../markets/mainnet";
 import { Contract, ethers, Signer } from "ethers";
-import { Prestare } from "./types";
+import { ContractName, Prestare, TokenContractName } from "./types";
 import { getDb } from './utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 
@@ -43,4 +43,25 @@ export const deployAndSave = async (
     await contract.deployed();
     await registerContractInJsonDb(contractName, contract);
     return contract;
-  }
+}
+
+export const getAllMockedTokens = async () => {
+    const db = getDb();
+    const tokens: any = await Object.keys(TokenContractName).reduce(
+      async (acc, tokenSymbol) => {
+        const accumulator: any = await acc;
+        const address = db.get(`${tokenSymbol.toUpperCase()}.${hre.network.name}`).value().address;
+        accumulator[tokenSymbol] = await getMintableERC20(address);
+        return Promise.resolve(acc);
+      },
+      Promise.resolve({})
+    );
+    return tokens;
+};
+
+export const getMintableERC20 = async (address: string) =>
+  await (await hre.ethers.getContractFactory("MintableERC20")).attach(
+    address || (
+        await getDb().get(`${ContractName.MintableERC20}.${hre.network.name}`).value()
+      ).address,
+);

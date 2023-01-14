@@ -9,7 +9,7 @@ import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
 import {IChainlinkAggregator} from '../interfaces/IChainlinkAggregator.sol';
 
 /// @title Chainlink Oracle
-contract ChainlinkOracle is IPriceOracleGetter, Ownable {
+contract PrestareOracle is IPriceOracleGetter, Ownable {
   using SafeERC20 for IERC20;
 
   event BaseCurrencySet(address indexed baseCurrency, uint256 baseCurrencyUnit);
