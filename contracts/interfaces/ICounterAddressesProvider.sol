@@ -35,11 +35,9 @@ interface ICounterAddressesProvider {
 
   function setCounter(address Counter) external;
 
-  // function setCounterImpl(address pool) external;
-
   function getCounterConfigurator() external view returns (address);
 
-  // function setCounterConfiguratorImpl(address configurator) external;
+  function setCounterConfigurator(address configurator) external;
 
   function getCounterCollateralManager() external view returns (address);
 

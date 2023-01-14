@@ -75,6 +75,12 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
         return getAddress(COUNTER_CONFIGURATOR);
     }
 
+    function setCounterConfigurator(address configurator) external override onlyOwner {
+        _addresses[COUNTER_CONFIGURATOR] = configurator;
+        emit CounterConfiguratorUpdated(configurator);
+    }
+
+
     /**
     * @dev Returns the address of the LendingPoolCollateralManager. Since the manager is used
     * through delegateCall within the LendingPool contract, the proxy contract pattern does not work properly hence

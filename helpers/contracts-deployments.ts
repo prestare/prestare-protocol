@@ -1,6 +1,6 @@
 import { Contract, Signer} from 'ethers';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import { eContractid } from './types';
+import { ContractName } from './types';
 import { getDb } from './utils';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -34,7 +34,7 @@ export const deployCounterAddressesProvider = async (
     const CounterAddressesProvider = await hre.ethers.getContractFactory('CounterAddressesProvider');
     const contract = await CounterAddressesProvider.connect(admin).deploy(marketId);
     await contract.deployed();
-    await registerContractInJsonDb(eContractid.CounterAddressesProvider, contract);
+    await registerContractInJsonDb(ContractName.CounterAddressesProvider, contract);
     return contract
 }
 
@@ -42,7 +42,7 @@ export const deployReserveLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("ReserveLogic");
     const contract = await ContractFac.connect(admin).deploy();
     await contract.deployed();
-    await registerContractInJsonDb(eContractid.ReserveLogic, contract);
+    await registerContractInJsonDb(ContractName.ReserveLogic, contract);
     return contract;
 };
 
@@ -50,7 +50,7 @@ export const deployGenericLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("GenericLogic");
     const contract = await ContractFac.connect(admin).deploy();
     await contract.deployed();
-    await registerContractInJsonDb(eContractid.GenericLogic, contract);
+    await registerContractInJsonDb(ContractName.GenericLogic, contract);
     return contract;
 }
 
@@ -58,7 +58,7 @@ export const deployCRTLogic =async (admin: Signer) => {
     const ContractFac = await hre.ethers.getContractFactory("CRTLogic");
     const contract = await ContractFac.connect(admin).deploy();
     await contract.deployed();
-    await registerContractInJsonDb(eContractid.CRTLogic, contract);
+    await registerContractInJsonDb(ContractName.CRTLogic, contract);
     return contract;
 }
 
@@ -71,7 +71,7 @@ export const deployValidationLogic =async (admin: Signer, CRTLogic: Contract, ge
     });
     const contract = await ContractFac.connect(admin).deploy();
     await contract.deployed();
-    await registerContractInJsonDb(eContractid.ValidationLogic, contract);
+    await registerContractInJsonDb(ContractName.ValidationLogic, contract);
     return contract;
 }
 
@@ -99,6 +99,14 @@ export const deployCounter =async (admin: Signer) => {
   });
   const contract = await ContractFac.connect(admin).deploy();
   await contract.deployed();
-  await registerContractInJsonDb(eContractid.Counter, contract);
+  await registerContractInJsonDb(ContractName.Counter, contract);
   return contract;
+}
+
+export const deployCounterConfigurator =async (admin: Signer) => {
+    const ContractFac = await hre.ethers.getContractFactory("CounterConfigurator");
+    const contract = await ContractFac.connect(admin).deploy();
+    await contract.deployed();
+    await registerContractInJsonDb(ContractName.CounterConfigurator, contract);
+    return contract;
 }
