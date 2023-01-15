@@ -1,10 +1,9 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 import {IScaledBalanceToken} from './IScaledBalanceToken.sol';
 /**
  * @title IVariableDebtToken
- * @author Aave
  * @notice Defines the basic interface for a variable debt token.
  **/
 interface IVariableDebtToken is IScaledBalanceToken {

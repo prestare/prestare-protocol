@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 
@@ -11,7 +11,7 @@ interface ICounterCollateralManager {
    * @param debtToCover The total amount liquidated
    * @param liquidatedCollateralAmount The amount of collateral being liquidated
    * @param liquidator The address of the liquidator
-   * @param receiveAToken true if the liquidator wants to receive aTokens, false otherwise
+   * @param receivepToken true if the liquidator wants to receive pTokens, false otherwise
    **/
   event LiquidationCall(
     address indexed collateral,
@@ -20,7 +20,7 @@ interface ICounterCollateralManager {
     uint256 debtToCover,
     uint256 liquidatedCollateralAmount,
     address liquidator,
-    bool receiveAToken
+    bool receivepToken
   );
 
   /**
@@ -43,7 +43,7 @@ interface ICounterCollateralManager {
    * @param principal The address of the principal reserve
    * @param user The address of the borrower
    * @param debtToCover The amount of principal that the liquidator wants to repay
-   * @param receiveAToken true if the liquidators wants to receive the aTokens, false if
+   * @param receivepToken true if the liquidators wants to receive the pTokens, false if
    * he wants to receive the underlying asset directly
    **/
   function liquidationCall(
@@ -51,6 +51,6 @@ interface ICounterCollateralManager {
     address principal,
     address user,
     uint256 debtToCover,
-    bool receiveAToken
+    bool receivepToken
   ) external returns (uint256, string memory);
 }

@@ -1,23 +1,9 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 /**
  * @title Errors library
- * @author Aave
- * @notice Defines the error messages emitted by the different contracts of the Aave protocol
- * @dev Error messages prefix glossary:
- *  - VL = ValidationLogic
- *  - MATH = Math libraries
- *  - CT = Common errors between tokens (AToken, VariableDebtToken and StableDebtToken)
- *  - AT = AToken
- *  - SDT = StableDebtToken
- *  - VDT = VariableDebtToken
- *  - LP = LendingPool
- *  - LPAPR = LendingPoolAddressesProviderRegistry
- *  - LPC = LendingPoolConfiguration
- *  - RL = ReserveLogic
- *  - LPCM = LendingPoolCollateralManager
- *  - P = Pausable
+ * @notice Defines the error messages emitted by the different contracts of the protocol
  */
 library Errors {
   //common errors
@@ -51,14 +37,14 @@ library Errors {
   string public constant LP_NOT_ENOUGH_LIQUIDITY_TO_BORROW = '24'; // 'There is not enough liquidity available to borrow'
   string public constant LP_REQUESTED_AMOUNT_TOO_SMALL = '25'; // 'The requested amount is too small for a FlashLoan.'
   string public constant LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE = '26'; // 'The actual balance of the protocol is inconsistent'
-  string public constant LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR = '27'; // 'The caller of the function is not the lending pool configurator'
+  string public constant LP_CALLER_NOT_Counter_CONFIGURATOR = '27'; // 'The caller of the function is not the Counter configurator'
   string public constant LP_INCONSISTENT_FLASHLOAN_PARAMS = '28';
-  string public constant CT_CALLER_MUST_BE_LENDING_POOL = '29'; // 'The caller of this function must be a lending pool'
+  string public constant CT_CALLER_MUST_BE_Counter = '29'; // 'The caller of this function must be a Counter'
   string public constant CT_CANNOT_GIVE_ALLOWANCE_TO_HIMSELF = '30'; // 'User cannot give allowance to himself'
   string public constant CT_TRANSFER_AMOUNT_NOT_GT_0 = '31'; // 'Transferred amount needs to be greater than zero'
   string public constant RL_RESERVE_ALREADY_INITIALIZED = '32'; // 'Reserve has already been initialized'
   string public constant LPC_RESERVE_LIQUIDITY_NOT_0 = '34'; // 'The liquidity of the reserve needs to be 0'
-  string public constant LPC_INVALID_ATOKEN_POOL_ADDRESS = '35'; // 'The liquidity of the reserve needs to be 0'
+  string public constant LPC_INVALID_pToken_POOL_ADDRESS = '35'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS = '36'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS = '37'; // 'The liquidity of the reserve needs to be 0'
   string public constant LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS = '38'; // 'The liquidity of the reserve needs to be 0'
@@ -87,7 +73,7 @@ library Errors {
   string public constant LP_FAILED_COLLATERAL_SWAP = '60';
   string public constant LP_INVALID_EQUAL_ASSETS_TO_SWAP = '61';
   string public constant LP_REENTRANCY_NOT_ALLOWED = '62';
-  string public constant LP_CALLER_MUST_BE_AN_ATOKEN = '63';
+  string public constant LP_CALLER_MUST_BE_AN_pToken = '63';
   string public constant LP_IS_PAUSED = '64'; // 'Pool is paused'
   string public constant LP_NO_MORE_RESERVES_ALLOWED = '65';
   string public constant LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN = '66';

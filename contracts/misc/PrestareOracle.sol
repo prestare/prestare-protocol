@@ -42,7 +42,7 @@ contract PrestareOracle is IPriceOracleGetter, Ownable {
     emit BaseCurrencySet(baseCurrency, baseCurrencyUnit);
   }
 
-  /// @notice External function called by the Aave governance to set or replace sources of assets
+  /// @notice External function called by the Comunity to set or replace sources of assets
   /// @param assets The addresses of the assets
   /// @param sources The address of the source of each asset
   function setAssetSources(address[] calldata assets, address[] calldata sources)
@@ -53,7 +53,7 @@ contract PrestareOracle is IPriceOracleGetter, Ownable {
   }
 
   /// @notice Sets the fallbackOracle
-  /// - Callable only by the Aave governance
+  /// - Callable only by the Comunity
   /// @param fallbackOracle The address of the fallbackOracle
   function setFallbackOracle(address fallbackOracle) external onlyOwner {
     _setFallbackOracle(fallbackOracle);

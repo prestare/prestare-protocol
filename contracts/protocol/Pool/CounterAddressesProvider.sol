@@ -29,7 +29,7 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
     }
 
     /**
-     * @dev Allows to set the market which this LendingPoolAddressesProvider represents
+     * @dev Allows to set the market which this CounterAddressesProvider represents
      * @param marketId The market id
      */
     function setMarketId(string memory marketId) external override onlyOwner {
@@ -68,8 +68,8 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
     }
 
     /**
-    * @dev Returns the address of the LendingPoolConfigurator proxy
-    * @return The LendingPoolConfigurator proxy address
+    * @dev Returns the address of the CounterConfigurator proxy
+    * @return The CounterConfigurator proxy address
     **/
     function getCounterConfigurator() external view override returns (address) {
         return getAddress(COUNTER_CONFIGURATOR);
@@ -82,10 +82,10 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
 
 
     /**
-    * @dev Returns the address of the LendingPoolCollateralManager. Since the manager is used
-    * through delegateCall within the LendingPool contract, the proxy contract pattern does not work properly hence
+    * @dev Returns the address of the CounterCollateralManager. Since the manager is used
+    * through delegateCall within the Counter contract, the proxy contract pattern does not work properly hence
     * the addresses are changed directly
-    * @return The address of the LendingPoolCollateralManager
+    * @return The address of the CounterCollateralManager
     **/
 
     function getCounterCollateralManager() external view override returns (address) {
@@ -93,8 +93,8 @@ contract CounterAddressesProvider is Ownable, ICounterAddressesProvider {
     }
 
     /**
-    * @dev Updates the address of the LendingPoolCollateralManager
-    * @param manager The new LendingPoolCollateralManager address
+    * @dev Updates the address of the CounterCollateralManager
+    * @param manager The new CounterCollateralManager address
     **/
     function setCounterCollateralManager(address manager) external override onlyOwner {
         _addresses[COUNTER_COLLATERAL_MANAGER] = manager;

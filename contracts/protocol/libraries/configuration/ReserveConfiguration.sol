@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 import {Errors} from '../helpers/Errors.sol';
@@ -6,7 +6,6 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 /**
  * @title ReserveConfiguration library
- * @author Aave
  * @notice Implements the bitmap logic to handle the reserve configuration
  */
 library ReserveConfiguration {

@@ -20,13 +20,13 @@ interface ICounterConfigurator {
   /**
    * @dev Emitted when a reserve is initialized.
    * @param asset The address of the underlying asset of the reserve
-   * @param aToken The address of the associated aToken contract
+   * @param pToken The address of the associated pToken contract
    * @param variableDebtToken The address of the associated variable rate debt token
    * @param interestRateStrategyAddress The address of the interest rate strategy for the reserve
    **/
   event ReserveInitialized(
     address indexed asset,
-    address indexed aToken,
+    address indexed pToken,
     address variableDebtToken,
     address interestRateStrategyAddress
   );
@@ -107,7 +107,7 @@ interface ICounterConfigurator {
    * @dev Emitted when the implementation of a variable debt token is upgraded
    * @param asset The address of the underlying asset of the reserve
    * @param proxy The variable debt token proxy address
-   * @param implementation The new aToken implementation
+   * @param implementation The new pToken implementation
    **/
   event VariableDebtTokenUpgraded(
     address indexed asset,

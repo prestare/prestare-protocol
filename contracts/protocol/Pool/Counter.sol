@@ -59,7 +59,7 @@ contract Counter is ICounter, CounterStorage {
   function _onlyCounterConfigurator() internal view {
     require(
       _addressesProvider.getCounterConfigurator() == msg.sender,
-      Errors.LP_CALLER_NOT_LENDING_POOL_CONFIGURATOR
+      Errors.LP_CALLER_NOT_Counter_CONFIGURATOR
     );
   }
 
@@ -85,12 +85,12 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying aTokens.
+   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying pTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * @param asset The address of the underlying asset to deposit
    * @param amount The amount to be deposited
-   * @param onBehalfOf The address that will receive the aTokens, same as msg.sender if the user
-   *   wants to receive them on his own wallet, or a different address if the beneficiary of aTokens
+   * @param onBehalfOf The address that will receive the pTokens, same as msg.sender if the user
+   *   wants to receive them on his own wallet, or a different address if the beneficiary of pTokens
    *   is a different wallet
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
@@ -460,7 +460,7 @@ contract Counter is ICounter, CounterStorage {
    * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
    * @param user The address of the borrower getting liquidated
    * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param receiveAToken `true` if the liquidators wants to receive the collateral aTokens, `false` if he wants
+   * @param receivepToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
    * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
@@ -468,7 +468,7 @@ contract Counter is ICounter, CounterStorage {
     address debtAsset,
     address user,
     uint256 debtToCover,
-    bool receiveAToken
+    bool receivepToken
   ) external override whenNotPaused {
     address collateralManager = _addressesProvider.getCounterCollateralManager();
 
@@ -481,7 +481,7 @@ contract Counter is ICounter, CounterStorage {
           debtAsset,
           user,
           debtToCover,
-          receiveAToken
+          receivepToken
         )
       );
 
@@ -609,7 +609,7 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Returns if the LendingPool is paused
+   * @dev Returns if the Counter is paused
    */
   function paused() external view override returns (bool) {
     return _paused;
@@ -628,7 +628,7 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Returns the cached LendingPoolAddressesProvider connected to this contract
+   * @dev Returns the cached CounterAddressesProvider connected to this contract
    **/
   function getAddressesProvider() external view override returns (ICounterAddressesProvider) {
     return _addressesProvider;
@@ -636,7 +636,7 @@ contract Counter is ICounter, CounterStorage {
 
   /**
    * @dev Updates the address of the interest rate strategy contract
-   * - Only callable by the LendingPoolConfigurator contract
+   * - Only callable by the CounterConfigurator contract
    * @param asset The address of the underlying asset of the reserve
    * @param rateStrategyAddress The address of the interest rate strategy contract
    **/
@@ -650,7 +650,7 @@ contract Counter is ICounter, CounterStorage {
 
   /**
    * @dev Sets the configuration bitmap of the reserve as a whole
-   * - Only callable by the LendingPoolConfigurator contract
+   * - Only callable by the CounterConfigurator contract
    * @param asset The address of the underlying asset of the reserve
    * @param configuration The new configuration bitmap
    **/
@@ -664,7 +664,7 @@ contract Counter is ICounter, CounterStorage {
 
   /**
    * @dev Set the _pause state of a reserve
-   * - Only callable by the LendingPoolConfigurator contract
+   * - Only callable by the CounterConfigurator contract
    * @param val `true` to pause the reserve, `false` to un-pause it
    */
   function setPause(bool val) external override onlyCounterConfigurator {
@@ -677,14 +677,14 @@ contract Counter is ICounter, CounterStorage {
   }
 
     /**
-   * @dev Validates and finalizes an aToken transfer
-   * - Only callable by the overlying aToken of the `asset`
-   * @param asset The address of the underlying asset of the aToken
-   * @param from The user from which the aTokens are transferred
-   * @param to The user receiving the aTokens
+   * @dev Validates and finalizes an pToken transfer
+   * - Only callable by the overlying pToken of the `asset`
+   * @param asset The address of the underlying asset of the pToken
+   * @param from The user from which the pTokens are transferred
+   * @param to The user receiving the pTokens
    * @param amount The amount being transferred/withdrawn
-   * @param balanceFromBefore The aToken balance of the `from` user before the transfer
-   * @param balanceToBefore The aToken balance of the `to` user before the transfer
+   * @param balanceFromBefore The pToken balance of the `from` user before the transfer
+   * @param balanceToBefore The pToken balance of the `to` user before the transfer
    */
   function finalizeTransfer(
     address asset,
@@ -694,7 +694,7 @@ contract Counter is ICounter, CounterStorage {
     uint256 balanceFromBefore,
     uint256 balanceToBefore
   ) external override whenNotPaused {
-    require(msg.sender == _reserves[asset].pTokenAddress, Errors.LP_CALLER_MUST_BE_AN_ATOKEN);
+    require(msg.sender == _reserves[asset].pTokenAddress, Errors.LP_CALLER_MUST_BE_AN_pToken);
 
     ValidationLogic.validateTransfer(
       from,
@@ -723,23 +723,23 @@ contract Counter is ICounter, CounterStorage {
   }
 
     /**
-   * @dev Initializes a reserve, activating it, assigning an aToken and debt tokens and an
+   * @dev Initializes a reserve, activating it, assigning an pToken and debt tokens and an
    * interest rate strategy
    * - Only callable by the CounterConfigurator contract
    * @param asset The address of the underlying asset of the reserve
-   * @param aTokenAddress The address of the aToken that will be assigned to the reserve
+   * @param pTokenAddress The address of the pToken that will be assigned to the reserve
    * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function initReserve(
     address asset,
-    address aTokenAddress,
+    address pTokenAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override onlyCounterConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _reserves[asset].init(
-      aTokenAddress,
+      pTokenAddress,
       variableDebtAddress,
       interestRateStrategyAddress
     );

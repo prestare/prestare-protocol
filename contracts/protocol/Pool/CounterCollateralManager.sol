@@ -24,7 +24,7 @@ import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 
-contract LendingPoolCollateralManager is
+contract CounterCollateralManager is
   ICounterCollateralManager,
   CounterStorage
 {

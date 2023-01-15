@@ -39,14 +39,14 @@ contract PToken is
   address internal _underlyingAsset;
 
   modifier onlyCounter {
-    require(_msgSender() == address(_counter), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(_counter), Errors.CT_CALLER_MUST_BE_Counter);
     _;
   }
 
   /**
    * @dev Initializes the pToken
-   * @param counter The address of the lending pool where this pToken will be used
-   * @param treasury The address of the Aave treasury, receiving the fees on this pToken
+   * @param counter The address of the Counter where this pToken will be used
+   * @param treasury The address of the treasury, receiving the fees on this pToken
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
    * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
    * @param pTokenName The name of the pToken
@@ -90,7 +90,7 @@ contract PToken is
 
   /**
    * @dev Burns pTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
-   * - Only callable by the LendingPool, as extra state updates there need to be managed
+   * - Only callable by the Counter, as extra state updates there need to be managed
    * @param user The owner of the pTokens, getting them burned
    * @param receiverOfUnderlying The address that will receive the underlying
    * @param amount The amount being burned
@@ -114,7 +114,7 @@ contract PToken is
 
   /**
    * @dev Mints `amount` pTokens to `user`
-   * - Only callable by the LendingPool, as extra state updates there need to be managed
+   * - Only callable by the Counter, as extra state updates there need to be managed
    * @param user The address receiving the minted tokens
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
@@ -139,7 +139,7 @@ contract PToken is
 
   /**
    * @dev Mints pTokens to the reserve treasury
-   * - Only callable by the LendingPool
+   * - Only callable by the Counter
    * @param amount The amount of tokens getting minted
    * @param index The new liquidity index of the reserve
    */
@@ -162,7 +162,7 @@ contract PToken is
 
   /**
    * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the pToken
-   * - Only callable by the LendingPool
+   * - Only callable by the Counter
    * @param from The address getting liquidated, current owner of the pTokens
    * @param to The recipient
    * @param value The amount of tokens getting transferred
@@ -243,7 +243,7 @@ contract PToken is
   }
 
   /**
-   * @dev Returns the address of the Aave treasury, receiving the fees on this pToken
+   * @dev Returns the address of the treasury, receiving the fees on this pToken
    **/
   function RESERVE_TREASURY_ADDRESS() public view returns (address) {
     return _treasury;
@@ -257,7 +257,7 @@ contract PToken is
   }
 
   /**
-   * @dev Returns the address of the lending pool where this pToken is used
+   * @dev Returns the address of the Counter where this pToken is used
    **/
   function COUNTER() public view returns (ICounter) {
     return _counter;
@@ -265,7 +265,7 @@ contract PToken is
 
 
   /**
-   * @dev Transfers the underlying asset to `target`. Used by the LendingPool to transfer
+   * @dev Transfers the underlying asset to `target`. Used by the Counter to transfer
    * assets in borrow(), withdraw() and flashLoan()
    * @param target The recipient of the pTokens
    * @param amount The amount getting transferred

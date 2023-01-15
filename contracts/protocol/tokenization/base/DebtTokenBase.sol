@@ -9,7 +9,6 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 /**
  * @title DebtTokenBase
  * @notice Base contract for different types of debt tokens, like StableDebtToken or VariableDebtToken
- * @author Aave
  */
 
 abstract contract DebtTokenBase is
@@ -19,10 +18,10 @@ abstract contract DebtTokenBase is
   mapping(address => mapping(address => uint256)) internal _borrowAllowances;
 
   /**
-   * @dev Only lending pool can call functions marked by this modifier
+   * @dev Only Counter can call functions marked by this modifier
    **/
   modifier onlyCounter {
-    require(_msgSender() == address(_getCounter()), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
+    require(_msgSender() == address(_getCounter()), Errors.CT_CALLER_MUST_BE_Counter);
     _;
   }
 

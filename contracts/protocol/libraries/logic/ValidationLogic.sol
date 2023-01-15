@@ -281,8 +281,8 @@ library ValidationLogic {
   }
 
   /**
-   * @dev Validates an aToken transfer
-   * @param from The user from which the aTokens are being transferred
+   * @dev Validates an pToken transfer
+   * @param from The user from which the pTokens are being transferred
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
    * @param reserves The addresses of all the active reserves

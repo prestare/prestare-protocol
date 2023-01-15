@@ -20,7 +20,7 @@ contract WETHGateway is IWETHGateway, Ownable {
   IWETH internal immutable WETH;
 
   /**
-   * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
+   * @dev Sets the WETH address and the CounterAddressesProvider address. Infinite approves Counter.
    * @param weth Address of the Wrapped Ether contract
    **/
   constructor(address weth) {
@@ -32,10 +32,10 @@ contract WETHGateway is IWETHGateway, Ownable {
   }
 
   /**
-   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (aTokens)
+   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (pTokens)
    * is minted.
-   * @param counter address of the targeted underlying lending pool
-   * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
+   * @param counter address of the targeted underlying Counter
+   * @param onBehalfOf address of the user who will receive the pTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
   function depositETH(
@@ -49,7 +49,7 @@ contract WETHGateway is IWETHGateway, Ownable {
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
-   * @param counter address of the targeted underlying lending pool
+   * @param counter address of the targeted underlying Counter
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
@@ -74,7 +74,7 @@ contract WETHGateway is IWETHGateway, Ownable {
 
   /**
    * @dev repays a borrow on the WETH reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
-   * @param counter address of the targeted underlying lending pool
+   * @param counter address of the targeted underlying Counter
    * @param amount the amount to repay, or uint256(-1) if the user wants to repay everything
    * @param rateMode the rate mode to repay
    * @param onBehalfOf the address for which msg.sender is repaying
@@ -105,8 +105,8 @@ contract WETHGateway is IWETHGateway, Ownable {
   }
 
   /**
-   * @dev borrow WETH, unwraps to ETH and send both the ETH and DebtTokens to msg.sender, via `approveDelegation` and onBehalf argument in `LendingPool.borrow`.
-   * @param counter address of the targeted underlying lending pool
+   * @dev borrow WETH, unwraps to ETH and send both the ETH and DebtTokens to msg.sender, via `approveDelegation` and onBehalf argument in `Counter.borrow`.
+   * @param counter address of the targeted underlying Counter
    * @param amount the amount of ETH to borrow
    * @param interesRateMode the interest rate mode
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards

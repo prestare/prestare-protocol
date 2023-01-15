@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 import {IPToken} from '../../../interfaces/IPToken.sol';
@@ -12,7 +12,6 @@ import {MathUtils} from '../math/MathUtils.sol';
 import {Errors} from '../helpers/Errors.sol';
 /**
  * @title ReserveLogic library
- * @author Aave
  * @notice Implements the logic to update the reserves state
  */
 library ReserveLogic {
@@ -96,7 +95,7 @@ library ReserveLogic {
   /**
    * @dev Initializes a reserve
    * @param reserve The reserve object
-   * @param pTokenAddress The address of the overlying atoken contract
+   * @param pTokenAddress The address of the overlying pToken contract
    * @param interestRateStrategyAddress The address of the interest rate strategy contract
    **/
   function init(
@@ -162,7 +161,7 @@ library ReserveLogic {
   function updateInterestRates(
     DataTypes.ReserveData storage reserve,
     address reserveAddress,
-    address aTokenAddress,
+    address pTokenAddress,
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
@@ -183,7 +182,7 @@ library ReserveLogic {
       vars.newVariableRate
     ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
-      aTokenAddress,
+      pTokenAddress,
       liquidityAdded,
       liquidityTaken,
       vars.totalVariableDebt,

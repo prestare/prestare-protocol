@@ -1,9 +1,9 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.10;
 
 /**
  * @title IPriceOracleGetter interface
- * @notice Interface for the Aave price oracle.
+ * @notice Interface for the price oracle.
  **/
 
 interface IPriceOracleGetter {

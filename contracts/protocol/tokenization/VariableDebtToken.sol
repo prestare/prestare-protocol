@@ -11,7 +11,6 @@ import {ICounter} from '../../interfaces/ICounter.sol';
  * @title VariableDebtToken
  * @notice Implements a variable debt token to track the borrowing positions of users
  * at variable rate mode
- * @author Aave
  **/
 contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   using WadRayMath for uint256;
@@ -23,7 +22,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Initializes the debt token.
-   * @param counter The address of the lending pool where this pToken will be used
+   * @param counter The address of the Counter where this pToken will be used
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
    * @param debtTokenDecimals The decimals of the debtToken, same as the underlying asset's
    * @param debtTokenName The name of the token
@@ -69,7 +68,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Mints debt token to the `onBehalfOf` address
-   * -  Only callable by the LendingPool
+   * -  Only callable by the Counter
    * @param user The address receiving the borrowed underlying, being the delegatee in case
    * of credit delegate, or same as `onBehalfOf` otherwise
    * @param onBehalfOf The address receiving the debt tokens
@@ -101,7 +100,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   /**
    * @dev Burns user variable debt
-   * - Only callable by the LendingPool
+   * - Only callable by the Counter
    * @param user The user whose debt is getting burned
    * @param amount The amount getting burned
    * @param index The variable debt index of the reserve
