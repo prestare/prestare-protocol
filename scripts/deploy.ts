@@ -73,8 +73,8 @@ async function main() {
         MainnetFork.OracleQuoteUnit
     )
 
-    console.log(tokens);
-    console.log(aggregator);
+    console.log("token list: ", tokens);
+    console.log("Aggregator list: ", aggregator);
 
     const prestareOracle = await deployPrestareOracle([
         tokens,
@@ -83,6 +83,8 @@ async function main() {
         MainnetFork.WETH.MainnetFork,
         MainnetFork.OracleQuoteUnit,
     ]);
+
+    await addressesProvider.setPriceOracle(prestareOracle.address);
 }
 
 main()

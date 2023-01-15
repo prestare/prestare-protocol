@@ -3,7 +3,7 @@ pragma solidity ^0.8.10;
 
 /**
  * @title Errors library
- * @notice Defines the error messages emitted by the different contracts of the protocol
+ * @notice Defines the error messages emitted by the different contracts of the protocol. Inspired by Aave
  */
 library Errors {
   //common errors
