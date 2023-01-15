@@ -209,6 +209,10 @@ contract CrtToken is ICRT, IERC20, IERC20Metadata, Context {
         _afterTokenTransfer(from, to, amount);
     }
 
+    function mint(address account, uint256 amount) external virtual {
+        _mint(account, amount);
+    }
+
     /** @dev Creates `amount` tokens and assigns them to `account`, increasing
      * the total supply.
      *

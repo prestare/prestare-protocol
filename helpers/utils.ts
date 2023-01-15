@@ -152,21 +152,21 @@ export const initReservesByHelper = async (
     }
 
     reserveSymbols.push(symbol);
-    initInputParams.push({
-      pToken: ,
-      variableDebtTokenImpl: ,
-      underlyingAssetDecimals: ,
-      interestRateStrategyAddress: strategyAddresses[strategy.name],
-      underlyingAsset: tokenAddresses[symbol],
-      treasury: treasuryAddress,
-      incentivesController: ZERO_ADDRESS,
-      underlyingAssetName: symbol,
-      pTokenName: `p ${symbol}`,
-      pTokenSymbol: `a ${symbol}`,
-      variableDebtTokenName: `variableDebt Prestare ${symbol}`,
-      variableDebtTokenSymbol: `variableDebt ${symbol}`,
-      params: ,
-    })
+    // initInputParams.push({
+    //   pToken: ,
+    //   variableDebtTokenImpl: ,
+    //   underlyingAssetDecimals: ,
+    //   interestRateStrategyAddress: strategyAddresses[strategy.name],
+    //   underlyingAsset: tokenAddresses[symbol],
+    //   treasury: treasuryAddress,
+    //   incentivesController: ZERO_ADDRESS,
+    //   underlyingAssetName: symbol,
+    //   pTokenName: `p ${symbol}`,
+    //   pTokenSymbol: `a ${symbol}`,
+    //   variableDebtTokenName: `variableDebt Prestare ${symbol}`,
+    //   variableDebtTokenSymbol: `variableDebt ${symbol}`,
+    //   params: ,
+    // })
   }
 };
 

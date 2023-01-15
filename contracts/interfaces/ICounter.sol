@@ -329,6 +329,8 @@ interface ICounter {
 
   function setPause(bool val) external;
 
+  function setCRT(address crt) external;
+
   function paused() external view returns (bool);
 }
 

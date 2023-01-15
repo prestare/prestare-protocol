@@ -256,6 +256,10 @@ contract CounterConfigurator is ICounterConfigurator {
     counter.setPause(val);
   }
 
+  function setCRT(address crt) external onlyEmergencyAdmin {
+    counter.setCRT(crt);
+  }
+
   function _checkNoLiquidity(address asset) internal view {
     DataTypes.ReserveData memory reserveData = counter.getReserveData(asset);
 

@@ -9,7 +9,8 @@ import {
     deployAllMockAggregators,
     deployPrestareOracle,
     deployCounterCollateralManager,
-    deployWETHGateway
+    deployWETHGateway,
+    deployCRT
 } from "../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
@@ -101,19 +102,23 @@ async function main() {
     // 7. deploy pToken for each asset
 
     // 8. initialize all token
-    await initReservesByHelper(
-        MainnetFork.ReservesConfig,
-        allTokenAddresses,
-        admin,
-        treasuryAddress,
-    )
+    // await initReservesByHelper(
+    //     MainnetFork.ReservesConfig,
+    //     allTokenAddresses,
+    //     admin,
+    //     treasuryAddress,
+    // )
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
     const WETHGateway = await deployWETHGateway([mockTokensAddress['WETH']]);
     console.log('WETH Gateway address is: ', WETHGateway.address);
     await authorizeWETHGateway(WETHGateway.address, CounterAddress);
-
+    
+    // 10. deploy set CRT
+    const CRT = await deployCRT(admin);
+    await CounterConfigurator.connect(admin).setCRT(CRT.address);
+    
     await CounterConfigurator.connect(admin).setPoolPause(false);
 
 }

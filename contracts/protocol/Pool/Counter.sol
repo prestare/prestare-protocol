@@ -671,6 +671,10 @@ contract Counter is ICounter, CounterStorage {
     }
   }
 
+  function setCRT(address crt) external override onlyCounterConfigurator {
+    _crtaddress = crt;
+  }
+
     /**
    * @dev Validates and finalizes an pToken transfer
    * - Only callable by the overlying pToken of the `asset`
