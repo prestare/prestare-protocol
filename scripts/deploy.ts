@@ -99,7 +99,7 @@ async function main() {
 
     const treasuryAddress = await admin.getAddress();
 
-    // 8. deploy pToken for each asset initialize all token
+    // 8. deploy pToken for each asset & initialize all token
     await initReservesByHelper(
         MainnetFork.ReservesConfig,
         allTokenAddresses,
