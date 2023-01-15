@@ -3,6 +3,7 @@ import { Contract, ethers, Signer } from "ethers";
 import { ContractName, Prestare, TokenContractName } from "./types";
 import { getDb } from './utils';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
+import { Counter, Counter__factory } from "../typechain-types";
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -98,22 +99,34 @@ export const getCounterAddressesProvider = async (address?: string) => {
   );
 };
 
-export const getCounter = async (address?: string) =>
-  await (await hre.ethers.getContractFactory("Counter")).attach(
+export const getCounter = async (admin: Signer, address?: string) => {
+  console.log(address);
+  return Counter__factory.connect(
     address ||
       (
         await getDb().get(`${ContractName.Counter}.${hre.network.name}`).value()
       ).address,
-);
+    admin
+  )
+};
 
 export const getContractAddressWithJsonFallback = async (
   id: string,
 ): Promise<string> => {
-  const db = getDb();
+  // const db = getDb();
 
   const contractAtDb = await getDb().get(`${id}.${hre.network.name}`).value();
   if (contractAtDb?.address) {
     return contractAtDb.address as string;
   }
   throw Error(`Missing contract address ${id} at Market config and JSON local db`);
+};
+
+export const getCounterConfigurator = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("CounterConfigurator")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.CounterConfigurator}.${hre.network.name}`).value()
+      ).address,
+  );
 };

@@ -173,10 +173,26 @@ export const deployCounterCollateralManager = async (admin: Signer) => {
   )
 };
 
-// export const deployPToken = async (
-//   [Counter, underlyingAsset]:type) => {
-  
-// }
+export const deployPToken = async (
+  admin: Signer,
+  symbol: string) => {
+    const ContractFac = await hre.ethers.getContractFactory("PToken");
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      `p${symbol}`
+    )
+};
+
+export const deployVariableDebtToken = async (
+  admin: Signer,
+  symbol: string) => {
+    const ContractFac = await hre.ethers.getContractFactory("VariableDebtToken");
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      `variable Debt p${symbol}`
+    )
+};
+
 export const deployWETHGateway = async (args: [string]) => {
   const ContractFac = await hre.ethers.getContractFactory("WETHGateway");
   return deployAndSave(

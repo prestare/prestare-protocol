@@ -99,15 +99,13 @@ async function main() {
 
     const treasuryAddress = await admin.getAddress();
 
-    // 7. deploy pToken for each asset
-
-    // 8. initialize all token
-    // await initReservesByHelper(
-    //     MainnetFork.ReservesConfig,
-    //     allTokenAddresses,
-    //     admin,
-    //     treasuryAddress,
-    // )
+    // 8. deploy pToken for each asset initialize all token
+    await initReservesByHelper(
+        MainnetFork.ReservesConfig,
+        allTokenAddresses,
+        admin,
+        treasuryAddress,
+    )
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);

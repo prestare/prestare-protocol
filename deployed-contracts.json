@@ -1,109 +1,190 @@
 {
   "CounterAddressesProvider": {
     "localhost": {
-      "address": "0xA8d14b3d9e2589CEA8644BB0f67EB90d21079f8B",
+      "address": "0x7Af7475Abe02a2e9CD03B0dc50EA534F84194e09",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "ReserveLogic": {
     "localhost": {
-      "address": "0x0Deeb4b6492C1a55Bb7C0555AaFf65fF6dC424B2",
+      "address": "0xC138B397Be84Ec53E2654eEf1D0D63355E459791",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "GenericLogic": {
     "localhost": {
-      "address": "0xe24e7570Fe7207AdAaAa8c6c89a59850391B5276",
+      "address": "0xa513902CE47191a5D4b63deFBa4f337347C512BE",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "CRTLogic": {
     "localhost": {
-      "address": "0x67Fc5Aa53440518DdbAd4B381fD4b86fFD77B776",
+      "address": "0x3fb8D607A42B3c4536a7ffB8786639BfBd5cd9c0",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "ValidationLogic": {
     "localhost": {
-      "address": "0xFE92134da38df8c399A90a540f20187D19216E05",
+      "address": "0x0740BFEeAEb3c8a7b8718A4F3B20618568cDF621",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "Counter": {
     "localhost": {
-      "address": "0x2e13f7644014F6E934E314F0371585845de7B986",
+      "address": "0xDCc1fAB7b7B33dCe9b7748B7572F07fac59B0956",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "CounterConfigurator": {
     "localhost": {
-      "address": "0xcE7e5946C14Cdd1f8de4473dB9c20fd65EBd47d0",
+      "address": "0x511930A41fae024714948b700764394CB759B72f",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "MintableERC20": {
     "localhost": {
-      "address": "0x72F853E9E202600c5017B5A060168603c3ed7368",
+      "address": "0x9D7b35BFA6e230A198B37220f83B63882Eae0680",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "DAI": {
     "localhost": {
-      "address": "0x00B0517de6b2b09aBD3a7B69d66D85eFdb2c7d94",
+      "address": "0x59Bb4180cEAf9160BE93d4bA3172D67f983FfC62",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "WETH": {
     "localhost": {
-      "address": "0x49AeF2C4005Bf572665b09014A563B5b9E46Df21",
+      "address": "0x1f871a3fe5956F642CfF1671eEe7a886E4986a2d",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "USDC": {
     "localhost": {
-      "address": "0xa9efDEf197130B945462163a0B852019BA529a66",
+      "address": "0xA68a91FCf064aE09f06D198503EDa896d0F04459",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "USDT": {
     "localhost": {
-      "address": "0x06786bCbc114bbfa670E30A1AC35dFd1310Be82f",
+      "address": "0x2B3323Dba63a4a1Ed0a4B02d0B3fD5C901760881",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "BUSD": {
     "localhost": {
-      "address": "0x72F853E9E202600c5017B5A060168603c3ed7368",
+      "address": "0x9D7b35BFA6e230A198B37220f83B63882Eae0680",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "PriceOracle": {
     "localhost": {
-      "address": "0x82Bd83ec6D4bCC8EaB6F6cF7565efE1e41D92Ce5",
+      "address": "0x8DA6b6Dd929deed2237eBE41e0AABF4862d0b93A",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "MockAggregator": {
     "localhost": {
-      "address": "0x81f4f47aa3bBd154171C877b4d70F6C9EeCAb216",
+      "address": "0xD0798f8308EFE28516C36D5d0dC31f68fD8D0d05",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "PrestareOracle": {
     "localhost": {
-      "address": "0x2ce1F0e20C1f69E9d9AEA83b25F0cEB69e2AA2b5",
+      "address": "0x0208BdffceE44608AaB5F5b09c3208E3072FCbDa",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "CounterCollateralManager": {
     "localhost": {
-      "address": "0x1F2C6E90F3DF741E0191eAbB1170f0B9673F12b3",
+      "address": "0x8bc1fCDaA75F381bE2d2a828Fd78aAa37414Bea2",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "WETHGateway": {
     "localhost": {
-      "address": "0x0C8542AB89c1C60D711B00F309f7EF63b5D9d6eb",
+      "address": "0x76F1a8278Fb5714e2771feE4F038cdBd42C330e6",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "DefaultReserveInterestRateStrategy": {
+    "localhost": {
+      "address": "0x7cf858d767d00942Ac1d7ADc3D7fDdA6BE980f18",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "rateStrategyStableTwo": {
+    "localhost": {
+      "address": "0xbFD3511180A40503D807c9249943431Cf847E5b7"
+    }
+  },
+  "pDAI": {
+    "localhost": {
+      "address": "0xC25fFDe61dA50C5d4Cc75d088814bf32B1F5d7c9",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "rateStrategyWETH": {
+    "localhost": {
+      "address": "0x4C70a29A4be0954eE358f03C18BecCb888549c01"
+    }
+  },
+  "pWETH": {
+    "localhost": {
+      "address": "0x2B4F80e20eaC049509C86f3B0742b6B4fB7C4bE2",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "rateStrategyStableOne": {
+    "localhost": {
+      "address": "0x7cf858d767d00942Ac1d7ADc3D7fDdA6BE980f18"
+    }
+  },
+  "pUSDC": {
+    "localhost": {
+      "address": "0xBc8f87CA68de19edED1c96f2789A4967F9e78E65",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "pUSDT": {
+    "localhost": {
+      "address": "0xdFE97385B11cAb514D8890C161534Acb129c03dF",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "pBUSD": {
+    "localhost": {
+      "address": "0x5837440Bb467C30288289D5Cd42a4aB75b156384",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "variable Debt pDAI": {
+    "localhost": {
+      "address": "0x70401A4AB04A90043BD419f56CC36B77D0587C30",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "variable Debt pWETH": {
+    "localhost": {
+      "address": "0xa6fA98A9A2496b8726897ea539344cea9890915f",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "variable Debt pUSDC": {
+    "localhost": {
+      "address": "0x5671CE66F356e67f291643911c3AC1269A5B3f69",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "variable Debt pUSDT": {
+    "localhost": {
+      "address": "0xDFDBd5A2c3cE928482bd6D6e0b1C0e8F27A51265",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "variable Debt pBUSD": {
+    "localhost": {
+      "address": "0x4Aa87B609FbbDD914e8120e74F77FCcf978953dF",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   }

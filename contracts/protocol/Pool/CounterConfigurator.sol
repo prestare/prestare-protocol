@@ -14,6 +14,8 @@ import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 import {ICounterConfigurator} from '../../interfaces/ICounterConfigurator.sol';
+import {IInitializablePToken} from '../../interfaces/IInitializablePToken.sol';
+import {IInitializableDebtToken} from '../../interfaces/IInitializableDebtToken.sol';
 
 import "hardhat/console.sol";
 
@@ -50,11 +52,31 @@ contract CounterConfigurator is ICounterConfigurator {
     counter = ICounter(addressesProvider.getCounter());
   }
 
-  function initReserve(InitReserveInput calldata input, address pToken, address variableDebtTokenAddress) external {
+  function initReserve(InitReserveInput calldata input) external {
+    ICounter cache = counter;
+    IInitializablePToken(input.pToken).initialize(
+      cache,
+      input.treasury,
+      input.underlyingAsset,
+      input.underlyingAssetDecimals,
+      input.pTokenName,
+      input.pTokenSymbol,
+      input.params
+    );
+
+    IInitializableDebtToken(input.variableDebtToken).initialize(
+      cache, 
+      input.underlyingAsset, 
+      input.underlyingAssetDecimals, 
+      input.variableDebtTokenName, 
+      input.variableDebtTokenSymbol, 
+      input.params
+    );
+    
     counter.initReserve(
       input.underlyingAsset,
-      pToken,
-      variableDebtTokenAddress,
+      input.pToken,
+      input.variableDebtToken,
       input.interestRateStrategyAddress
     );
 
@@ -70,8 +92,8 @@ contract CounterConfigurator is ICounterConfigurator {
 
     emit ReserveInitialized(
       input.underlyingAsset,
-      pToken,
-      variableDebtTokenAddress,
+      input.pToken,
+      input.variableDebtToken,
       input.interestRateStrategyAddress
     );
   }

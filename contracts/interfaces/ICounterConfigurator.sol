@@ -3,7 +3,8 @@ pragma solidity ^0.8.10;
 
 interface ICounterConfigurator {
   struct InitReserveInput {
-    address pTokenImpl;
+    address pToken;
+    address variableDebtToken;
     uint8 underlyingAssetDecimals;
     address interestRateStrategyAddress;
     address underlyingAsset;

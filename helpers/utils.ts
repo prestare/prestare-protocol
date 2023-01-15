@@ -3,12 +3,17 @@ import { getContractAddress } from 'ethers/lib/utils';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
 import { ZERO_ADDRESS } from './constants';
-import { deployRateStrategy } from './contracts-deployments';
+import { 
+  deployPToken, 
+  deployRateStrategy,
+  deployVariableDebtToken 
+} from './contracts-deployments';
 import { 
   getCounterAddressesProvider, 
   getCounter, 
   rawInsertContractAddressInDb,
-  getContractAddressWithJsonFallback
+  getContractAddressWithJsonFallback,
+  getCounterConfigurator
 } from './contracts-helpers';
 import { 
   TokenMap,
@@ -87,7 +92,7 @@ export const initReservesByHelper = async (
   
   let initInputParams: {
     pToken: string;
-    variableDebtTokenImpl: string;
+    variableDebtToken: string;
     underlyingAssetDecimals: BigNumber;
     interestRateStrategyAddress: string;
     underlyingAsset: string;
@@ -116,8 +121,10 @@ export const initReservesByHelper = async (
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
     }
-    const Counter = await getCounter(await addressProvider.getCounter());
+    const Counter = await getCounter(admin, await addressProvider.getCounter());
+
     const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol]);
+
     if (CounterReserve.pTokenAddress !== ZERO_ADDRESS) {
       console.log(`- Skipping init of ${symbol} due is already initialized`);
       continue;
@@ -150,24 +157,33 @@ export const initReservesByHelper = async (
 
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
-
+    console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
-    // initInputParams.push({
-    //   pToken: ,
-    //   variableDebtTokenImpl: ,
-    //   underlyingAssetDecimals: ,
-    //   interestRateStrategyAddress: strategyAddresses[strategy.name],
-    //   underlyingAsset: tokenAddresses[symbol],
-    //   treasury: treasuryAddress,
-    //   incentivesController: ZERO_ADDRESS,
-    //   underlyingAssetName: symbol,
-    //   pTokenName: `p ${symbol}`,
-    //   pTokenSymbol: `a ${symbol}`,
-    //   variableDebtTokenName: `variableDebt Prestare ${symbol}`,
-    //   variableDebtTokenSymbol: `variableDebt ${symbol}`,
-    //   params: ,
-    // })
+    let pTokenContract = await deployPToken(admin, symbol);
+    let variableDebtContract = await deployVariableDebtToken(admin, symbol);
+    initInputParams.push({
+      pToken: pTokenContract.address,
+      variableDebtToken: variableDebtContract.address,
+      underlyingAssetDecimals: BigNumber.from(reserveDecimals),
+      interestRateStrategyAddress: strategyAddresses[strategy.name],
+      underlyingAsset: tokenAddresses[symbol],
+      treasury: treasuryAddress,
+      incentivesController: ZERO_ADDRESS,
+      underlyingAssetName: symbol,
+      pTokenName: `p ${symbol}`,
+      pTokenSymbol: `p${symbol}`,
+      variableDebtTokenName: `variableDebt Prestare ${symbol}`,
+      variableDebtTokenSymbol: `variableDebt ${symbol}`,
+      params: '0x10',
+    });
   }
+  console.log("finish initInputParams");
+  const configurator = await getCounterConfigurator();
+  for (let index = 0; index < initInputParams.length; index++) {
+    console.log(initInputParams[index]);
+    await configurator.connect(admin).initReserve(initInputParams[index]);
+  }
+  console.log("finish initReserve.");
 };
 
 

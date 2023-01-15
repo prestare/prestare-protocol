@@ -10,6 +10,9 @@ import {CrtToken} from '../../CRT/token/CrtToken.sol';
 contract MockCRT is CrtToken {
   uint8 _decimals;
 
+  constructor() public CrtToken() {
+    
+  }
   /**
    * @dev Function to mint tokens
    * @param value The amount of tokens to mint.
