@@ -153,7 +153,7 @@ library ReserveLogic {
   }
 
   /**
-   * @dev Updates the reserve current stable borrow rate, the current variable borrow rate and the current liquidity rate
+   * @dev Updates the reserve the current variable borrow rate and the current liquidity rate
    * @param reserve The address of the reserve to be updated
    * @param liquidityAdded The amount of liquidity added to the protocol (deposit or repay) in the previous action
    * @param liquidityTaken The amount of liquidity taken from the protocol (redeem or borrow)
@@ -166,9 +166,6 @@ library ReserveLogic {
     uint256 liquidityTaken
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
-
-    // (vars.totalStableDebt, vars.avgStableRate) = IStableDebtToken(vars.stableDebtTokenAddress)
-    //   .getTotalSupplyAndAvgRate();
 
     //calculates the total variable debt locally using the scaled total supply instead
     //of totalSupply(), as it's noticeably cheaper. Also, the index has been
@@ -204,13 +201,8 @@ library ReserveLogic {
   }
 
   struct MintToTreasuryLocalVars {  
-    uint256 currentStableDebt;
-    uint256 principalStableDebt;
-    uint256 previousStableDebt;
     uint256 currentVariableDebt;
     uint256 previousVariableDebt;
-    uint256 avgStableRate;
-    uint256 cumulatedStableInterest;
     uint256 totalDebtAccrued;
     uint256 amountToMint;
     uint256 reserveFactor;
@@ -286,8 +278,6 @@ library ReserveLogic {
 
       reserve.liquidityIndex = uint128(newLiquidityIndex);
 
-      //as the liquidity rate might come only from stable rate loans, we need to ensure
-      //that there is actual variable debt before accumulating
       if (scaledVariableDebt != 0) {
         uint256 cumulatedVariableBorrowInterest =
           MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);

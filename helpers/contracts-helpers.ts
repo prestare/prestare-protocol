@@ -36,6 +36,13 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
     .write();
 };
 
+export const rawInsertContractAddressInDb = async (id: string, address: string) =>
+  await getDb()
+    .set(`${id}.${hre.network.name}`, {
+      address,
+    })
+    .write();
+
 export const deployAndSave = async (
     contract: Contract,
     contractName: string,
@@ -81,3 +88,32 @@ export const authorizeWETHGateway = async (
   await (await hre.ethers.getContractFactory("WETHGateway"))
     .attach(wethGateWay)
     .authorizeCounter(Counter);
+
+export const getCounterAddressesProvider = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("CounterAddressesProvider")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.CounterAddressesProvider}.${hre.network.name}`).value()
+      ).address,
+  );
+};
+
+export const getCounter = async (address?: string) =>
+  await (await hre.ethers.getContractFactory("Counter")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.Counter}.${hre.network.name}`).value()
+      ).address,
+);
+
+export const getContractAddressWithJsonFallback = async (
+  id: string,
+): Promise<string> => {
+  const db = getDb();
+
+  const contractAtDb = await getDb().get(`${id}.${hre.network.name}`).value();
+  if (contractAtDb?.address) {
+    return contractAtDb.address as string;
+  }
+  throw Error(`Missing contract address ${id} at Market config and JSON local db`);
+};

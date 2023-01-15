@@ -19,6 +19,7 @@ import { getAllTokenAddresses, getPairsTokenAggregator, initReservesByHelper } f
 import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
 import { TokenContractName } from "../helpers/types";
 import { MainnetFork } from '../markets/mainnet';
+import { ZERO_ADDRESS } from "../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
@@ -97,15 +98,17 @@ async function main() {
 
     const treasuryAddress = await admin.getAddress();
 
-    // 7. initialize all token
+    // 7. deploy AToken for each asset
+    
+    // 8. initialize all token
     await initReservesByHelper(
         MainnetFork.ReservesConfig,
         allTokenAddresses,
         admin,
-        treasuryAddress
+        treasuryAddress,
     )
 
-    // 8. WETHGateway
+    // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
     const WETHGateway = await deployWETHGateway([mockTokensAddress['WETH']]);
     console.log('WETH Gateway address is: ', WETHGateway.address);

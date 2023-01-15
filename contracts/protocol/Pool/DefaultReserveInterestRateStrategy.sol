@@ -42,20 +42,12 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   // Slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _variableRateSlope2;
 
-  // Slope of the stable interest curve when utilization rate > 0 and <= OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal immutable _stableRateSlope1;
-
-  // Slope of the stable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
-  uint256 internal immutable _stableRateSlope2;
-
   constructor(
     ICounterAddressesProvider provider,
     uint256 optimalUtilizationRate,
     uint256 baseVariableBorrowRate,
     uint256 variableRateSlope1,
-    uint256 variableRateSlope2,
-    uint256 stableRateSlope1,
-    uint256 stableRateSlope2
+    uint256 variableRateSlope2
   ) public {
     OPTIMAL_UTILIZATION_RATE = optimalUtilizationRate;
     EXCESS_UTILIZATION_RATE = WadRayMath.ray() - optimalUtilizationRate;
@@ -63,8 +55,6 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     _baseVariableBorrowRate = baseVariableBorrowRate;
     _variableRateSlope1 = variableRateSlope1;
     _variableRateSlope2 = variableRateSlope2;
-    _stableRateSlope1 = stableRateSlope1;
-    _stableRateSlope2 = stableRateSlope2;
   }
 
   function variableRateSlope1() external view returns (uint256) {
@@ -75,13 +65,13 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     return _variableRateSlope2;
   }
 
-  function stableRateSlope1() external view returns (uint256) {
-    return _stableRateSlope1;
-  }
+  // function stableRateSlope1() external view returns (uint256) {
+  //   return _stableRateSlope1;
+  // }
 
-  function stableRateSlope2() external view returns (uint256) {
-    return _stableRateSlope2;
-  }
+  // function stableRateSlope2() external view returns (uint256) {
+  //   return _stableRateSlope2;
+  // }
 
   function baseVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate;

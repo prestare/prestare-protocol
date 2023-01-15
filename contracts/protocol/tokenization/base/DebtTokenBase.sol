@@ -8,7 +8,7 @@ import {Errors} from '../../libraries/helpers/Errors.sol';
 
 /**
  * @title DebtTokenBase
- * @notice Base contract for different types of debt tokens, like StableDebtToken or VariableDebtToken
+ * @notice Base contract for different types of debt tokens, like VariableDebtToken
  */
 
 abstract contract DebtTokenBase is

@@ -173,6 +173,10 @@ export const deployCounterCollateralManager = async (admin: Signer) => {
   )
 };
 
+// export const deployPToken = async (
+//   [Counter, underlyingAsset]:type) => {
+  
+// }
 export const deployWETHGateway = async (args: [string]) => {
   const ContractFac = await hre.ethers.getContractFactory("WETHGateway");
   return deployAndSave(
@@ -180,4 +184,26 @@ export const deployWETHGateway = async (args: [string]) => {
     ContractName.WETHGateway
   )
 }
+
+export const deployRateStrategy = async (
+  strategyName: string,
+  args: [string, string, string, string, string],
+): Promise<string> => {
+  switch (strategyName) {
+    default:
+      return await (
+        await deployDefaultReserveInterestRateStrategy(args)
+      ).address;
+  }
+};
+
+export const deployDefaultReserveInterestRateStrategy = async (
+  args: [string, string, string, string, string],
+) => {
+  const ContractFac = await hre.ethers.getContractFactory("DefaultReserveInterestRateStrategy");
+  return deployAndSave(
+    await ContractFac.deploy(...args),
+    ContractName.DefaultReserveInterestRateStrategy
+  )
+};
 

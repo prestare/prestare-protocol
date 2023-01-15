@@ -45,8 +45,8 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   }
 
   /**
-   * @dev Gets the revision of the stable debt token implementation
-   * @return The debt token implementation revision
+   * @dev Gets the revision of the debt token 
+   * @return The debt token revision
    **/
   function getRevision() internal pure virtual returns (uint256) {
     return DEBT_TOKEN_REVISION;

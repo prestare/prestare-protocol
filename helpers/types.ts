@@ -17,6 +17,7 @@ export enum ContractName {
     PrestareOracle = 'PrestareOracle',
     CounterCollateralManager = 'CounterCollateralManager',
     WETHGateway = 'WETHGateway',
+    DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
 }
 
 export enum EthereumNetwork {
