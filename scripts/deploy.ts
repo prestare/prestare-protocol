@@ -98,8 +98,8 @@ async function main() {
 
     const treasuryAddress = await admin.getAddress();
 
-    // 7. deploy AToken for each asset
-    
+    // 7. deploy pToken for each asset
+
     // 8. initialize all token
     await initReservesByHelper(
         MainnetFork.ReservesConfig,
@@ -113,7 +113,6 @@ async function main() {
     const WETHGateway = await deployWETHGateway([mockTokensAddress['WETH']]);
     console.log('WETH Gateway address is: ', WETHGateway.address);
     await authorizeWETHGateway(WETHGateway.address, CounterAddress);
-
 
     await CounterConfigurator.connect(admin).setPoolPause(false);
 

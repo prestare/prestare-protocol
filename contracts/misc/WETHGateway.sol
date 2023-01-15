@@ -33,10 +33,10 @@ contract WETHGateway is IWETHGateway, Ownable {
   }
 
   /**
-   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (aTokens)
+   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (pTokens)
    * is minted.
    * @param counter address of the targeted underlying Counter
-   * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
+   * @param onBehalfOf address of the user who will receive the pTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
   function depositETH(
