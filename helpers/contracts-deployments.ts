@@ -163,4 +163,21 @@ export const deployPrestareOracle = async (
     await ContractFac.deploy(...args),
     ContractName.PrestareOracle
   )
+};
+
+export const deployCounterCollateralManager = async (admin: Signer) => {
+  const ContractFac = await hre.ethers.getContractFactory("CounterCollateralManager");
+  return deployAndSave(
+    await ContractFac.deploy(),
+    ContractName.CounterCollateralManager
+  )
+};
+
+export const deployWETHGateway = async (args: [string]) => {
+  const ContractFac = await hre.ethers.getContractFactory("WETHGateway");
+  return deployAndSave(
+    await ContractFac.deploy(...args),
+    ContractName.WETHGateway
+  )
 }
+

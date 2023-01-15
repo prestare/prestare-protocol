@@ -12,7 +12,7 @@ export const MainnetFork = {
     MockUsdPriceInWei: '5848466240000000',
     oracleQuoteCurrency: 'ETH',
     OracleQuoteUnit: oneEther.toString(),
-    ReserveConfig: {
+    ReservesConfig: {
         DAI: strategyDAI,
         WETH: strategyWETH,
         USDC: strategyUSDC,

@@ -7,12 +7,15 @@ import {
     deployCounterConfigurator, 
     deployPriceOracle,
     deployAllMockAggregators,
-    deployPrestareOracle
+    deployPrestareOracle,
+    deployCounterCollateralManager,
+    deployWETHGateway
 } from "../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
+    authorizeWETHGateway
 } from '../helpers/contracts-helpers';
-import { getAllTokenAddresses, getPairsTokenAggregator, getQuoteCurrencies } from "../helpers/utils";
+import { getAllTokenAddresses, getPairsTokenAggregator, initReservesByHelper } from "../helpers/utils";
 import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
 import { TokenContractName } from "../helpers/types";
 import { MainnetFork } from '../markets/mainnet';
@@ -32,11 +35,13 @@ async function main() {
     const Counter = await deployCounter(admin);
 
     await addressesProvider.connect(admin).setCounter(Counter.address);
+    await Counter.connect(admin).initialize(addressesProvider.address);
     const CounterAddress: string = await addressesProvider.getCounter();
     console.log("Counter is deploy to: ", CounterAddress);
     
     // 3. deploy CounterConfigurator
     const CounterConfigurator = await deployCounterConfigurator(admin);
+    await CounterConfigurator.connect(admin).initialize(addressesProvider.address)
     await addressesProvider.setCounterConfigurator(CounterConfigurator.address);
     const CounterConfiguratorAddress = await addressesProvider.getCounterConfigurator();
 
@@ -85,6 +90,30 @@ async function main() {
     ]);
 
     await addressesProvider.setPriceOracle(prestareOracle.address);
+
+    // 6. deploy CounterCollateralManager
+    const collateralManager = await deployCounterCollateralManager(admin);
+    await addressesProvider.setCounterCollateralManager(collateralManager.address);
+
+    const treasuryAddress = await admin.getAddress();
+
+    // 7. initialize all token
+    await initReservesByHelper(
+        MainnetFork.ReservesConfig,
+        allTokenAddresses,
+        admin,
+        treasuryAddress
+    )
+
+    // 8. WETHGateway
+    // console.log("WETH is: ", [mockTokensAddress['WETH']]);
+    const WETHGateway = await deployWETHGateway([mockTokensAddress['WETH']]);
+    console.log('WETH Gateway address is: ', WETHGateway.address);
+    await authorizeWETHGateway(WETHGateway.address, CounterAddress);
+
+
+    await CounterConfigurator.connect(admin).setPoolPause(false);
+
 }
 
 main()

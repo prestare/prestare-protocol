@@ -12,7 +12,7 @@ import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveC
 import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
 import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
-
+import "hardhat/console.sol";
 contract WETHGateway is IWETHGateway, Ownable {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
@@ -28,14 +28,15 @@ contract WETHGateway is IWETHGateway, Ownable {
   }
 
   function authorizeCounter(address counter) external onlyOwner {
-    WETH.approve(counter, type(uint256).max);
+    console.log("authorizeCounter");
+    bool result = WETH.approve(counter, type(uint256).max);
   }
 
   /**
-   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (pTokens)
+   * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (aTokens)
    * is minted.
    * @param counter address of the targeted underlying Counter
-   * @param onBehalfOf address of the user who will receive the pTokens representing the deposit
+   * @param onBehalfOf address of the user who will receive the aTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
   function depositETH(

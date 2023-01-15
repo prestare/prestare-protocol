@@ -15,6 +15,8 @@ export enum ContractName {
     PriceOracle = 'PriceOracle',
     MockAggregator = 'MockAggregator',
     PrestareOracle = 'PrestareOracle',
+    CounterCollateralManager = 'CounterCollateralManager',
+    WETHGateway = 'WETHGateway',
 }
 
 export enum EthereumNetwork {
@@ -38,7 +40,23 @@ export interface IInterestRateStrategyParams {
     baseVariableBorrowRate: string;
     variableRateSlope1: string;
     variableRateSlope2: string;
+};
+
+export interface IReserveBorrowParams {
+    borrowingEnabled: boolean;
+    reserveDecimals: string;
 }
+export interface IReserveCollateralParams {
+    baseLTVAsCollateral: string;
+    liquidationThreshold: string;
+    liquidationBonus: string;
+};
+
+export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
+    pToken: ContractName;
+    reserveFactor: string;
+    strategy: IInterestRateStrategyParams;
+  }
 
 export enum Prestare {
     MainnetFork = 'MainnetFork',

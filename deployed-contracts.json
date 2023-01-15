@@ -1,97 +1,109 @@
 {
   "CounterAddressesProvider": {
     "localhost": {
-      "address": "0xb932C8342106776E73E39D695F3FFC3A9624eCE0",
+      "address": "0xEb0fCBB68Ca7Ba175Dc1D3dABFD618e7a3F582F6",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "ReserveLogic": {
     "localhost": {
-      "address": "0x2c8ED11fd7A058096F2e5828799c68BE88744E2F",
+      "address": "0xE2307e3710d108ceC7a4722a020a050681c835b3",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "GenericLogic": {
     "localhost": {
-      "address": "0x7580708993de7CA120E957A62f26A5dDD4b3D8aC",
+      "address": "0xD28F3246f047Efd4059B24FA1fa587eD9fa3e77F",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "CRTLogic": {
     "localhost": {
-      "address": "0x75c68e69775fA3E9DD38eA32E554f6BF259C1135",
+      "address": "0x15F2ea83eB97ede71d84Bd04fFF29444f6b7cd52",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "ValidationLogic": {
     "localhost": {
-      "address": "0x572316aC11CB4bc5daf6BDae68f43EA3CCE3aE0e",
+      "address": "0x0B32a3F8f5b7E5d315b9E52E640a49A89d89c820",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "Counter": {
     "localhost": {
-      "address": "0x975Ab64F4901Af5f0C96636deA0b9de3419D0c2F",
+      "address": "0xF357118EBd576f3C812c7875B1A1651a7f140E9C",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "CounterConfigurator": {
     "localhost": {
-      "address": "0xCd7c00Ac6dc51e8dCc773971Ac9221cC582F3b1b",
+      "address": "0xb6057e08a11da09a998985874FE2119e98dB3D5D",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "MintableERC20": {
     "localhost": {
-      "address": "0xFD2Cf3b56a73c75A7535fFe44EBABe7723c64719",
+      "address": "0xD56e6F296352B03C3c3386543185E9B8c2e5Fd0b",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "DAI": {
     "localhost": {
-      "address": "0x94fFA1C7330845646CE9128450F8e6c3B5e44F86",
+      "address": "0x4278C5d322aB92F1D876Dd7Bd9b44d1748b88af2",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "WETH": {
     "localhost": {
-      "address": "0xCa1D199b6F53Af7387ac543Af8e8a34455BBe5E0",
+      "address": "0x0D92d35D311E54aB8EEA0394d7E773Fc5144491a",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "USDC": {
     "localhost": {
-      "address": "0xdF46e54aAadC1d55198A4a8b4674D7a4c927097A",
+      "address": "0x24EcC5E6EaA700368B8FAC259d3fBD045f695A08",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "USDT": {
     "localhost": {
-      "address": "0xf5c4a909455C00B99A90d93b48736F3196DB5621",
+      "address": "0x876939152C56362e17D508B9DEA77a3fDF9e4083",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "BUSD": {
     "localhost": {
-      "address": "0xFD2Cf3b56a73c75A7535fFe44EBABe7723c64719",
+      "address": "0xD56e6F296352B03C3c3386543185E9B8c2e5Fd0b",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "PriceOracle": {
     "localhost": {
-      "address": "0xB22C255250d74B0ADD1bfB936676D2a299BF48Bd",
+      "address": "0xEC7cb8C3EBE77BA6d284F13296bb1372A8522c5F",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "MockAggregator": {
     "localhost": {
-      "address": "0x9338CA7d556248055f5751d85cDA7aD6eF254433",
+      "address": "0x11632F9766Ee9d9317F95562a6bD529652ead78f",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   },
   "PrestareOracle": {
     "localhost": {
-      "address": "0x9c65f85425c619A6cB6D29fF8d57ef696323d188",
+      "address": "0x4f1F87d512650f32bf9949C4c5Ef37a3cc891C6D",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "CounterCollateralManager": {
+    "localhost": {
+      "address": "0x4c04377f90Eb1E42D845AB21De874803B8773669",
+      "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+    }
+  },
+  "WETHGateway": {
+    "localhost": {
+      "address": "0x8CeA85eC7f3D314c4d144e34F2206C8Ac0bbadA1",
       "deployer": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
     }
   }

@@ -1,6 +1,10 @@
+import { Signer } from 'ethers';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import { TokenMap } from './types';
+import { 
+  TokenMap,
+  IReserveParams
+} from './types';
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
 export const getAllTokenAddresses = (mockTokens: TokenMap) =>
@@ -62,3 +66,12 @@ export const getPairsTokenAggregator = (
 
   return [mappedPairs, mappedAggregators];
 };
+
+export const initReservesByHelper = async (
+  reservesParams:{ [key: string]: IReserveParams},
+  tokenAddresses: { [symbol: string]: string },
+  admin: Signer,
+  treasuryAddress: String
+  ) => {
+  
+}

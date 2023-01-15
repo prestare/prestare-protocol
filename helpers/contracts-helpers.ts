@@ -9,7 +9,7 @@ const hre: HardhatRuntimeEnvironment = require('hardhat');
 export const getReservesConfigByPool = (pool: Prestare) => {
     switch (pool) {
         case Prestare.MainnetFork:
-            return MainnetFork.ReserveConfig;
+            return MainnetFork.ReservesConfig;
     }
 }
 
@@ -65,3 +65,19 @@ export const getMintableERC20 = async (address: string) =>
         await getDb().get(`${ContractName.MintableERC20}.${hre.network.name}`).value()
       ).address,
 );
+
+export const getWETHGateway = async (address?: string) =>
+  await (await hre.ethers.getContractFactory("WETHGateway")).attach(
+    address || (
+        await getDb().get(`${ContractName.WETHGateway}.${hre.network.name}`).value()
+      ).address,
+  
+);
+
+export const authorizeWETHGateway = async (
+  wethGateWay: string,
+  Counter: string
+) =>
+  await (await hre.ethers.getContractFactory("WETHGateway"))
+    .attach(wethGateWay)
+    .authorizeCounter(Counter);

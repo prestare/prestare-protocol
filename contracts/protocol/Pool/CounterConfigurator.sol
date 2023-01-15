@@ -15,6 +15,8 @@ import {DataTypes} from '../libraries/types/DataTypes.sol';
 
 import {ICounterConfigurator} from '../../interfaces/ICounterConfigurator.sol';
 
+import "hardhat/console.sol";
+
 contract CounterConfigurator is ICounterConfigurator {
   using PercentageMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -28,6 +30,8 @@ contract CounterConfigurator is ICounterConfigurator {
   }
 
   modifier onlyEmergencyAdmin {
+    console.log(addressesProvider.getEmergencyAdmin());
+    console.log(msg.sender);
     require(
       addressesProvider.getEmergencyAdmin() == msg.sender,
       Errors.LPC_CALLER_NOT_EMERGENCY_ADMIN
