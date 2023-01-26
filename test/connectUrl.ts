@@ -1,0 +1,20 @@
+import { ethers } from "ethers";
+
+const url = 'http://120.53.224.174:8545';
+// const url = 'http://35.77.194.76:8546';
+
+async function main() {
+    console.log("Connecting to blockchain, loading token balances...");
+    console.log('');
+    const PRIVATE_KEY = process.env.PRIVATE_KEY;
+    const provider = new ethers.providers.JsonRpcProvider(url);
+    let chainId = (await provider.getNetwork()).chainId;
+    console.log(chainId);
+}
+
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
