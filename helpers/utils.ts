@@ -19,6 +19,7 @@ import {
   TokenMap,
   IReserveParams
 } from './types';
+
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
 export const getAllTokenAddresses = (mockTokens: TokenMap) =>

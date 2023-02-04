@@ -205,7 +205,7 @@ export const deployCRT = async (admin: Signer) => {
   const ContractFac = await hre.ethers.getContractFactory("MockCRT");
   return deployAndSave(
     await ContractFac.connect(admin).deploy(),
-    ContractName.CounterCollateralManager
+    ContractName.CRT
   )
 }
 

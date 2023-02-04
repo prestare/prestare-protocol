@@ -24,14 +24,20 @@ const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
+      chainId: 2,
       forking: {
         url: "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_ID,
         blockNumber: 15415000
-      }
+      },
+      gasPrice: 0,
+      initialBaseFeePerGas: 0,
+      loggingEnabled: false
     },
     localhost: {
-      url: "http://127.0.0.1:8545/"
-    }
+      url: "http://120.53.224.174:8546",
+      chainId: 2,
+      gas: 3e7
+    },
   }
 };
 

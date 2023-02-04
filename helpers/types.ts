@@ -18,6 +18,7 @@ export enum ContractName {
     CounterCollateralManager = 'CounterCollateralManager',
     WETHGateway = 'WETHGateway',
     DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
+    CRT = 'CRT',
 }
 
 export enum EthereumNetwork {
