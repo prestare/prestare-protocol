@@ -40,8 +40,8 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
 export const getDbProperty = async (contractId: string, network:string) => {
   // await getDb().read();
   // console.log(network);
-  // console.log(getDb().get(`${contractId}.${network}`).value());
-  console.log(getDb().get(`ReserveLogic.${network}`).value());
+  console.log(getDb().get(`${contractId}.${network}`).value());
+  // console.log(getDb().get(`ReserveLogic.${network}`).value());
 
   return 
 }

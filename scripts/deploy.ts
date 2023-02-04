@@ -118,7 +118,7 @@ async function main() {
     await CounterConfigurator.connect(admin).setCRT(CRT.address);
     
     await CounterConfigurator.connect(admin).setPoolPause(false);
-
+    
 }
 
 main()
