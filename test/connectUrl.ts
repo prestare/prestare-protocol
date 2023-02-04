@@ -9,6 +9,8 @@ async function main() {
     const PRIVATE_KEY = process.env.PRIVATE_KEY;
     const provider = new ethers.providers.JsonRpcProvider(url);
     let chainId = (await provider.getNetwork()).chainId;
+    let blockNumber = await provider.getBlockNumber();
+    console.log(blockNumber);
     console.log(chainId);
 }
 

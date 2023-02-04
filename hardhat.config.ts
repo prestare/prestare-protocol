@@ -30,7 +30,7 @@ const config: HardhatUserConfig = {
       }
     },
     localhost: {
-      url: "http://127.0.0.1:8545/"
+      url: "http://120.53.224.174:8545/"
     }
   }
 };
