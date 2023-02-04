@@ -131,11 +131,12 @@ export const deployPriceOracle = async (admin:Signer) => {
   )
 }
 
-export const deployMockAggregator = async (price: string) => {
+export const deployMockAggregator = async (tokenName:string, price: string) => {
   const ContractFac = await hre.ethers.getContractFactory("MockAggregator");
+  let name = ContractName.MockAggregator + "-" + tokenName;
   return deployAndSave(
     await ContractFac.deploy(price),
-    ContractName.MockAggregator
+    name
   )
 };
 
@@ -149,7 +150,7 @@ export const deployAllMockAggregators = async (
         (value) => value === tokenContractName
       );
       const [, price] = (Object.entries(initialPrices) as [string, string][])[priceIndex];
-      aggregators[tokenContractName] = (await deployMockAggregator(price)).address;
+      aggregators[tokenContractName] = (await deployMockAggregator(tokenContractName, price)).address;
     }
   }
   return aggregators;
