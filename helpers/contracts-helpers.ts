@@ -2,6 +2,7 @@ import { MainnetFork } from "../markets/mainnet";
 import { Contract, ethers, Signer } from "ethers";
 import { ContractName, Prestare, TokenContractName } from "./types";
 import { getDb } from './utils';
+import { getCounterAddress } from './contracts-getter';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
 
@@ -40,10 +41,9 @@ export const registerContractInJsonDb = async (contractId: string, contractInsta
 export const getDbProperty = async (contractId: string, network:string) => {
   // await getDb().read();
   // console.log(network);
-  console.log(getDb().get(`${contractId}.${network}`).value());
+  const result = getDb().get(`${contractId}.${network}`).value()
   // console.log(getDb().get(`ReserveLogic.${network}`).value());
-
-  return 
+  return result
 }
 
 export const rawInsertContractAddressInDb = async (id: string, address: string) =>
@@ -75,6 +75,7 @@ export const getAllMockedTokens = async () => {
     );
     return tokens;
 };
+
 
 export const getMintableERC20 = async (address: string) =>
   await (await hre.ethers.getContractFactory("MintableERC20")).attach(
@@ -109,7 +110,7 @@ export const getCounterAddressesProvider = async (address?: string) => {
 };
 
 export const getCounter = async (admin: Signer, address?: string) => {
-  console.log(address);
+  // console.log(address);
   return Counter__factory.connect(
     address ||
       (
@@ -139,3 +140,15 @@ export const getCounterConfigurator = async (address?: string) => {
       ).address,
   );
 };
+
+export const approveToken4Counter = async (signer: Signer, token: Contract, amount: ethers.BigNumber) => {
+  const counterAddress = await getCounterAddress()
+  const balanceBefore = await token.allowance(signer.getAddress(), counterAddress.address);
+  console.log("token %s", token.address);
+  console.log("   Before Approve, allowance is: ", balanceBefore.toString());
+  console.log(counterAddress.address);
+  let tx = await token.connect(signer).approve(counterAddress.address, amount);
+  // console.log(tx);
+  const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);
+  console.log("   After  Approve, allowance is: ", balanceAfter.toString());
+}
