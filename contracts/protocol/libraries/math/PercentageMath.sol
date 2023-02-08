@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: Unlicensed
-pragma solidity ^0.8.4;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.10;
 
-import {Errors} from "../helpers/Errors.sol";
+import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title PercentageMath library
- * @author Aave
  * @notice Provides functions to perform percentage calculations
  * @dev Percentages are defined by default with 2 decimals of precision (100.00). The precision is indicated by PERCENTAGE_FACTOR
  * @dev Operations are rounded half up

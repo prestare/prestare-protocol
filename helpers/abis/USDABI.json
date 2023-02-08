@@ -1,0 +1,7 @@
+[
+    "function approve(address, uint) returns (bool)",
+    "function transfer(address, uint)",
+    'function transferFrom(address, address, uint)',
+    'function balanceOf(address) view returns (uint)',
+    'function allowance(address, address) returns (uint)',
+]

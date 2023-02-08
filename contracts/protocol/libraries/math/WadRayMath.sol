@@ -1,11 +1,10 @@
-// SPDX-License-Identifier: Unlicensed
-pragma solidity ^0.8.4;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity ^0.8.10;
 
 import {Errors} from '../helpers/Errors.sol';
 
 /**
  * @title WadRayMath library
- * @author Aave
  * @dev Provides mul and div function for wads (decimal numbers with 18 digits precision) and rays (decimals with 27 digits)
  **/
 
