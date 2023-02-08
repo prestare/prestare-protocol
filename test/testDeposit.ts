@@ -14,7 +14,10 @@ const hre: HardhatRuntimeEnvironment = require('hardhat');
 async function mintToken(tokenName: string, amount: string) {
     console.log();
     console.log("mint %s ...", tokenName);
-    let [signer,] = await hre.ethers.getSigners();
+    let [signer,tx2,tx3] = await hre.ethers.getSigners();
+    console.log("signer ETH Balance: ", await (await signer.getBalance()).toString());
+    console.log("tx2 ETH Balance: ", await (await tx2.getBalance()).toString());
+    console.log("tx3 ETH Balance: ", await (await tx3.getBalance()).toString());
 
     const tokenContract = await getTokenContract(tokenName);
 
@@ -55,10 +58,10 @@ async function depositToken(tokenName: string, amount: string) {
 async function main() {
     let amount = '10';
     let tokens = Object.keys(TokenContractName)
-    // for (let tokenSymbol of tokens) {
-    //     // console.log(tokenSymbol);
-    //     await mintToken(tokenSymbol, amount);
-    // }
+    for (let tokenSymbol of tokens) {
+        // console.log(tokenSymbol);
+        await mintToken(tokenSymbol, amount);
+    }
     await depositToken('DAI', amount);
 }
 
