@@ -1,5 +1,5 @@
 import { ethers, Signer, BigNumber, Contract } from 'ethers';
-import { getCounterAddress, getTokenAddress, getTokenContract } from '../helpers/contracts-getter';
+import { getCounterAssetInfo, getPTokenContract, getTokenContract } from '../helpers/contracts-getter';
 import { getDb } from '../helpers/utils';
 
 import { getProvider } from '../test/connectUrl';
@@ -43,6 +43,12 @@ async function depositToken(tokenName: string, amount: string) {
     // const approveTx = await approveToken4Counter(signer, token, depositAmount);
 
     // const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
+    const pToken: Contract = await getPTokenContract(tokenName);
+    const pTokenBalance = await pToken.balanceOf(signer.address);
+    console.log("After deposit pToken amount is: ", pTokenBalance.toString());
+
+    const counterInfo = await getCounterAssetInfo(signer, token.address);
+    console.log("");
     // console.log(tx);
 }
 

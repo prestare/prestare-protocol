@@ -84,12 +84,19 @@ export const getMintableERC20 = async (address: string) =>
       ).address,
 );
 
+export const getPToken = async (address:string) => 
+  await (await hre.ethers.getContractFactory("PToken")).attach(
+    address || (
+        await getDb().get(`${ContractName.PToken}.${hre.network.name}`).value()
+    ).address,
+);
+
+
 export const getWETHGateway = async (address?: string) =>
   await (await hre.ethers.getContractFactory("WETHGateway")).attach(
     address || (
         await getDb().get(`${ContractName.WETHGateway}.${hre.network.name}`).value()
       ).address,
-  
 );
 
 export const authorizeWETHGateway = async (
