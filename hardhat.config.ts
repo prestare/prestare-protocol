@@ -31,7 +31,7 @@ const config: HardhatUserConfig = {
       },
       gasPrice: 0,
       initialBaseFeePerGas: 0,
-      loggingEnabled: false
+      loggingEnabled: true
     },
     localhost: {
       url: "http://120.53.224.174:8545",

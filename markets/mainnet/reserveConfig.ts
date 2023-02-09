@@ -1,37 +1,38 @@
 import { ContractName } from '../../helpers/types';
 import { rateStrategyStableOne, rateStrategyStableTwo, rateStrategyWETH} from './rateStrategies';
+import { IReserveParams } from '../../helpers/types';
 
-export const strategyBUSD = {
+export const strategyBUSD: IReserveParams = {
     strategy: rateStrategyStableOne,
-    baseLTVAsCollateral: '0',
-    liquidationThreshold: '0',
-    liquidationBonus: '0',
+    baseLTVAsCollateral: '8000',
+    liquidationThreshold: '8500',
+    liquidationBonus: '10500',
     borrowingEnabled: true,
     reserveDecimals: '18',
     pToken: ContractName.PToken,
     reserveFactor: '1000',
   };
-export const strategyUSDC = {
+export const strategyUSDC: IReserveParams = {
     strategy: rateStrategyStableOne,
-    baseLTVAsCollateral: '0',
-    liquidationThreshold: '0',
-    liquidationBonus: '0',
+    baseLTVAsCollateral: '8000',
+    liquidationThreshold: '8500',
+    liquidationBonus: '10500',
     borrowingEnabled: true,
     reserveDecimals: '18',
     pToken: ContractName.PToken,
     reserveFactor: '1000',
   };
-  export const strategyUSDT = {
+  export const strategyUSDT: IReserveParams = {
     strategy: rateStrategyStableOne,
-    baseLTVAsCollateral: '0',
-    liquidationThreshold: '0',
-    liquidationBonus: '0',
+    baseLTVAsCollateral: '8000',
+    liquidationThreshold: '8500',
+    liquidationBonus: '10500',
     borrowingEnabled: true,
     reserveDecimals: '18',
     pToken: ContractName.PToken,
     reserveFactor: '1000',
   };
-export const strategyDAI = {
+export const strategyDAI: IReserveParams = {
     strategy: rateStrategyStableTwo,
     baseLTVAsCollateral: '7500',
     liquidationThreshold: '8000',
@@ -42,13 +43,12 @@ export const strategyDAI = {
     reserveFactor: '1000',
   };
 
-export const strategyWETH = {
+export const strategyWETH: IReserveParams = {
     strategy: rateStrategyWETH,
     baseLTVAsCollateral: '8000',
     liquidationThreshold: '8250',
     liquidationBonus: '10500',
     borrowingEnabled: true,
-    stableBorrowRateEnabled: true,
     reserveDecimals: '18',
     pToken: ContractName.PToken,
     reserveFactor: '1000',

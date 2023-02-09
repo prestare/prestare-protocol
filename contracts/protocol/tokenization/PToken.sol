@@ -9,6 +9,7 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {Errors} from '../libraries/helpers/Errors.sol';
 
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
+import "hardhat/console.sol";
 
 /**
  * @title Prestare ERC20 PToken
@@ -133,7 +134,7 @@ contract PToken is
 
     emit Transfer(address(0), user, amount);
     emit Mint(user, amount, index);
-
+    console.log("previousBalance is: ", previousBalance);
     return previousBalance == 0;
   }
 

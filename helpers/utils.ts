@@ -1,7 +1,8 @@
-import { BigNumber, Signer } from 'ethers';
+import { BigNumber, Signer, BigNumberish } from 'ethers';
 import { getContractAddress } from 'ethers/lib/utils';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
+import { token } from '../typechain-types/@openzeppelin/contracts';
 import { ZERO_ADDRESS } from './constants';
 import { 
   deployPToken, 
@@ -187,6 +188,93 @@ export const initReservesByHelper = async (
   console.log("finish initReserve.");
 };
 
+export const configureReservesByHelper =async (
+  reservesParams:{ [key: string]: IReserveParams},
+  tokenAddresses: { [symbol: string]: string },
+  admin: Signer,
+) => {
+  const addressProvider = await getCounterAddressesProvider();
+  const tokens: string[] = [];
+  const symbols: string[] = [];
 
+  const inputParams: {
+    asset: string;
+    baseLTV: BigNumberish;
+    liquidationThreshold: BigNumberish;
+    liquidationBonus: BigNumberish;
+    reserveFactor: BigNumberish;
+    borrowingEnabled: boolean;
+  }[] = [];
 
+  for (const [reserveSymbol, {
+    baseLTVAsCollateral,
+    liquidationBonus,
+    liquidationThreshold,
+    reserveFactor,
+    borrowingEnabled,
+  }] of Object.entries(reservesParams) as [string, IReserveParams][]) {
+    if (!tokenAddresses[reserveSymbol]) {
+      console.log(
+        `- Skipping init of ${reserveSymbol} due token address is not set at markets config`
+      );
+      continue;
+    }
+    if (baseLTVAsCollateral === '-1') continue;
 
+    const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+      (value) => value === reserveSymbol
+    );
+
+    const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
+      assetAddressIndex
+    ];
+
+    inputParams.push({
+      asset: tokenAddress,
+      baseLTV: baseLTVAsCollateral,
+      liquidationThreshold: liquidationThreshold,
+      liquidationBonus: liquidationBonus,
+      reserveFactor: reserveFactor,
+      borrowingEnabled: borrowingEnabled,
+    });
+
+    tokens.push(tokenAddress);
+    symbols.push(reserveSymbol);
+  }
+
+  if (tokens.length) {
+    const configurator = await getCounterConfigurator();
+    for (let index = 0; index < inputParams.length; index++) {
+      console.log(inputParams[index]);
+      await configurator.connect(admin).configureReserveAsCollateral(
+        inputParams[index].asset,
+        inputParams[index].baseLTV,
+        inputParams[index].liquidationThreshold,
+        inputParams[index].liquidationBonus,
+      );
+      if (inputParams[index].borrowingEnabled) {
+        await configurator.connect(admin).enableBorrowingOnReserve(
+          inputParams[index].asset,
+          false
+        );
+      }
+      await configurator.setReserveFactor(inputParams[index].asset, inputParams[index].reserveFactor);
+    }
+    console.log("finish configure Reserve.");
+  }
+}
+
+export const enableReservesBorrowing = async (
+  tokenAddresses: { [symbol: string]: string },
+  admin: Signer,
+  ) => {
+    const addressProvider = await getCounterAddressesProvider();
+    const configurator = await getCounterConfigurator(await addressProvider.getCounterConfigurator())
+    const reserves = Object.entries(tokenAddresses);
+
+    for (let [symbol, address] of reserves) {
+      console.log("Enable %s token to be borrowed", symbol);
+      await configurator.connect(admin).enableBorrowingOnReserve(address, false);
+    }
+
+  }

@@ -11,13 +11,13 @@ import { token } from '../typechain-types/@openzeppelin/contracts';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-async function mintToken(tokenName: string, amount: string) {
+export async function mintToken(tokenName: string, amount: string) {
     console.log();
     console.log("mint %s ...", tokenName);
-    let [signer,tx2,tx3] = await hre.ethers.getSigners();
+    let [signer,] = await hre.ethers.getSigners();
     console.log("signer ETH Balance: ", await (await signer.getBalance()).toString());
-    console.log("tx2 ETH Balance: ", await (await tx2.getBalance()).toString());
-    console.log("tx3 ETH Balance: ", await (await tx3.getBalance()).toString());
+    // console.log("tx2 ETH Balance: ", await (await tx2.getBalance()).toString());
+    // console.log("tx3 ETH Balance: ", await (await tx3.getBalance()).toString());
 
     const tokenContract = await getTokenContract(tokenName);
 
@@ -35,7 +35,7 @@ async function mintToken(tokenName: string, amount: string) {
     console.log("   Account Balance is:", balanceT0.toString());
 }
 
-async function depositToken(tokenName: string, amount: string) {
+export async function depositToken(tokenName: string, amount: string) {
     const [signer,] = await hre.ethers.getSigners();
     const counter: Counter = await getCounter(signer);
     const token: Contract = await getTokenContract(tokenName);
@@ -43,9 +43,9 @@ async function depositToken(tokenName: string, amount: string) {
     const decimals = await token.decimals();
     console.log("Token decimals is: ", decimals);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
-    // const approveTx = await approveToken4Counter(signer, token, depositAmount);
+    const approveTx = await approveToken4Counter(signer, token, depositAmount);
 
-    // const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
+    const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
     const pToken: Contract = await getPTokenContract(tokenName);
     const pTokenBalance = await pToken.balanceOf(signer.address);
     console.log("After deposit pToken amount is: ", pTokenBalance.toString());
@@ -61,8 +61,11 @@ async function main() {
     for (let tokenSymbol of tokens) {
         // console.log(tokenSymbol);
         await mintToken(tokenSymbol, amount);
+        await depositToken(tokenSymbol, amount);
     }
-    await depositToken('DAI', amount);
+    // let tokenSymbol = 'DAI';
+    // await mintToken(tokenSymbol, amount);
+    // await depositToken(tokenSymbol, amount);
 }
 
 main()

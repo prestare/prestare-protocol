@@ -23,7 +23,7 @@ import {GenericLogic} from '../libraries/logic/GenericLogic.sol';
 import {ValidationLogic} from '../libraries/logic/ValidationLogic.sol';
 
 import {DataTypes} from '../libraries/types/DataTypes.sol';
-
+import "hardhat/console.sol";
 /**
  * @title Prestare Counter contract
  * @dev Main point of User interaction in Prestare protocol
@@ -115,6 +115,7 @@ contract Counter is ICounter, CounterStorage {
     bool isFirstDeposit = IPToken(pToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
 
     if (isFirstDeposit) {
+      console.log("First deposit and setUsingAsCollateral");
       _usersConfig[onBehalfOf].setUsingAsCollateral(reserve.id, true);
       emit ReserveUsedAsCollateralEnabled(asset, onBehalfOf);
     }
@@ -251,7 +252,7 @@ contract Counter is ICounter, CounterStorage {
       _reservesCount,
       oracle
     );
-
+    console.log("borrow - userCollateralBalanceETH is ", userStatVar.userCollateralBalanceETH);
     uint256 crtamount = 0;
     if (vars.crtenable) {
       crtamount = CRTLogic.calculateCRTBorrow(

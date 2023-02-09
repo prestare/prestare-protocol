@@ -9,6 +9,7 @@ import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {PercentageMath} from '../math/PercentageMath.sol';
 import {DataTypes} from '../types/DataTypes.sol';
+import "hardhat/console.sol";
 
 /**
  * @title GenericLogic library
@@ -169,6 +170,7 @@ library GenericLogic {
     }
     for (vars.i = 0; vars.i < reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
+        console.log("calculateUserAccountData - found not allow borrowed asset");
         continue;
       }
 
@@ -181,15 +183,20 @@ library GenericLogic {
 
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+      console.log("user Config:");
+      console.log(userConfig.isUsingAsCollateral(vars.i));
+      console.log("liquidationThreshold");
+      console.log(vars.liquidationThreshold);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
+        console.log("calculateUserAccountData calculate asset %s value", vars.i);
         vars.compoundedLiquidityBalance = IERC20(currentReserve.pTokenAddress).balanceOf(user);
 
         uint256 liquidityBalanceETH =
           vars.reserveUnitPrice * (vars.compoundedLiquidityBalance) / (vars.tokenUnit);
 
         vars.totalCollateralInETH = vars.totalCollateralInETH + liquidityBalanceETH;
-
+        console.log("totalCollateral In Eth is: ", vars.totalCollateralInETH );
         vars.avgLtv = vars.avgLtv + (liquidityBalanceETH * vars.ltv);
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold + (
           liquidityBalanceETH * vars.liquidationThreshold

@@ -127,6 +127,15 @@ export const getCounter = async (admin: Signer, address?: string) => {
   )
 };
 
+export const getCounterConfigurator = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("CounterConfigurator")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.CounterConfigurator}.${hre.network.name}`).value()
+      ).address,
+  );
+};
+
 export const getContractAddressWithJsonFallback = async (
   id: string,
 ): Promise<string> => {
@@ -139,14 +148,6 @@ export const getContractAddressWithJsonFallback = async (
   throw Error(`Missing contract address ${id} at Market config and JSON local db`);
 };
 
-export const getCounterConfigurator = async (address?: string) => {
-  return await (await hre.ethers.getContractFactory("CounterConfigurator")).attach(
-    address ||
-      (
-        await getDb().get(`${ContractName.CounterConfigurator}.${hre.network.name}`).value()
-      ).address,
-  );
-};
 
 export const approveToken4Counter = async (signer: Signer, token: Contract, amount: ethers.BigNumber) => {
   const counterAddress = await getCounterAddress()

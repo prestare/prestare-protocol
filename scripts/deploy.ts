@@ -16,7 +16,12 @@ import {
     getAllMockedTokens,
     authorizeWETHGateway
 } from '../helpers/contracts-helpers';
-import { getAllTokenAddresses, getPairsTokenAggregator, initReservesByHelper } from "../helpers/utils";
+import { getAllTokenAddresses,
+    getPairsTokenAggregator,
+    initReservesByHelper, 
+    enableReservesBorrowing,
+    configureReservesByHelper
+ } from "../helpers/utils";
 import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
 import { TokenContractName } from "../helpers/types";
 import { MainnetFork } from '../markets/mainnet';
@@ -106,6 +111,7 @@ async function main() {
         admin,
         treasuryAddress,
     )
+    await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses, admin);
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
