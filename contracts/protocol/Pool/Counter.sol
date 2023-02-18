@@ -181,7 +181,7 @@ contract Counter is ICounter, CounterStorage {
    * corresponding debt token (VariableDebtToken)
    * @param asset The address of the underlying asset to borrow
    * @param amount The amount to be borrowed
-   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Variable, 2 for Stable
+   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
    * @param onBehalfOf Address of the user who will receive the debt. Should be the address of the borrower itself
@@ -324,7 +324,7 @@ contract Counter is ICounter, CounterStorage {
    * @param asset The address of the borrowed underlying asset previously borrowed
    * @param amount The amount to repay
    * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
-   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Variable, 2 for Stable
+   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
    * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
    * user calling the function if he wants to reduce/remove his own debt, or the address of any other
    * other borrower whose debt should be removed
@@ -388,7 +388,7 @@ contract Counter is ICounter, CounterStorage {
       _crtaddress
     );
 
-    if (unlockCRT != 0) {
+    if (unlockCRT > 0) {
       ICRT(_crtaddress).unlockCRT(msg.sender, unlockCRT);
     }
 

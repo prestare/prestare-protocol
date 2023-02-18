@@ -1,5 +1,5 @@
 import { getCounter, getDbProperty } from './contracts-helpers';
-import { getMintableERC20, getPToken } from './contracts-helpers';
+import { getMintableERC20, getPToken, getVariableDebtToken } from './contracts-helpers';
 import { ContractName } from './types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Signer } from 'ethers';
@@ -38,6 +38,12 @@ export const getVariableDebtTokenAddress = async (tokenName:string) => {
     let debtToken = "variable Debt p" + tokenName;
     let debtTokenInfo = await getDbProperty(debtToken, hre.network.name);
     return debtTokenInfo;
+}
+
+export const getVariableDebtTokenContract = async (tokenName:string) => {
+    let debtTokenAddress = (await getVariableDebtTokenAddress(tokenName)).address;
+    let debtTokenContract = await getVariableDebtToken(debtTokenAddress);
+    return debtTokenContract;
 }
 
 export const getCounterAddress = async () => {

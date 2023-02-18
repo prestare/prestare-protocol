@@ -1,5 +1,5 @@
 import { ethers, Signer, BigNumber, Contract } from 'ethers';
-import { getCounterAssetInfo, getPTokenContract, getTokenContract } from '../helpers/contracts-getter';
+import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract } from '../helpers/contracts-getter';
 import { getDb } from '../helpers/utils';
 
 import { getProvider } from '../test/connectUrl';
@@ -13,27 +13,35 @@ import { mintToken, depositToken } from './testDeposit';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export async function borrowToken(tokenName: string, amount: string) {
+    console.log();
+    console.log("Borrow...")
     const [signer,] = await hre.ethers.getSigners();
     const counter: Counter = await getCounter(signer);
     const token: Contract = await getTokenContract(tokenName);
+    const debtToken: Contract = await getVariableDebtTokenContract(tokenName);
 
     const decimals = await token.decimals();
-    console.log("Token decimals is: ", decimals);
+    console.log("   Token decimals is: ", decimals);
     const balanceT0: BigNumber = await token.balanceOf(signer.address);
-    console.log("Before Borrow, borrower balance is: ", balanceT0.toString());
-    
+    console.log("   Before Borrow, borrower balance is: ", balanceT0.toString());
+    const debtT0: BigNumber = await debtToken.balanceOf(signer.address);
+    console.log("   Before Borrow, borrower debt balance is: ", debtT0.toString());
+
     const borrowAmount = ethers.utils.parseUnits(amount, decimals);
     
     let crtenable = false;
     let userConfig = await counter.getUserConfiguration(signer.address);
     console.log(userConfig);
     const tx = await counter.connect(signer).borrow(token.address, borrowAmount, 2, 0, signer.address, crtenable);
+    
     const balanceT1: BigNumber = await token.balanceOf(signer.address);
-    console.log("After Borrow borrower balance is: ", balanceT1.toString());
+    const debtT1: BigNumber = await debtToken.balanceOf(signer.address);
+    console.log("   After Borrow borrower balance is: ", balanceT1.toString());
+    console.log("   After Borrow, borrower debt balance is: ", debtT1.toString());
 
     const counterInfo = await getCounterAssetInfo(signer, token.address);
     console.log("");
-    // console.log(tx);
+
 }
 
 async function main() {

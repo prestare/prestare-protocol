@@ -12,6 +12,7 @@ import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterest
 import {DataTypes} from '../types/DataTypes.sol';
 
 import {ICRT} from '../../../CRT/ICRT.sol';
+import "hardhat/console.sol";
 /**
  * @title CRT Logic Library
  */
@@ -86,6 +87,7 @@ library CRTLogic {
         uint newcrtvalue = calculateCRTValue(newltv, cf);
         uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
         uint idleCRTValue = userlockBalance * newcrtvalue - (oldcrtvalue);
+        console.log("idelCRT value is: ", idleCRTValue);
         // todo it need more validation? like check the user health factor?
         return idleCRTValue;
     }
@@ -100,7 +102,13 @@ library CRTLogic {
 
     function calculateCRTValue(uint256 ltv, uint256 cf) internal returns (uint) {
         // scale by 1e18
+        console.log("ltv is ", ltv);
+        console.log("collateral factor is ", cf);
+        if (ltv < cf) {
+            return WadRayMath.WAD;
+        }
         uint256 first = cf * (ltv - cf);
+        console.log("first is ", first);
         // TODO !! there may be error that caused by conversion
         // exp的溢出问题，精度损失，公式的优化, 牛顿算法
         // 求导牛顿
@@ -111,14 +119,19 @@ library CRTLogic {
         // 1 - x + x^2/2 - x^3/6
         
         uint256 second = WadRayMath.WAD - first + (first * first / (2e18)) - (first * first / (6e18) * first);
+        console.log("second is ", second);
+
         // log(1+x)
         // x - x^2/2 + x^3/3
         uint256 crtvalue = second - (second * second / (2e18)) + (second * second / (3e18) * second);
+        console.log("crtvalue is ", crtvalue);
 
         // uint256 crtvalue = ABDKMath64x64.toUInt(crtvalue_128);
         if (crtvalue < floodPrice){
             crtvalue = floodPrice;
         }
+        console.log("crtvalue is ", crtvalue);
+
         return crtvalue;
     }
 

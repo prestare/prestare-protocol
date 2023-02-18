@@ -91,6 +91,12 @@ export const getPToken = async (address:string) =>
     ).address,
 );
 
+export const getVariableDebtToken =async (address:string) =>
+  await (await hre.ethers.getContractFactory("VariableDebtToken")).attach(
+    address || (
+      await getDb().get(`${ContractName.PToken}.${hre.network.name}`).value()
+    ).address,
+);
 
 export const getWETHGateway = async (address?: string) =>
   await (await hre.ethers.getContractFactory("WETHGateway")).attach(
