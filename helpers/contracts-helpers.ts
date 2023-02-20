@@ -142,6 +142,15 @@ export const getCounterConfigurator = async (address?: string) => {
   );
 };
 
+export const getCRT = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("MockCRT")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.CRT}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
 export const getContractAddressWithJsonFallback = async (
   id: string,
 ): Promise<string> => {

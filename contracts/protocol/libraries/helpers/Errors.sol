@@ -91,6 +91,9 @@ library Errors {
   string public constant SDT_BURN_EXCEEDS_BALANCE = '80';
 
   string public constant CRT_INVALID_AMOUNT = "200";
+  string public constant MATH_MULTIPLICATION_UNDERFLOW = "201";
+  string public constant MATH_PERCENTAGE_DIVISION_OVERFLOW = "202";
+
 
   enum CollateralManagerErrors {
     NO_ERROR,

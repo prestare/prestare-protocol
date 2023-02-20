@@ -9,6 +9,9 @@ import {Errors} from '../helpers/Errors.sol';
  **/
 
 library WadRayMath {
+  uint256 internal constant GWEI = 1e9;
+  uint256 internal constant halfGWEI = GWEI / 2;
+
   uint256 internal constant WAD = 1e18;
   uint256 internal constant halfWAD = WAD / 2;
 
@@ -27,7 +30,6 @@ library WadRayMath {
   /**
    * @return One wad, 1e18
    **/
-
   function wad() internal pure returns (uint256) {
     return WAD;
   }
@@ -44,6 +46,38 @@ library WadRayMath {
    **/
   function halfWad() internal pure returns (uint256) {
     return halfWAD;
+  }
+
+
+  /**
+   * @dev Multiplies two GWEI, rounding half up to the nearest GWEI
+   * @param a GWEI
+   * @param b GWEI
+   * @return The result of a*b, in GWEI
+   **/
+  function gweiMul(uint256 a, uint256 b) internal pure returns (uint256) {
+    if (a == 0 || b == 0) {
+      return 0;
+    }
+
+    require(a <= (type(uint256).max - halfGWEI) / b, Errors.MATH_MULTIPLICATION_OVERFLOW);
+
+    return (a * b + halfGWEI) / GWEI;
+  }
+
+  /**
+   * @dev Divides two GWEI, rounding half up to the nearest GWEI
+   * @param a GWEI
+   * @param b GWEI
+   * @return The result of a/b, in GWEI
+   **/
+  function gweiDiv(uint256 a, uint256 b) internal pure returns (uint256) {
+    require(b != 0, Errors.MATH_DIVISION_BY_ZERO);
+    uint256 halfB = b / 2;
+
+    require(a <= (type(uint256).max - halfB) / GWEI, Errors.MATH_MULTIPLICATION_OVERFLOW);
+
+    return (a * GWEI + halfB) / b;
   }
 
   /**

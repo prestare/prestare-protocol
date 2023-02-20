@@ -19,6 +19,8 @@ import "hardhat/console.sol";
 
 // credit token的兑换机制，交易所的gas费影响，如何分发crt
 library CRTLogic {
+    using PercentageMath for uint256;
+    using PercentageMath for int256;
 
     using WadRayMath for uint256;
     using ReserveLogic for DataTypes.ReserveData;
@@ -26,7 +28,7 @@ library CRTLogic {
 
     uint256 public constant dec = 0;
     // the flood price is 0.574 scaled by 1e18
-    uint256 public constant floodPrice = 574e15;
+    uint256 public constant FLOODPRICE = 57e2;
 
     /**
      * @dev validate a user has enought crt in their wallet
@@ -41,27 +43,53 @@ library CRTLogic {
         uint256 collateralNotBeBorrowed;
         uint256 crtltv;
         uint256 additionalAmount;
-        uint256 crtamount;
+        uint256 crtNeed;
+        uint256 perCrtValueInUSD;
     }
 
     function calculateCRTBorrow(
         address userAddress,
         DataTypes.ReserveData storage reserve,
         uint256 amount,
-        uint256 amountInETH,
+        uint256 amountInUSD,
         DataTypes.UserAccountVars memory userStateVars,
         address oracle
-    ) external returns (uint) {
+    ) external returns (uint256, uint256) {
         CrtBorrowVars memory vars;
         // todo add the crt logic how to calculate the idle amount
-        vars.cf = reserve.configuration.getReserveFactor();
-        vars.collateralNotBeBorrowed = userStateVars.userCollateralBalanceETH - userStateVars.userBorrowBalanceETH / vars.cf;
+        vars.cf = reserve.configuration.getLtv();
+        console.log("calculateCRTBorrow - amountInUSD: ", amountInUSD);
 
-        vars.crtltv = amountInETH / vars.collateralNotBeBorrowed;
-        vars.additionalAmount = amountInETH - vars.collateralNotBeBorrowed * vars.cf;
-        vars.crtamount = calculateCRTDecay(vars.crtltv, vars.cf, vars.additionalAmount);
+        console.log("calculateCRTBorrow - collateral Factor is: ", vars.cf);
+        console.log("calculateCRTBorrow - userCollateralBalanceUSD is: ", userStateVars.userCollateralBalanceUSD);
+        console.log("calculateCRTBorrow - userBorrowBalanceUSD is: ", userStateVars.userBorrowBalanceUSD);
+        // scaled by 18, against Eth
+        // problem userBorrowBalance may be a multi-asset debt, but cf is a specific collateral factor, will be attack by other?
+        vars.collateralNotBeBorrowed = userStateVars.userCollateralBalanceUSD - (userStateVars.userBorrowBalanceUSD).percentDiv(vars.cf);
+        // amountInTETH is a 18 decimals number if they scaled by 18 again, it will be overflow problem? 
+        // vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
+        // crtltv is represented in percentage
+        vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
 
-        return vars.crtamount;
+        console.log("calculateCRTBorrow - crtltv is: ", vars.crtltv);
+        // sclaed by 18, against usd
+        // uint256 canBorrowAmount = (vars.collateralNotBeBorrowed).percentMul(vars.cf);
+        uint256 amountOfCollateralNeedUSD = amountInUSD.percentDiv(vars.cf);
+        console.log("calculateCRTBorrow - amountOfCollateralNeedUSD: ", amountOfCollateralNeedUSD);
+
+        // calculate the gap between use want to borrow and can Borrow Amount, which will be fill by the crt
+        vars.additionalAmount = 0;
+        if (vars.collateralNotBeBorrowed < amountOfCollateralNeedUSD) {
+            vars.additionalAmount = amountOfCollateralNeedUSD -  vars.collateralNotBeBorrowed;
+        }
+        // problem: when amountInUSD < canBorrowAmount, if it can use crt to lower the ltv?
+        console.log("calculateCRTBorrow - additionalAmount needed: ", vars.additionalAmount);
+        // calculate when ltv is crtltv, the value of one crt
+        vars.perCrtValueInUSD = calculateCRTValue(vars.crtltv, vars.cf);
+        vars.crtNeed = calculateValueAfterDecay(vars.additionalAmount, vars.perCrtValueInUSD);
+        console.log("calculateCRTBorrow - crtamount needed: ", vars.crtNeed);
+
+        return (vars.crtNeed, vars.additionalAmount);
     }
 
     // struct CrtRepayVars {
@@ -79,60 +107,81 @@ library CRTLogic {
         DataTypes.UserAccountVars memory userStateVars,
         address crtaddress
     ) external returns (uint) {
-        uint newdebt = userStateVars.userBorrowBalanceETH - amountInETH;
-        uint newltv = newdebt / userStateVars.userCollateralBalanceETH;
-        uint cf = reserve.configuration.getReserveFactor();
+        uint newdebt = userStateVars.userBorrowBalanceUSD - amountInETH;
+        uint newltv = newdebt / userStateVars.userCollateralBalanceUSD;
+        uint cf = reserve.configuration.getLtv();
 
         uint oldcrtvalue = calculateCRTValue(userStateVars.currentLtv, cf);
         uint newcrtvalue = calculateCRTValue(newltv, cf);
+        if (newcrtvalue < oldcrtvalue) {
+            return 0;
+        }
         uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
-        uint idleCRTValue = userlockBalance * newcrtvalue - (oldcrtvalue);
-        console.log("idelCRT value is: ", idleCRTValue);
+        if (userlockBalance == 0) {
+            return 0;
+        }
+        uint idleCRT = userlockBalance * (newcrtvalue - oldcrtvalue);
+        console.log("idelCRT value is: ", idleCRT);
         // todo it need more validation? like check the user health factor?
-        return idleCRTValue;
+        return idleCRT;
     }
 
-    function calculateCRTDecay(uint256 ltv, uint256 cf, uint256 additional_amount) internal returns (uint) {
+    function calculateValueAfterDecay(uint256 additional_amount, uint256 crtValue) internal returns (uint256) {
 
-        uint crtvcalculateCRTDecayalue = calculateCRTValue(ltv, cf);
-        uint crtAmount = additional_amount.rayDiv(crtvcalculateCRTDecayalue);
+        uint256 crtAmount = additional_amount.percentDiv(crtValue);
         
         return crtAmount;
     }
-
+    /**
+     * @dev calculate value of one CRT
+     * @param ltv in this borrow loan to value, in percentage
+     * @param cf The collateral factor of the asset, represent in percentage
+    */
     function calculateCRTValue(uint256 ltv, uint256 cf) internal returns (uint) {
-        // scale by 1e18
         console.log("ltv is ", ltv);
         console.log("collateral factor is ", cf);
         if (ltv < cf) {
-            return WadRayMath.WAD;
+            return PercentageMath.BASIC_POINT;
         }
-        uint256 first = cf * (ltv - cf);
-        console.log("first is ", first);
+        // first is represent in percentage and max is 10000 = 100.00
+        int256 first = int256(cf.percentMul(ltv - cf));
+        console.log("first is ");
+        console.logInt(first);
+
+        // scaled by 18
         // TODO !! there may be error that caused by conversion
         // exp的溢出问题，精度损失，公式的优化, 牛顿算法
         // 求导牛顿
         // int128 second = 0 - ABDKMath64x64.fromUInt(first);
         // int128 crtvalue_128 = ABDKMath64x64.log_2(ABDKMath64x64.exp(second) + 1);
         // 原式太过复杂，因此使用泰勒展开来逼近实际结果
-        // exp(-x) x == first
+        // exp(-x); x == first
         // 1 - x + x^2/2 - x^3/6
-        
-        uint256 second = WadRayMath.WAD - first + (first * first / (2e18)) - (first * first / (6e18) * first);
-        console.log("second is ", second);
+        int256 second = int256(PercentageMath.BASIC_POINT) - first;
+        console.log("second is...");
+        console.logInt(second);
+        second = second + first.percentMul(first)/ 2;
+        console.logInt(second);
+        second = second - first.percentMul(first).percentMul(first) / 6;
+        // second = PercentageMath.BASIC_POINT * WadRayMath.GWEI - first + first.gweiMul(first).gweiDiv(2e9) - first.gweiMul(first).gweiDiv(6e9).gweiMul(first);
+        console.logInt(second);
 
-        // log(1+x)
+        // log(1+x); x = exp(-x);
         // x - x^2/2 + x^3/3
-        uint256 crtvalue = second - (second * second / (2e18)) + (second * second / (3e18) * second);
-        console.log("crtvalue is ", crtvalue);
+        // console.log(second);
+        // console.log(second.percentMul(second) / 2);
+        // console.log(second.percentMul(second).percentMul(second) / 3);
+        uint256 crtvalue = uint256(second - second.percentMul(second ) / 2 + second.percentMul(second).percentMul(second) / 3);
+        // console.log("crtvalue is ", crtvalue);
 
+        require(crtvalue > 0, "Crt value lower than 0");
         // uint256 crtvalue = ABDKMath64x64.toUInt(crtvalue_128);
-        if (crtvalue < floodPrice){
-            crtvalue = floodPrice;
+        if (crtvalue < FLOODPRICE){
+            crtvalue = FLOODPRICE;
         }
         console.log("crtvalue is ", crtvalue);
 
-        return crtvalue;
+        return uint256(crtvalue);
     }
 
 }

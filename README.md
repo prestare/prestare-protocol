@@ -9,4 +9,9 @@ npx hardhat node --hostname 0.0.0.0 --port 8545
 npx hardhat run .\scripts\deploy.ts --network localhost
 ```
 
+通过script运行各种测试
+```
+npx hardhat run .\test\testDeploy.ts --network localhost
+```
+
 

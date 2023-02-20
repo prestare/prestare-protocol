@@ -6,48 +6,53 @@ import {Errors} from '../helpers/Errors.sol';
 /**
  * @title PercentageMath library
  * @notice Provides functions to perform percentage calculations
- * @dev Percentages are defined by default with 2 decimals of precision (100.00). The precision is indicated by PERCENTAGE_FACTOR
+ * @dev Percentages are defined by default with 2 decimals of precision (100.00). The precision is indicated by BASIC_POINT
  * @dev Operations are rounded half up
  **/
 
 library PercentageMath {
-  uint256 constant PERCENTAGE_FACTOR = 1e4; //percentage plus two decimals
-  uint256 constant HALF_PERCENT = PERCENTAGE_FACTOR / 2;
+  uint256 constant BASIC_POINT = 1e4; //use the idea of bps
 
   /**
    * @dev Executes a percentage multiplication
-   * @param value The value of which the percentage needs to be calculated
-   * @param percentage The percentage of the value to be calculated
+   * @param amount The amount of which the percentage needs to be calculated
+   * @param bps The percentage like 10000=100.00=100%
    * @return The percentage of value
    **/
-  function percentMul(uint256 value, uint256 percentage) internal pure returns (uint256) {
-    if (value == 0 || percentage == 0) {
+  function percentMul(uint256 amount, uint256 bps) internal pure returns (uint256) {
+    if (amount == 0 || bps == 0) {
       return 0;
     }
-
-    require(
-      value <= (type(uint256).max - HALF_PERCENT) / percentage,
-      Errors.MATH_MULTIPLICATION_OVERFLOW
-    );
-
-    return (value * percentage + HALF_PERCENT) / PERCENTAGE_FACTOR;
+    require((amount * bps) > 10000, Errors.MATH_MULTIPLICATION_UNDERFLOW);
+    return amount * bps / 10000;  
   }
-
+  function percentMul(int256 amount, int256 bps) internal pure returns (int256) {
+    if (amount == 0 || bps == 0) {
+      return 0;
+    }
+    require((amount * bps) > 10000, Errors.MATH_MULTIPLICATION_UNDERFLOW);
+    return amount * bps / 10000;  
+  }
   /**
    * @dev Executes a percentage division
-   * @param value The value of which the percentage needs to be calculated
-   * @param percentage The percentage of the value to be calculated
+   * @param amount The value of which the percentage needs to be calculated
+   * @param bps The percentage of the value to be calculated
    * @return The value divided the percentage
    **/
-  function percentDiv(uint256 value, uint256 percentage) internal pure returns (uint256) {
-    require(percentage != 0, Errors.MATH_DIVISION_BY_ZERO);
-    uint256 halfPercentage = percentage / 2;
+  function percentDiv(uint256 amount, uint256 bps) internal pure returns (uint256) {
+    if (amount == 0 || bps == 0) {
+      return 0;
+    }
+    require(bps < 10000, Errors.MATH_PERCENTAGE_DIVISION_OVERFLOW);
 
-    require(
-      value <= (type(uint256).max - halfPercentage) / PERCENTAGE_FACTOR,
-      Errors.MATH_MULTIPLICATION_OVERFLOW
-    );
+    return (amount * 10000) / bps;
+  }
+    function percentDiv(int256 amount, int256 bps) internal pure returns (int256) {
+    if (amount == 0 || bps == 0) {
+      return 0;
+    }
+    require(bps < 10000, Errors.MATH_PERCENTAGE_DIVISION_OVERFLOW);
 
-    return (value * PERCENTAGE_FACTOR + halfPercentage) / percentage;
+    return (amount * 10000) / bps;
   }
 }

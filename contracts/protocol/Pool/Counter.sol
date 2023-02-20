@@ -230,8 +230,8 @@ contract Counter is ICounter, CounterStorage {
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
     address oracle = _addressesProvider.getPriceOracle();
-
-    uint256 amountInETH =
+    // change from amountInETH to amountInUSD
+    uint256 amountInUSD =
       IPriceOracleGetter(oracle).getAssetPrice(vars.asset) * vars.amount / (
         10**reserve.configuration.getDecimals()
       );
@@ -239,8 +239,8 @@ contract Counter is ICounter, CounterStorage {
     // get User Account Stata
     DataTypes.UserAccountVars memory userStatVar;
     (
-      userStatVar.userCollateralBalanceETH,
-      userStatVar.userBorrowBalanceETH,
+      userStatVar.userCollateralBalanceUSD,
+      userStatVar.userBorrowBalanceUSD,
       userStatVar.currentLtv,
       userStatVar.currentLiquidationThreshold,
       userStatVar.healthFactor
@@ -252,38 +252,42 @@ contract Counter is ICounter, CounterStorage {
       _reservesCount,
       oracle
     );
-    console.log("borrow - userCollateralBalanceETH is ", userStatVar.userCollateralBalanceETH);
-    uint256 crtamount = 0;
+    console.log("borrow - userCollateralBalanceUSD is ", userStatVar.userCollateralBalanceUSD);
+    uint256 crtNeed = 0;
+    uint256 crtValue = 0;
     if (vars.crtenable) {
-      crtamount = CRTLogic.calculateCRTBorrow(
+      // if the amountInUSD > canBorrowAmount, how much crt need to fill the gap
+      (crtNeed, crtValue) = CRTLogic.calculateCRTBorrow(
         vars.onBehalfOf,
         reserve,
         vars.amount,
-        amountInETH,
+        amountInUSD,
         userStatVar,
         oracle
       );
     }
     // 审计问题
     // 考虑拆分更仔细
+    // when undercollateral, need to check the balance left in
     ValidationLogic.validateBorrow(
       vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,
-      amountInETH,
+      amountInUSD,
       vars.interestRateMode,
       userStatVar,
       _crtaddress,
-      crtamount
+      crtValue,
+      crtNeed
     );
 
     reserve.updateState();
 
     bool isFirstBorrowing = false;
 
-    if (vars.crtenable && crtamount != 0) {
-        ICRT(_crtaddress).lockCRT(vars.onBehalfOf, crtamount);
+    if (vars.crtenable && crtNeed != 0) {
+        ICRT(_crtaddress).lockCRT(vars.onBehalfOf, crtNeed);
     }
 
     isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
@@ -300,7 +304,7 @@ contract Counter is ICounter, CounterStorage {
     reserve.updateInterestRates(
       vars.asset,
       vars.pTokenAddress,
-      0,
+      vars.crtenable ? crtValue :0,
       vars.releaseUnderlying ? vars.amount : 0
     );
 
@@ -365,8 +369,8 @@ contract Counter is ICounter, CounterStorage {
     
     DataTypes.UserAccountVars memory userStatVar;
     (
-      userStatVar.userCollateralBalanceETH,
-      userStatVar.userBorrowBalanceETH,
+      userStatVar.userCollateralBalanceUSD,
+      userStatVar.userBorrowBalanceUSD,
       userStatVar.currentLtv,
       userStatVar.currentLiquidationThreshold,
       userStatVar.healthFactor
@@ -406,7 +410,7 @@ contract Counter is ICounter, CounterStorage {
     if (variableDebt - paybackAmount == 0) {
       _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
     }
-
+    console.log("repay payback amount is: ", paybackAmount);
     IERC20(asset).transferFrom(msg.sender, pToken, paybackAmount);
 
     IPToken(pToken).handleRepayment(msg.sender, paybackAmount);

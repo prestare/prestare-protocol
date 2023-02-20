@@ -46,8 +46,8 @@ library DataTypes {
   enum InterestRateMode {NONE, STABLE, VARIABLE}
 
   struct UserAccountVars {
-      uint256 userCollateralBalanceETH;
-      uint256 userBorrowBalanceETH;
+      uint256 userCollateralBalanceUSD;
+      uint256 userBorrowBalanceUSD;
       uint256 currentLtv;
       uint256 currentLiquidationThreshold;
       uint256 healthFactor;

@@ -12,6 +12,9 @@ import {DataTypes} from '../types/DataTypes.sol';
 
 import {CRTLogic} from './CRTLogic.sol';
 import {GenericLogic} from './GenericLogic.sol';
+
+import "hardhat/console.sol";
+
 /**
  * @title ReserveLogic library
  * @author Prestare
@@ -83,7 +86,7 @@ library ValidationLogic {
   }
 
   struct ValidateBorrowLocalVars {
-    uint256 amountOfCollateralNeededETH;
+    uint256 amountOfCollateralNeededUSD;
     uint256 availableLiquidity;
     bool isActive;
     bool isFrozen;
@@ -97,22 +100,24 @@ library ValidationLogic {
    * @param reserve The reserve state from which the user is borrowing
    * @param userAddress The address of the user
    * @param amount The amount to be borrowed
-   * @param amountInETH The amount to be borrowed, in ETH
+   * @param amountInUSD The amount to be borrowed, in USD
    * @param interestRateMode The interest rate mode at which the user is borrowing
    * @param userStateVars User State Variable
    * @param crtAddress The address of Crt
-   * @param crtAmount The Crtamount to use
+   * @param crtValue The value of the crtNeed in this borrow transaction
+   * @param crtNeed The value of one crt in this borrow transaction
    */
   function validateBorrow(
     address asset,
     DataTypes.ReserveData storage reserve,
     address userAddress,
     uint256 amount,
-    uint256 amountInETH,
+    uint256 amountInUSD,
     uint256 interestRateMode,
     DataTypes.UserAccountVars memory userStateVars,
     address crtAddress,
-    uint crtAmount
+    uint256 crtValue,
+    uint256 crtNeed
   ) external view {
     ValidateBorrowLocalVars memory vars;
 
@@ -132,26 +137,33 @@ library ValidationLogic {
       Errors.VL_INVALID_INTEREST_RATE_MODE_SELECTED
     );
 
-    require(userStateVars.userCollateralBalanceETH > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
+    require(userStateVars.userCollateralBalanceUSD > 0, Errors.VL_COLLATERAL_BALANCE_IS_0);
 
     require(
       userStateVars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
 
-    if (crtAmount != 0) {
-        CRTLogic.validateCRTBalance(crtAddress, userAddress, crtAmount);
+    if (crtNeed != 0) {
+        CRTLogic.validateCRTBalance(crtAddress, userAddress, crtNeed);
     }
 
     // //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
-    vars.amountOfCollateralNeededETH = (userStateVars.userBorrowBalanceETH + amountInETH).percentDiv(
+    vars.amountOfCollateralNeededUSD = (userStateVars.userBorrowBalanceUSD + amountInUSD).percentDiv(
       userStateVars.currentLtv
     ); //LTV is calculated in percentage
+    console.log("validateBorrow userBorrowBalanceUSD is: ", userStateVars.userBorrowBalanceUSD);
+    console.log("validateBorrow amountInUSD is: ", amountInUSD);
+    console.log("validateBorrow currentLtv is: ", userStateVars.currentLtv);
+    console.log("validateBorrow amountOfCollateralNeededUSD is: ", vars.amountOfCollateralNeededUSD);
 
-    uint userTotalCredit = userStateVars.userCollateralBalanceETH + crtAmount;
-    
+    uint256 userTotalCredit = userStateVars.userCollateralBalanceUSD + crtValue;
+    console.log("validateBorrow userCollateralBalanceUSD is: ", userStateVars.userCollateralBalanceUSD);
+    console.log("validateBorrow crt value is: ", crtValue);
+    console.log("validateBorrow userTotalCredit is: ", userTotalCredit);
+
     require(
-      vars.amountOfCollateralNeededETH <= userTotalCredit,
+      vars.amountOfCollateralNeededUSD <= userTotalCredit,
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
   }

@@ -6,6 +6,7 @@ import {WadRayMath} from '../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "hardhat/console.sol";
 
 /**
  * @title DefaultReserveInterestRateStrategy contract
@@ -108,6 +109,10 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
   {
     uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
     //avoid stack too deep
+    console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
+    console.log("calculateInterestRates - liquidityAdded is ", liquidityAdded);
+    console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
+
     availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
 
     return
@@ -178,7 +183,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       vars.currentVariableBorrowRate
     )
       .rayMul(vars.utilizationRate)
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR - reserveFactor);
+      .percentMul(PercentageMath.BASIC_POINT - reserveFactor);
 
     return (
       vars.currentLiquidityRate,

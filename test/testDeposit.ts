@@ -8,13 +8,13 @@ import { ContractName, TokenContractName } from '../helpers/types';
 import { getCounter, approveToken4Counter } from '../helpers/contracts-helpers';
 import { Counter } from '../typechain-types';
 import { token } from '../typechain-types/@openzeppelin/contracts';
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-export async function mintToken(tokenName: string, amount: string) {
+export async function mintToken(signer: SignerWithAddress,tokenName: string, amount: string) {
     console.log();
     console.log("mint %s ...", tokenName);
-    let [signer,] = await hre.ethers.getSigners();
     console.log("signer ETH Balance: ", await (await signer.getBalance()).toString());
     // console.log("tx2 ETH Balance: ", await (await tx2.getBalance()).toString());
     // console.log("tx3 ETH Balance: ", await (await tx3.getBalance()).toString());
@@ -35,8 +35,7 @@ export async function mintToken(tokenName: string, amount: string) {
     console.log("   Account Balance is:", balanceT0.toString());
 }
 
-export async function depositToken(tokenName: string, amount: string) {
-    const [signer,] = await hre.ethers.getSigners();
+export async function depositToken(signer: SignerWithAddress,tokenName: string, amount: string) {
     const counter: Counter = await getCounter(signer);
     const token: Contract = await getTokenContract(tokenName);
 
@@ -56,16 +55,20 @@ export async function depositToken(tokenName: string, amount: string) {
 }
 
 async function main() {
-    let amount = '10';
+    let amount = '100';
     let tokens = Object.keys(TokenContractName)
-    for (let tokenSymbol of tokens) {
-        // console.log(tokenSymbol);
-        await mintToken(tokenSymbol, amount);
-        await depositToken(tokenSymbol, amount);
-    }
-    // let tokenSymbol = 'DAI';
-    // await mintToken(tokenSymbol, amount);
-    // await depositToken(tokenSymbol, amount);
+    // for (let tokenSymbol of tokens) {
+    //     // console.log(tokenSymbol);
+    //     await mintToken(tokenSymbol, amount);
+    //     await depositToken(tokenSymbol, amount);
+    // }
+    let [signer, signer2] = await hre.ethers.getSigners();
+    let tokenSymbol = 'DAI';
+    await mintToken(signer, tokenSymbol, amount);
+    await mintToken(signer2, tokenSymbol, amount )
+    await depositToken(signer, tokenSymbol, amount);
+    await depositToken(signer2, tokenSymbol, amount);
+
 }
 
 main()
