@@ -68,9 +68,12 @@ library CRTLogic {
         vars.collateralNotBeBorrowed = userStateVars.userCollateralBalanceUSD - (userStateVars.userBorrowBalanceUSD).percentDiv(vars.cf);
         // amountInTETH is a 18 decimals number if they scaled by 18 again, it will be overflow problem? 
         // vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
-        // crtltv is represented in percentage
+        // crtltv is represented in percentage form
         vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
-
+        
+        // PROBLEM: when crtltv is represented in percentage form, but currentLtv is scaled by 18, 
+        // there is a Accuracy problem
+        
         console.log("calculateCRTBorrow - crtltv is: ", vars.crtltv);
         // sclaed by 18, against usd
         // uint256 canBorrowAmount = (vars.collateralNotBeBorrowed).percentMul(vars.cf);
@@ -103,14 +106,15 @@ library CRTLogic {
         address userAddress,
         DataTypes.ReserveData storage reserve,
         uint256 amount,
-        uint256 amountInETH,
+        uint256 amountInUSD,
         DataTypes.UserAccountVars memory userStateVars,
         address crtaddress
     ) external returns (uint) {
-        uint newdebt = userStateVars.userBorrowBalanceUSD - amountInETH;
-        uint newltv = newdebt / userStateVars.userCollateralBalanceUSD;
+        uint256 newdebt = userStateVars.userBorrowBalanceUSD - amountInUSD;
+        uint256 newltv = newdebt.wadDiv(userStateVars.userCollateralBalanceUSD) * 10000 / WadRayMath.WAD;
+        console.log("calculateCRTRepay - newltv is", newltv);
         uint cf = reserve.configuration.getLtv();
-
+        console.log("calculateCRTRepay - currentLtv is", currentLtv);
         uint oldcrtvalue = calculateCRTValue(userStateVars.currentLtv, cf);
         uint newcrtvalue = calculateCRTValue(newltv, cf);
         if (newcrtvalue < oldcrtvalue) {

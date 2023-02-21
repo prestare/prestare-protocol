@@ -196,7 +196,7 @@ library GenericLogic {
           vars.reserveUnitPrice * (vars.compoundedLiquidityBalance) / (vars.tokenUnit);
 
         vars.totalCollateralInUSD = vars.totalCollateralInUSD + liquidityBalanceUSD;
-        console.log(" Eth is: ", vars.totalCollateralInUSD );
+        console.log(" USD is: ", vars.totalCollateralInUSD );
         vars.avgLtv = vars.avgLtv + (liquidityBalanceUSD * vars.ltv);
         vars.avgLiquidationThreshold = vars.avgLiquidationThreshold + (
           liquidityBalanceUSD * vars.liquidationThreshold

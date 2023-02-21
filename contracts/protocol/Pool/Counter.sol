@@ -268,9 +268,9 @@ contract Counter is ICounter, CounterStorage {
     }
     // 审计问题
     // 考虑拆分更仔细
-    // when undercollateral, need to check the balance left in
+    // when undercollateral, need to check if we have enough balance
     ValidationLogic.validateBorrow(
-      vars.asset,
+      vars.pTokenAddress,
       reserve,
       vars.onBehalfOf,
       vars.amount,
@@ -362,7 +362,7 @@ contract Counter is ICounter, CounterStorage {
     
     // CRT 
     address oracle = _addressesProvider.getPriceOracle();
-    uint256 paybackamountInETH =
+    uint256 paybackamountInUSD =
       IPriceOracleGetter(oracle).getAssetPrice(asset) * paybackAmount / (
         10**reserve.configuration.getDecimals()
       );

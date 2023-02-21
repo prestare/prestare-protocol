@@ -119,6 +119,11 @@ library ValidationLogic {
     uint256 crtValue,
     uint256 crtNeed
   ) external view {
+
+    uint256 availableLiquidity = IERC20(asset).balanceOf(reserve.pTokenAddress);
+    require(availableLiquidity > amountInUSD, 
+      Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW);
+
     ValidateBorrowLocalVars memory vars;
 
     (vars.isActive, vars.isFrozen, vars.borrowingEnabled, vars.stableRateBorrowingEnabled) = reserve
@@ -161,14 +166,14 @@ library ValidationLogic {
     console.log("validateBorrow userCollateralBalanceUSD is: ", userStateVars.userCollateralBalanceUSD);
     console.log("validateBorrow crt value is: ", crtValue);
     console.log("validateBorrow userTotalCredit is: ", userTotalCredit);
-
+    
     require(
       vars.amountOfCollateralNeededUSD <= userTotalCredit,
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW
     );
   }
 
-    /**
+  /**
    * @dev Validates a repay action
    * @param reserve The reserve state from which the user is repaying
    * @param amountSent The amount sent for the repayment. Can be an actual value or uint(-1)
