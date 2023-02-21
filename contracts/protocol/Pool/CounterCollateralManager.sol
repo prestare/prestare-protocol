@@ -76,13 +76,14 @@ contract CounterCollateralManager is
     DataTypes.ReserveData storage collateralReserve = _reserves[collateralAsset];
     DataTypes.ReserveData storage debtReserve = _reserves[debtAsset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user];
-
+    DataTypes.UserCreditData storage userCredit = _usersCredit[user];
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
       user,
       _reserves,
       userConfig,
+      userCredit,
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()

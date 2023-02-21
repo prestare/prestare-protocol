@@ -43,6 +43,10 @@ library DataTypes {
     uint256 data;
   }
 
+  struct UserCreditData {
+    uint256 crtValue;
+  }
+
   enum InterestRateMode {NONE, STABLE, VARIABLE}
 
   struct UserAccountVars {
@@ -51,5 +55,7 @@ library DataTypes {
       uint256 currentLtv;
       uint256 currentLiquidationThreshold;
       uint256 healthFactor;
+      uint256 newCrtValue;
+      uint256 idleCRT;
   }
 }

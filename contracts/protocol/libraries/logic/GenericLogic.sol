@@ -46,6 +46,7 @@ library GenericLogic {
    * @param amount The amount to decrease
    * @param reservesData The data of all the reserves
    * @param userConfig The user configuration
+   * @param userCredit The user credit Data
    * @param reserves The list of all the active reserves
    * @param oracle The address of the oracle contract
    * @return true if the decrease of the balance is allowed
@@ -56,6 +57,7 @@ library GenericLogic {
     uint256 amount,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap calldata userConfig,
+    DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -80,7 +82,7 @@ library GenericLogic {
       ,
       vars.avgLiquidationThreshold,
 
-    ) = calculateUserAccountData(user, reservesData, userConfig, reserves, reservesCount, oracle);
+    ) = calculateUserAccountData(user, reservesData, userConfig, userCredit,reserves, reservesCount, oracle);
 
     if (vars.totalDebtInUSD == 0) {
       return true;
@@ -141,6 +143,7 @@ library GenericLogic {
    * @param user The address of the user
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
+   * @param userCredit The credit Data of the user
    * @param reserves The list of the available reserves
    * @param oracle The price oracle address
    * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold and the HF
@@ -149,6 +152,7 @@ library GenericLogic {
     address user,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
+    DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -212,14 +216,14 @@ library GenericLogic {
         );
       }
     }
-
-    vars.avgLtv = vars.totalCollateralInUSD > 0 ? (vars.avgLtv / vars.totalCollateralInUSD) : 0;
+    // problem how to interact with credit score
+    vars.avgLtv = vars.totalCollateralInUSD > 0 ? (vars.avgLtv / (vars.totalCollateralInUSD + userCredit.crtValue)) : 0;
     vars.avgLiquidationThreshold = vars.totalCollateralInUSD > 0
-      ? vars.avgLiquidationThreshold / vars.totalCollateralInUSD
+      ? vars.avgLiquidationThreshold / (vars.totalCollateralInUSD +  userCredit.crtValue)
       : 0;
 
     vars.healthFactor = calculateHealthFactorFromBalances(
-      vars.totalCollateralInUSD,
+      vars.totalCollateralInUSD + userCredit.crtValue, 
       vars.totalDebtInUSD,
       vars.avgLiquidationThreshold
     );
@@ -234,19 +238,19 @@ library GenericLogic {
 
   /**
    * @dev Calculates the health factor from the corresponding balances
-   * @param totalCollateralInUSD The total collateral in ETH
-   * @param totalDebtInUSD The total debt in ETH
+   * @param totalCollateralCreditInUSD The total collateral in USD
+   * @param totalDebtInUSD The total debt in USD
    * @param liquidationThreshold The avg liquidation threshold
    * @return The health factor calculated from the balances provided
    **/
   function calculateHealthFactorFromBalances(
-    uint256 totalCollateralInUSD,
+    uint256 totalCollateralCreditInUSD,
     uint256 totalDebtInUSD,
     uint256 liquidationThreshold
   ) internal pure returns (uint256) {
     if (totalDebtInUSD == 0) return type(uint256).max;
 
-    return (totalCollateralInUSD.percentMul(liquidationThreshold)).wadDiv(totalDebtInUSD);
+    return (totalCollateralCreditInUSD.percentMul(liquidationThreshold)).wadDiv(totalDebtInUSD);
   }
 
   /**

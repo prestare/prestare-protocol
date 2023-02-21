@@ -23,7 +23,9 @@ contract CounterStorage {
 
   // Map of users address and their configuration data (userAddress => userConfiguration)
   mapping(address => DataTypes.UserConfigurationMap) internal _usersConfig;
-
+  
+  // Map of users address and their lock Crt Value
+  mapping(address => DataTypes.UserCreditData) internal _usersCredit;
   // List of reserves as a map (reserveId => reserve).
   // It is structured as a mapping for gas savings reasons, using the reserve id as index
   mapping(uint256 => address) internal _reservesList;

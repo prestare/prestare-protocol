@@ -14,7 +14,7 @@ library Helpers {
    * @param reserve The reserve data object
    * @return The variable debt balance
    **/
-  function getUserCurrentDebt(address user, DataTypes.ReserveData storage reserve)
+  function getUserCurrentDebt(address user, DataTypes.ReserveData memory reserve)
     internal
     view
     returns (uint256)

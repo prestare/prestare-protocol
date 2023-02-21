@@ -47,6 +47,7 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
     const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
     const pToken: Contract = await getPTokenContract(tokenName);
     const pTokenBalance = await pToken.balanceOf(signer.address);
+    console.log(pToken.address);
     console.log("After deposit pToken amount is: ", pTokenBalance.toString());
 
     const counterInfo = await getCounterAssetInfo(signer, token.address);
@@ -55,7 +56,7 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
 }
 
 async function main() {
-    let amount = '100';
+    let amount = '200';
     let tokens = Object.keys(TokenContractName)
     // for (let tokenSymbol of tokens) {
     //     // console.log(tokenSymbol);
@@ -65,7 +66,7 @@ async function main() {
     let [signer, signer2] = await hre.ethers.getSigners();
     let tokenSymbol = 'DAI';
     await mintToken(signer, tokenSymbol, amount);
-    await mintToken(signer2, tokenSymbol, amount )
+    await mintToken(signer2, tokenSymbol, amount)
     await depositToken(signer, tokenSymbol, amount);
     await depositToken(signer2, tokenSymbol, amount);
 

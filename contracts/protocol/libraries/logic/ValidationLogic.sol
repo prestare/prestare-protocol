@@ -60,6 +60,7 @@ library ValidationLogic {
     uint256 userBalance,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
+    DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -77,6 +78,7 @@ library ValidationLogic {
         amount,
         reservesData,
         userConfig,
+        userCredit,
         reserves,
         reservesCount,
         oracle
@@ -120,7 +122,15 @@ library ValidationLogic {
     uint256 crtNeed
   ) external view {
 
+    if (crtNeed != 0) {
+        CRTLogic.validateCRTBalance(crtAddress, userAddress, crtNeed);
+    }
+
     uint256 availableLiquidity = IERC20(asset).balanceOf(reserve.pTokenAddress);
+    console.log(asset);
+    console.log(reserve.pTokenAddress);
+    console.log("validateBorrow - availableLiquidity is: ", availableLiquidity);
+    console.log("validateBorrow - amountInUSD is: ", amountInUSD);
     require(availableLiquidity > amountInUSD, 
       Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW);
 
@@ -148,10 +158,6 @@ library ValidationLogic {
       userStateVars.healthFactor > GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD,
       Errors.VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD
     );
-
-    if (crtNeed != 0) {
-        CRTLogic.validateCRTBalance(crtAddress, userAddress, crtNeed);
-    }
 
     // //add the current already borrowed amount to the amount requested to calculate the total collateral needed.
     vars.amountOfCollateralNeededUSD = (userStateVars.userBorrowBalanceUSD + amountInUSD).percentDiv(
@@ -215,11 +221,12 @@ library ValidationLogic {
    * @param oracle The price oracle
    */
   function validateSetUseReserveAsCollateral(
-    DataTypes.ReserveData storage reserve,
+    DataTypes.ReserveData memory reserve,
     address reserveAddress,
     bool useAsCollateral,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
+    DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -236,6 +243,7 @@ library ValidationLogic {
           underlyingBalance,
           reservesData,
           userConfig,
+          userCredit,
           reserves,
           reservesCount,
           oracle
@@ -309,6 +317,7 @@ library ValidationLogic {
     address from,
     mapping(address => DataTypes.ReserveData) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
+    DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
@@ -318,6 +327,7 @@ library ValidationLogic {
         from,
         reservesData,
         userConfig,
+        userCredit,
         reserves,
         reservesCount,
         oracle

@@ -154,6 +154,7 @@ contract Counter is ICounter, CounterStorage {
       userBalance,
       _reserves,
       _usersConfig[msg.sender],
+      _usersCredit[msg.sender],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -238,6 +239,7 @@ contract Counter is ICounter, CounterStorage {
     
     // get User Account Stata
     DataTypes.UserAccountVars memory userStatVar;
+    // include crt value
     (
       userStatVar.userCollateralBalanceUSD,
       userStatVar.userBorrowBalanceUSD,
@@ -248,6 +250,7 @@ contract Counter is ICounter, CounterStorage {
       vars.onBehalfOf,
       _reserves,
       userConfig,
+      _usersCredit[vars.onBehalfOf],
       _reservesList,
       _reservesCount,
       oracle
@@ -270,7 +273,7 @@ contract Counter is ICounter, CounterStorage {
     // 考虑拆分更仔细
     // when undercollateral, need to check if we have enough balance
     ValidationLogic.validateBorrow(
-      vars.pTokenAddress,
+      vars.asset,
       reserve,
       vars.onBehalfOf,
       vars.amount,
@@ -288,6 +291,7 @@ contract Counter is ICounter, CounterStorage {
 
     if (vars.crtenable && crtNeed != 0) {
         ICRT(_crtaddress).lockCRT(vars.onBehalfOf, crtNeed);
+        _usersCredit[vars.onBehalfOf].crtValue += crtValue;
     }
 
     isFirstBorrowing = IVariableDebtToken(reserve.variableDebtTokenAddress).mint(
@@ -341,6 +345,7 @@ contract Counter is ICounter, CounterStorage {
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
     DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.UserCreditData storage userCredit = _usersCredit[onBehalfOf];
 
     uint256 variableDebt = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
 
@@ -360,7 +365,6 @@ contract Counter is ICounter, CounterStorage {
       paybackAmount = amount;
     }
     
-    // CRT 
     address oracle = _addressesProvider.getPriceOracle();
     uint256 paybackamountInUSD =
       IPriceOracleGetter(oracle).getAssetPrice(asset) * paybackAmount / (
@@ -378,22 +382,25 @@ contract Counter is ICounter, CounterStorage {
       onBehalfOf,
       _reserves,
       _usersConfig[onBehalfOf],
+      userCredit,
       _reservesList,
       _reservesCount,
       oracle
     );
-
-    uint unlockCRT = CRTLogic.calculateCRTRepay(
-      msg.sender,
+    // CRT 
+    (userStatVar.idleCRT, userStatVar.newCrtValue) = CRTLogic.calculateCRTRepay(
+      onBehalfOf,
       reserve,
       paybackAmount,
-      paybackamountInETH,
+      paybackamountInUSD,
       userStatVar,
+      userCredit,
       _crtaddress
     );
 
-    if (unlockCRT > 0) {
-      ICRT(_crtaddress).unlockCRT(msg.sender, unlockCRT);
+    if (userStatVar.idleCRT > 0) {
+      ICRT(_crtaddress).unlockCRT(msg.sender, userStatVar.idleCRT);
+      userCredit.crtValue = userStatVar.newCrtValue;
     }
 
     reserve.updateState();
@@ -438,6 +445,7 @@ contract Counter is ICounter, CounterStorage {
       useAsCollateral,
       _reserves,
       _usersConfig[msg.sender],
+      _usersCredit[msg.sender],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -539,6 +547,7 @@ contract Counter is ICounter, CounterStorage {
       user,
       _reserves,
       _usersConfig[user],
+      _usersCredit[user],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()
@@ -704,6 +713,7 @@ contract Counter is ICounter, CounterStorage {
       from,
       _reserves,
       _usersConfig[from],
+      _usersCredit[from],
       _reservesList,
       _reservesCount,
       _addressesProvider.getPriceOracle()

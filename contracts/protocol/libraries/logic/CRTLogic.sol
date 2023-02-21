@@ -95,39 +95,44 @@ library CRTLogic {
         return (vars.crtNeed, vars.additionalAmount);
     }
 
-    // struct CrtRepayVars {
-    //     uint256 cf;
-    //     uint256 collateralNotBeBorrowed;
-    //     uint256 crtltv;
-    //     uint256 additionalAmount;
-    //     uint256 crtamount;
-    // }
+    struct CrtRepayVars {
+        uint256 newdebt;
+        uint256 newltv;
+        uint256 cf;
+        uint256 newCrtPerValue;
+        uint256 newCrtValue;
+    }
     function calculateCRTRepay(
         address userAddress,
         DataTypes.ReserveData storage reserve,
         uint256 amount,
         uint256 amountInUSD,
         DataTypes.UserAccountVars memory userStateVars,
+        DataTypes.UserCreditData memory userCredit,
         address crtaddress
-    ) external returns (uint) {
-        uint256 newdebt = userStateVars.userBorrowBalanceUSD - amountInUSD;
-        uint256 newltv = newdebt.wadDiv(userStateVars.userCollateralBalanceUSD) * 10000 / WadRayMath.WAD;
-        console.log("calculateCRTRepay - newltv is", newltv);
-        uint cf = reserve.configuration.getLtv();
-        console.log("calculateCRTRepay - currentLtv is", currentLtv);
-        uint oldcrtvalue = calculateCRTValue(userStateVars.currentLtv, cf);
-        uint newcrtvalue = calculateCRTValue(newltv, cf);
-        if (newcrtvalue < oldcrtvalue) {
-            return 0;
-        }
+    ) external returns (uint256, uint256) {
+        CrtRepayVars memory vars;
         uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
         if (userlockBalance == 0) {
-            return 0;
+            return (0, 0);
         }
-        uint idleCRT = userlockBalance * (newcrtvalue - oldcrtvalue);
+        vars.newdebt = userStateVars.userBorrowBalanceUSD - amountInUSD;
+        vars.newltv = vars.newdebt.wadDiv(userStateVars.userCollateralBalanceUSD + userCredit.crtValue) * 10000 / WadRayMath.WAD;
+        console.log("calculateCRTRepay - newltv is", vars.newltv);
+        vars.cf = reserve.configuration.getLtv();
+        console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
+        // problem userStateVars.currentLtv may scaled by 18, so treat it carefully
+        vars.newCrtPerValue = calculateCRTValue(vars.newltv, vars.cf);
+        vars.newCrtValue = userlockBalance * vars.newCrtPerValue;
+
+        if (vars.newCrtValue <= userCredit.crtValue) {
+            return (0, userCredit.crtValue);
+        }
+
+        uint idleCRT = (userCredit.crtValue - vars.newCrtValue) / vars.newCrtPerValue;
         console.log("idelCRT value is: ", idleCRT);
         // todo it need more validation? like check the user health factor?
-        return idleCRT;
+        return (idleCRT,  vars.newCrtValue);
     }
 
     function calculateValueAfterDecay(uint256 additional_amount, uint256 crtValue) internal returns (uint256) {
