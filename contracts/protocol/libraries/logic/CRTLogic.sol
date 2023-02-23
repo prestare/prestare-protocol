@@ -113,6 +113,7 @@ library CRTLogic {
     ) external returns (uint256, uint256) {
         CrtRepayVars memory vars;
         uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
+        console.log(userlockBalance);
         if (userlockBalance == 0) {
             return (0, 0);
         }
@@ -121,15 +122,20 @@ library CRTLogic {
         console.log("calculateCRTRepay - newltv is", vars.newltv);
         vars.cf = reserve.configuration.getLtv();
         console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
+        if (vars.newltv <= vars.cf) {
+            return (userlockBalance, PercentageMath.BASIC_POINT);
+        }
         // problem userStateVars.currentLtv may scaled by 18, so treat it carefully
         vars.newCrtPerValue = calculateCRTValue(vars.newltv, vars.cf);
         vars.newCrtValue = userlockBalance * vars.newCrtPerValue;
+        console.log("calculateCRTRepay - crtValue is ", userCredit.crtValue);
+        console.log("calculateCRTRepay - newCrtValue is ", vars.newCrtValue);
 
         if (vars.newCrtValue <= userCredit.crtValue) {
             return (0, userCredit.crtValue);
         }
 
-        uint idleCRT = (userCredit.crtValue - vars.newCrtValue) / vars.newCrtPerValue;
+        uint idleCRT = (vars.newCrtValue - userCredit.crtValue) / vars.newCrtPerValue;
         console.log("idelCRT value is: ", idleCRT);
         // todo it need more validation? like check the user health factor?
         return (idleCRT,  vars.newCrtValue);

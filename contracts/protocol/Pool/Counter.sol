@@ -372,6 +372,7 @@ contract Counter is ICounter, CounterStorage {
       );
     
     DataTypes.UserAccountVars memory userStatVar;
+    // the userCollateralBalanceUSD is not contain crtvalue 
     (
       userStatVar.userCollateralBalanceUSD,
       userStatVar.userBorrowBalanceUSD,
