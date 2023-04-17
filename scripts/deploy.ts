@@ -92,7 +92,7 @@ async function main() {
         tokens,
         aggregator,
         fallbackOracle.address,
-        MainnetFork.WETH.MainnetFork,
+        MainnetFork.ReserveAssetsAddress.MainnetFork.USD,
         MainnetFork.OracleQuoteUnit,
     ]);
 

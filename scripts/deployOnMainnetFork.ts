@@ -15,7 +15,8 @@ import {
 import {
     getAllMockedTokens,
     authorizeWETHGateway,
-    getAllAssetTokens
+    getAllAssetTokens,
+    insertAllAssetToken
 } from '../helpers/contracts-helpers';
 import { getAllTokenAddresses,
     getPairsTokenAggregator,
@@ -57,6 +58,7 @@ async function main() {
 
     // 4. get All assetToken
     // await deployAllMockTokens(admin);
+    await insertAllAssetToken();
     const defaultTokenList: { [key: string]: string} = {
         ...Object.fromEntries(Object.keys(TokenContractName).map((symbol) => [symbol, '']))
     }

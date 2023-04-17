@@ -5,6 +5,7 @@ import { getDb } from './utils';
 import { getCounterAddress } from './contracts-getter';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
+import {MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -14,7 +15,12 @@ export const getReservesConfigByPool = (pool: Prestare) => {
             return MainnetFork.ReservesConfig;
     }
 }
-
+export const getReserveAssetsAddress = (pool: Prestare) => {
+  switch (pool) {
+      case Prestare.MainnetFork:
+          return MainnetFork.ReserveAssetsAddress;
+  }
+}
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
     const currentNetwork = hre.network.name;
     const FORK = process.env.FORK;
@@ -91,6 +97,17 @@ export const getAllMockedTokens = async () => {
     return tokens;
 };
 
+export const insertAllAssetToken = async () => {
+    const tokens: { [symbol: string]: Contract | MintableERC20} = {};
+
+    const protocolReserveAsset = getReserveAssetsAddress(Prestare.MainnetFork).MainnetFork;
+
+    for (const tokenSymbol of Object.keys(TokenContractName)) {
+        let decimals = '18';
+        let assetAddress = (<any>protocolReserveAsset)[tokenSymbol];
+        await rawInsertContractAddressInDb(tokenSymbol, assetAddress);
+    }
+};
 
 export const getMintableERC20 = async (address: string) =>
   await (await hre.ethers.getContractFactory("MintableERC20")).attach(
@@ -184,7 +201,7 @@ export const approveToken4Counter = async (signer: Signer, token: Contract, amou
   const balanceBefore = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("token %s", token.address);
   console.log("   Before Approve, allowance is: ", balanceBefore.toString());
-  console.log(counterAddress.address);
+  // console.log(counterAddress.address);
   let tx = await token.connect(signer).approve(counterAddress.address, amount);
   // console.log(tx);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);

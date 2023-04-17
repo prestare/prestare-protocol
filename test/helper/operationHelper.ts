@@ -9,7 +9,7 @@ export async function checkBalance(contract: Contract, address: string) {
     const tokenName = await contract.name();
     const balance = await contract.balanceOf(address);
     console.log(`   Token %s user %s`, tokenName, address);
-    console.log(`   balance is %d`, balance);
+    console.log(`   balance is %s`, balance.toString());
 }
 
 export async function mintToken(signer: SignerWithAddress, tokenName: string, amount: string) {
@@ -43,8 +43,9 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
     const token: Contract = await getTokenContract(tokenName);
     const pToken: Contract = await getPTokenContract(tokenName);
 
+    const name = await token.name();
     const decimals = await token.decimals();
-    // console.log("Token decimals is: ", decimals);
+    console.log("Token is: ", name);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
     const approveTx = await approveToken4Counter(signer, token, depositAmount);
     console.log("   Before deposit, ");
