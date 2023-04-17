@@ -18,9 +18,10 @@ contract CounterStorage {
 
   ICounterAddressesProvider public _addressesProvider;
 
-  // Map of reserves and their data (underlyingAssetOfReserve => reserveData)
-  mapping(address => DataTypes.ReserveData) internal _reserves;
-
+  // Map of reserves and their data (underlyingAssetOfReserve (Tier => reserveData))
+  mapping(address => mapping(uint8 => DataTypes.ReserveData)) internal _reserves;
+  // Map of asset and their class
+  mapping(address => uint8) internal _assetClass;
   // Map of users address and their configuration data (userAddress => userConfiguration)
   mapping(address => DataTypes.UserConfigurationMap) internal _usersConfig;
   
@@ -37,6 +38,7 @@ contract CounterStorage {
   uint256 internal _flashLoanPremiumTotal;
 
   uint256 internal _maxNumberOfReserves;
+  uint256 internal _maxAssetClass;
 
   address internal _crtaddress;
 

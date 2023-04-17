@@ -18,6 +18,7 @@ library DataTypes {
     uint40 lastUpdateTimestamp;
     //tokens addresses
     address pTokenAddress;
+
     address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateStrategyAddress;

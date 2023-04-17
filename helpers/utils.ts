@@ -172,10 +172,10 @@ export const initReservesByHelper = async (
       treasury: treasuryAddress,
       incentivesController: ZERO_ADDRESS,
       underlyingAssetName: symbol,
-      pTokenName: `p ${symbol}`,
-      pTokenSymbol: `p${symbol}`,
-      variableDebtTokenName: `variableDebt Prestare ${symbol}`,
-      variableDebtTokenSymbol: `variableDebt ${symbol}`,
+      pTokenName: `p ${symbol}-C`,
+      pTokenSymbol: `p${symbol}-C`,
+      variableDebtTokenName: `variableDebt Prestare ${symbol}-C`,
+      variableDebtTokenSymbol: `variableDebt ${symbol}-C`,
       params: '0x10',
     });
   }

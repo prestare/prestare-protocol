@@ -139,10 +139,30 @@ interface ICounter {
   );
 
   /**
+   * @dev Emitted when a reserve is upgrade or downgrade.
+   * @param asset The address of the underlying asset of the reserve
+   * @param assetTier The class of the asset after update
+   * @param direction The direction of asset class update, 1 is upgrade, 0 is downgrade.
+   * @param pToken The address of the associated pToken contract
+   * @param variableDebtToken The address of the associated variable rate debt token
+   * @param interestRateStrategyAddress The address of the interest rate strategy for the reserve
+   */
+  event ReserveClassUpdate(
+    address indexed asset,
+    uint8 indexed assetTier,
+    uint8 indexed direction,
+    address pToken,
+    address variableDebtToken,
+    address interestRateStrategyAddress
+  );
+
+  /**
    * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying pTokens.
    * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
    * @param asset The address of the underlying asset to deposit
    * @param amount The amount to be deposited
+   * @param assetTier The tier of asset pool user want to deposit
+   * - E.g. User want to deposit 100 USDC in a Tier Pool, assetTier will be 1
    * @param onBehalfOf The address that will receive the pTokens, same as msg.sender if the user
    *   wants to receive them on his own wallet, or a different address if the beneficiary of pTokens
    *   is a different wallet
@@ -160,6 +180,7 @@ interface ICounter {
    * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent pTokens owned
    * E.g. User has 100 aUSDC, calls withdraw() and receives 100 USDC, burning the 100 aUSDC
    * @param asset The address of the underlying asset to withdraw
+   * @param assetTier The tier of asset pool user want to withdraw
    * @param amount The underlying amount to be withdrawn
    *   - Send the value type(uint256).max in order to withdraw the whole pToken balance
    * @param to Address that will receive the underlying, same as msg.sender if the user
@@ -169,6 +190,7 @@ interface ICounter {
    **/
   function withdraw(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     address to
   ) external returns (uint256);
@@ -176,6 +198,7 @@ interface ICounter {
   /**
    * @dev Allows users to borrow a specific `amount` of the reserve underlying asset
    * @param asset The address of the underlying asset to borrow
+   * @param assetTier The tier of asset pool user want to borrow
    * @param amount The amount to be borrowed
    * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Variable, 2 for stable(not finish)
    * @param referralCode not used
@@ -186,6 +209,7 @@ interface ICounter {
    **/
   function borrow(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
@@ -197,6 +221,7 @@ interface ICounter {
    * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
    * - E.g. User repays 100 USDC, burning 100 variable debt tokens of the `onBehalfOf` address
    * @param asset The address of the borrowed underlying asset previously borrowed
+   * @param assetTier The tier of asset pool user want to repay
    * @param amount The amount to repay
    * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
    * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Variable, 2 for Stable
@@ -207,6 +232,7 @@ interface ICounter {
    **/
   function repay(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
@@ -216,9 +242,10 @@ interface ICounter {
   /**
    * @dev Allows depositors to enable/disable a specific deposited asset as collateral
    * @param asset The address of the underlying asset deposited
+   * @param assetTier The tier of asset pool user want to set as Collateral 
    * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
    **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral) external;
+  function setUserUseReserveAsCollateral(address asset, uint8 assetTier, bool useAsCollateral) external;
 
   /**
    * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
@@ -238,6 +265,14 @@ interface ICounter {
     uint256 debtToCover,
     bool receivepToken
   ) external;
+
+  /**
+   * @dev Returns the state and configuration of the reserve
+   * @param asset The address of the underlying asset of the reserve
+   * @param assetTier The tier of asset pool user want to set as Collateral 
+   * @return The state of the reserve
+   **/
+  function getReserveData(address asset, uint8 assetTier) external view returns (DataTypes.ReserveData memory);
 
   /**
    * @dev Returns the user account data across all the reserves
@@ -266,6 +301,30 @@ interface ICounter {
     address pTokenAddress,
     address variableDebtAddress,
     address interestRateStrategyAddress
+  ) external;
+
+  /**
+   * @dev Update the Reserve Tier, assigning an pToken and debt tokens and an
+   * ir strategy to higher Tier Token
+   * - Only callable by the COunterConfigurator contract
+   * @param asset The address of the underlying asset of the reserve
+   * @param pTokenAddress The address of the pToken that will be assigned to the reserve Tier pool
+   * @param variableDebtAddress The address of the VariableDebtToken that will be assigned to the reserve Tier pool
+   * @param interestRateStrategyAddress The address of the interest rate strategy contract
+   */
+  function upgradeAssetClass(
+    address asset,
+    address pTokenAddress,
+    address variableDebtAddress,
+    address interestRateStrategyAddress
+  ) external;
+
+  /**
+   * @dev
+   * @param asset The address of asset to be downgrade
+   */
+  function downgradeAssetClass(
+    address asset
   ) external;
 
   function setReserveInterestRateStrategyAddress(address reserve, address rateStrategyAddress)
@@ -306,13 +365,6 @@ interface ICounter {
    * @return The reserve normalized variable debt
    */
   function getReserveNormalizedVariableDebt(address asset) external view returns (uint256);
-
-  /**
-   * @dev Returns the state and configuration of the reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @return The state of the reserve
-   **/
-  function getReserveData(address asset) external view returns (DataTypes.ReserveData memory);
 
   function finalizeTransfer(
     address asset,

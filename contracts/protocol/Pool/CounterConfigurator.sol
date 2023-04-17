@@ -25,6 +25,7 @@ contract CounterConfigurator is ICounterConfigurator {
 
   ICounterAddressesProvider internal addressesProvider;
   ICounter internal counter;
+  uint8 internal initAssetTier;
 
   modifier onlyPoolAdmin {
     require(addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -49,6 +50,8 @@ contract CounterConfigurator is ICounterConfigurator {
 
   function initialize(ICounterAddressesProvider provider) public {
     addressesProvider = provider;
+    // D Tier
+    initAssetTier = 3;
     counter = ICounter(addressesProvider.getCounter());
   }
 
@@ -79,9 +82,8 @@ contract CounterConfigurator is ICounterConfigurator {
       input.variableDebtToken,
       input.interestRateStrategyAddress
     );
-
     DataTypes.ReserveConfigurationMap memory currentConfig =
-    counter.getConfiguration(input.underlyingAsset);
+    counter.getConfiguration(input.underlyingAsset, initAssetTier);
 
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
@@ -98,6 +100,54 @@ contract CounterConfigurator is ICounterConfigurator {
     );
   }
 
+  function upgradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
+    ICounter cache = counter;
+    IInitializablePToken(input.pToken).initialize(
+      cache,
+      input.treasury,
+      input.underlyingAsset,
+      input.underlyingAssetDecimals,
+      input.pTokenName,
+      input.pTokenSymbol,
+      input.params
+    );
+
+    IInitializableDebtToken(input.variableDebtToken).initialize(
+      cache, 
+      input.underlyingAsset, 
+      input.underlyingAssetDecimals, 
+      input.variableDebtTokenName, 
+      input.variableDebtTokenSymbol, 
+      input.params
+    );
+
+    counter.upgradeAssetClass(
+      input.underlyingAsset,
+      input.pToken,
+      input.variableDebtToken,
+      input.interestRateStrategyAddress
+    );
+
+    uint8 upgradeAssetClass = counter.getAssetClass();
+    DataTypes.ReserveConfigurationMap memory currentConfig =
+    counter.getConfiguration(input.underlyingAsset, upgradeAssetClass);
+
+    currentConfig.setDecimals(input.underlyingAssetDecimals);
+
+    currentConfig.setActive(true);
+    currentConfig.setFrozen(false);
+
+    counter.setConfiguration(input.underlyingAsset, upgradeAssetClass, currentConfig.data);
+
+    emit ReserveClassUpdate(
+      input.asset,
+      upgradeAssetClass,
+      1,
+      input.pToken,
+      input.variableDebtToken,
+      input.interestRateStrategyAddress
+    );
+  }
   /**
    * @dev Enables borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve

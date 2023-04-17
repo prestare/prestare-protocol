@@ -80,28 +80,22 @@ contract Counter is ICounter, CounterStorage {
    **/
   function initialize(ICounterAddressesProvider provider) public {
     _addressesProvider = provider;
+    _maxAssetClass = 3;
     _flashLoanPremiumTotal = 9;
     _maxNumberOfReserves = 128;
   }
 
   /**
-   * @dev Deposits an `amount` of underlying asset into the reserve, receiving in return overlying pTokens.
-   * - E.g. User deposits 100 USDC and gets in return 100 aUSDC
-   * @param asset The address of the underlying asset to deposit
-   * @param amount The amount to be deposited
-   * @param onBehalfOf The address that will receive the pTokens, same as msg.sender if the user
-   *   wants to receive them on his own wallet, or a different address if the beneficiary of pTokens
-   *   is a different wallet
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   **/
+   * @dev described in ICounter.sol
+   */
   function deposit(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
 
     ValidationLogic.validateDeposit(reserve, amount);
 
@@ -124,19 +118,15 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Withdraws an `amount` of underlying asset from the reserve, burning the equivalent pTokens owned
-   * @param asset The address of the underlying asset to withdraw
-   * @param amount The underlying amount to be withdrawn
-   *   - If the value is type(uint256).max which mean withdraw the whole pToken balance
-   * @param to Address that will receive the underlying
-   * @return The final amount withdrawn
-   **/
+   * @dev described in ICounter.sol
+   */
   function withdraw(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     address to
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
 
     address pToken = reserve.pTokenAddress;
 
@@ -150,6 +140,7 @@ contract Counter is ICounter, CounterStorage {
 
     ValidationLogic.validateWithdraw(
       asset,
+      assetTier,
       amountToWithdraw,
       userBalance,
       _reserves,
@@ -177,27 +168,18 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Allows users to borrow a specific `amount` of the reserve underlying asset, provided that the borrower
-   * already deposited enough collateral, or he was given enough allowance by a credit delegator on the
-   * corresponding debt token (VariableDebtToken)
-   * @param asset The address of the underlying asset to borrow
-   * @param amount The amount to be borrowed
-   * @param interestRateMode The interest rate mode at which the user wants to borrow: 1 for Stable, 2 for Variable
-   * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
-   *   0 if the action is executed directly by the user, without any middle-man
-   * @param onBehalfOf Address of the user who will receive the debt. Should be the address of the borrower itself
-   * calling the function if he wants to borrow against his own collateral, or the address of the credit delegator
-   * if he has been given credit delegation allowance
-   **/
+   * @dev described in ICounter.sol
+   */
   function borrow(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     uint256 interestRateMode,
     uint16 referralCode,
     address onBehalfOf,
     bool crtenable
   ) external override whenNotPaused {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
 
     _executeBorrow(
       ExecuteBorrowParams(
@@ -328,23 +310,16 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @notice Repays a borrowed `amount` on a specific reserve, burning the equivalent debt tokens owned
-   * @param asset The address of the borrowed underlying asset previously borrowed
-   * @param amount The amount to repay
-   * - Send the value type(uint256).max in order to repay the whole debt for `asset` on the specific `debtMode`
-   * @param rateMode The interest rate mode at of the debt the user wants to repay: 1 for Stable, 2 for Variable
-   * @param onBehalfOf Address of the user who will get his debt reduced/removed. Should be the address of the
-   * user calling the function if he wants to reduce/remove his own debt, or the address of any other
-   * other borrower whose debt should be removed
-   * @return The final amount repaid
-   **/
+   * @dev described in ICounter.sol
+   */
   function repay(
     address asset,
+    uint8 assetTier,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
     DataTypes.UserCreditData storage userCredit = _usersCredit[onBehalfOf];
 
     uint256 variableDebt = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -401,7 +376,8 @@ contract Counter is ICounter, CounterStorage {
 
     if (userStatVar.idleCRT > 0) {
       ICRT(_crtaddress).unlockCRT(msg.sender, userStatVar.idleCRT);
-      userCredit.crtValue = userStatVar.newCrtValue;
+      // fix
+      _usersCredit[msg.sender].crtValue = userStatVar.newCrtValue;
     }
 
     reserve.updateState();
@@ -429,16 +405,14 @@ contract Counter is ICounter, CounterStorage {
   }
 
   /**
-   * @dev Allows depositors to enable/disable a specific deposited asset as collateral
-   * @param asset The address of the underlying asset deposited
-   * @param useAsCollateral `true` if the user wants to use the deposit as collateral, `false` otherwise
-   **/
-  function setUserUseReserveAsCollateral(address asset, bool useAsCollateral)
+   * @dev described in ICounter.sol
+   */
+  function setUserUseReserveAsCollateral(address asset, uint8 assetTier, bool useAsCollateral)
     external
     override
     whenNotPaused
   {
-    DataTypes.ReserveData storage reserve = _reserves[asset];
+    DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
 
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
@@ -461,7 +435,7 @@ contract Counter is ICounter, CounterStorage {
     }
   }
 
-    /**
+  /**
    * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
    *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
@@ -472,47 +446,45 @@ contract Counter is ICounter, CounterStorage {
    * @param receivepToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
    * to receive the underlying collateral asset directly
    **/
-  function liquidationCall(
-    address collateralAsset,
-    address debtAsset,
-    address user,
-    uint256 debtToCover,
-    bool receivepToken
-  ) external override whenNotPaused {
-    address collateralManager = _addressesProvider.getCounterCollateralManager();
+  // function liquidationCall(
+  //   address collateralAsset,
+  //   address debtAsset,
+  //   address user,
+  //   uint256 debtToCover,
+  //   bool receivepToken
+  // ) external override whenNotPaused {
+  //   address collateralManager = _addressesProvider.getCounterCollateralManager();
 
-    //solium-disable-next-line
-    (bool success, bytes memory result) =
-      collateralManager.delegatecall(
-        abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receivepToken
-        )
-      );
+  //   //solium-disable-next-line
+  //   (bool success, bytes memory result) =
+  //     collateralManager.delegatecall(
+  //       abi.encodeWithSignature(
+  //         'liquidationCall(address,address,address,uint256,bool)',
+  //         collateralAsset,
+  //         debtAsset,
+  //         user,
+  //         debtToCover,
+  //         receivepToken
+  //       )
+  //     );
 
-    require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
+  //   require(success, Errors.LP_LIQUIDATION_CALL_FAILED);
 
-    (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
+  //   (uint256 returnCode, string memory returnMessage) = abi.decode(result, (uint256, string));
 
-    require(returnCode == 0, string(abi.encodePacked(returnMessage)));
-  }
+  //   require(returnCode == 0, string(abi.encodePacked(returnMessage)));
+  // }
 
   /**
-   * @dev Returns the state and configuration of the reserve
-   * @param asset The address of the underlying asset of the reserve
-   * @return The state of the reserve
-   **/
-  function getReserveData(address asset)
+   * @dev described in ICounter.sol
+   */
+  function getReserveData(address asset, uint8 assetTier)
     external
     view
     override
     returns (DataTypes.ReserveData memory)
   {
-    return _reserves[asset];
+    return _reserves[asset][assetTier];
   }
 
   /**
@@ -566,13 +538,13 @@ contract Counter is ICounter, CounterStorage {
    * @param asset The address of the underlying asset of the reserve
    * @return The configuration of the reserve
    **/
-  function getConfiguration(address asset)
+  function getConfiguration(address asset, uint8 assetTier)
     external
     view
     override
     returns (DataTypes.ReserveConfigurationMap memory)
   {
-    return _reserves[asset].configuration;
+    return _reserves[asset][assetTier].configuration;
   }
 
   /**
@@ -664,12 +636,12 @@ contract Counter is ICounter, CounterStorage {
    * @param asset The address of the underlying asset of the reserve
    * @param configuration The new configuration bitmap
    **/
-  function setConfiguration(address asset, uint256 configuration)
+  function setConfiguration(address asset, uint8 assetTier,uint256 configuration)
     external
     override
     onlyCounterConfigurator
   {
-    _reserves[asset].configuration.data = configuration;
+    _reserves[asset][assetTier].configuration.data = configuration;
   }
 
   /**
@@ -753,23 +725,70 @@ contract Counter is ICounter, CounterStorage {
     address interestRateStrategyAddress
   ) external override onlyCounterConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
-    _reserves[asset].init(
+    uint8 initAssetTier = 3;
+    _reserves[asset][initAssetTier].init(
       pTokenAddress,
       variableDebtAddress,
       interestRateStrategyAddress
     );
-    _addReserveToList(asset);
+    _addReserveToList(asset, initAssetTier);
   }
 
-  function _addReserveToList(address asset) internal {
+  function upgradeAssetClass(
+    address asset,
+    address pTokenAddress,
+    address variableDebtAddress,
+    address interestRateStrategyAddress
+  ) external override onlyCounterConfigurator {
+    require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
+    require(_assetClass[asset] > 0, Errors.ASSET_HAVE_BEEN_ACLASS);
+    uint8 upgradeAssetClass = _assetClass[asset] - 1;
+    _reserves[asset][upgradeAssetClass].init(
+      pTokenAddress,
+      variableDebtAddress,
+      interestRateStrategyAddress
+    );
+    _addReserveToList(asset, upgradeAssetClass);
+  }
+
+  function downgradeAssetClass(
+    address asset 
+  ) external override onlyCounterConfigurator {
+    uint8 nowAssetTier = _assetClass[asset];
+    require(nowAssetTier < _maxAssetClass, Errors.ASSET_CLASS_IS_LOWERST);
+    // After downgrade, asset Class become nowAssetTier + 1
+    uint8 demoteAssetTier = nowAssetTier + 1;
+    // get reserve assetTier config
+    DataTypes.ReserveData memory reserveData = _reserves[asset][nowAssetTier];
+    DataTypes.ReserveConfigurationMap memory currentConfig = reserveData.configuration;
+    address pTokenAddress = reserveData.pTokenAddress;
+    address variableDebtAddress = reserveData.variableDebtAddress;
+    address interestRateStrategyAddress = reserveData.interestRateStrategyAddress;
+    // After downgrading asset Class, the assetTier which is higher than assetClass should be frozen; 
+    currentConfig.setFrozen(true);
+    _reserves[asset][nowAssetTier].configuration.data = currentConfig.data;
+    // Downgrade asset Class by 1;
+    _assetClass[asset] = demoteAssetTier;
+    emit ReserveClassUpdate(
+      asset,
+      demoteAssetTier,
+      0,
+      pTokenAddress,
+      variableDebtAddress,
+      interestRateStrategyAddress
+    );
+  }
+
+  function _addReserveToList(address asset, uint8 assetTier) internal {
     uint256 reservesCount = _reservesCount;
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset].id != 0 || _reservesList[0] == asset;
+    bool reserveAlreadyAdded = _reserves[asset][assetTier].id != 0 || _reservesList[0] == asset;
 
     if (!reserveAlreadyAdded) {
-      _reserves[asset].id = uint8(reservesCount);
+      _assetClass[asset] = assetTier;
+      _reserves[asset][assetTier].id = uint8(reservesCount);
       _reservesList[reservesCount] = asset;
 
       _reservesCount = reservesCount + 1;

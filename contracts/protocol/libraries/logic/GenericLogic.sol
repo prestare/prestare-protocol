@@ -42,6 +42,7 @@ library GenericLogic {
    * @dev Checks if a specific balance decrease is allowed
    * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
    * @param asset The address of the underlying asset of the reserve
+   * @param assetTier The tier of the asset
    * @param user The address of the user
    * @param amount The amount to decrease
    * @param reservesData The data of all the reserves
@@ -52,23 +53,24 @@ library GenericLogic {
    * @return true if the decrease of the balance is allowed
    **/
   function balanceDecreaseAllowed(
-    address asset,
+    address asset,    
+    uint8 assetTier,
     address user,
     uint256 amount,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap calldata userConfig,
     DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
-    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset].id)) {
+    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset][assetTier].id)) {
       return true;
     }
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset]
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset][assetTier]
       .configuration
       .getParams();
 
@@ -150,7 +152,7 @@ library GenericLogic {
    **/
   function calculateUserAccountData(
     address user,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
     DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,

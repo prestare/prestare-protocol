@@ -46,6 +46,7 @@ library ValidationLogic {
   /**
    * @dev Validates a withdraw action
    * @param reserveAddress The address of the reserve
+   * @param assetTier The tier of the asset
    * @param amount The amount to be withdrawn
    * @param userBalance The balance of the user
    * @param reservesData The reserves state
@@ -56,9 +57,10 @@ library ValidationLogic {
    */
   function validateWithdraw(
     address reserveAddress,
+    uint8 assetTier,
     uint256 amount,
     uint256 userBalance,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     DataTypes.UserCreditData memory userCredit,
     mapping(uint256 => address) storage reserves,
@@ -68,12 +70,13 @@ library ValidationLogic {
     require(amount != 0, Errors.VL_INVALID_AMOUNT);
     require(amount <= userBalance, Errors.VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE);
 
-    (bool isActive, , , ) = reservesData[reserveAddress].configuration.getFlags();
+    (bool isActive, , , ) = reservesData[reserveAddress][assetTier].configuration.getFlags();
     require(isActive, Errors.VL_NO_ACTIVE_RESERVE);
 
     require(
       GenericLogic.balanceDecreaseAllowed(
         reserveAddress,
+        assetTier,
         msg.sender,
         amount,
         reservesData,

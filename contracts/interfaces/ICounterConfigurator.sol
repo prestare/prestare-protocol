@@ -33,6 +33,24 @@ interface ICounterConfigurator {
   );
 
   /**
+   * @dev Emitted when a reserve is upgrade or downgrade.
+   * @param asset The address of the underlying asset of the reserve
+   * @param assetTier The class of the asset after update
+   * @param direction The direction of asset class update, 1 is upgrade, 0 is downgrade.
+   * @param pToken The address of the associated pToken contract
+   * @param variableDebtToken The address of the associated variable rate debt token
+   * @param interestRateStrategyAddress The address of the interest rate strategy for the reserve
+   */
+  event ReserveClassUpdate(
+    address indexed asset,
+    uint8 indexed assetTier,
+    uint8 indexed direction,
+    address pToken,
+    address variableDebtToken,
+    address interestRateStrategyAddress
+  );
+
+  /**
    * @dev Emitted when borrowing is enabled on a reserve
    * @param asset The address of the underlying asset of the reserve
    * @param stableRateEnabled True if stable rate borrowing is enabled, false otherwise
