@@ -66,7 +66,9 @@ export const getAllAssetTokens = async (reserveAddress: any) => {
     const tokens: any = await Object.keys(TokenContractName).reduce(
       async (acc, tokenSymbol) => {
         const accumulator: any = await acc;
-        const address = reserveAddress.tokenSymbol;
+        console.log(tokenSymbol);
+        const address = reserveAddress[tokenSymbol];
+        console.log(address);
         accumulator[tokenSymbol] = await getMintableERC20(address);
         return Promise.resolve(acc);
       },

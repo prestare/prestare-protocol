@@ -72,10 +72,14 @@ async function main() {
     //   );
     
     // 5. deploy Oracle 
+    console.log();
+    console.log("Deploy Oracle....");
     const fallbackOracle = await deployPriceOracle(admin);
     await fallbackOracle.setEthUsdPrice(MainnetFork.MockUsdPriceInWei);
     await setInitialAssetPricesInOracle(MainnetFork.Mocks.AllMockAssetPrice, ReserveAssetsAddress, fallbackOracle);
     
+    console.log();
+    console.log("Deploy Prestare Oracle....");
     // const mockAggregators = await deployAllMockAggregators(MainnetFork.Mocks.AllMockAssetPrice);
     const ChainlinkAggregator = MainnetFork.ChainlinkAggregator.MainnetFork;
     // console.log(mockAggregators);
@@ -91,42 +95,44 @@ async function main() {
     console.log("token list: ", tokens);
     console.log("Aggregator list: ", aggregator);
 
-    // const prestareOracle = await deployPrestareOracle([
-    //     tokens,
-    //     aggregator,
-    //     fallbackOracle.address,
-    //     MainnetFork.ReserveAssetsAddress.MainnetFork.USD,
-    //     MainnetFork.OracleQuoteUnit,
-    // ]);
+    const prestareOracle = await deployPrestareOracle([
+        tokens,
+        aggregator,
+        fallbackOracle.address,
+        MainnetFork.ReserveAssetsAddress.MainnetFork.USD,
+        MainnetFork.OracleQuoteUnit,
+    ]);
 
-    // await addressesProvider.setPriceOracle(prestareOracle.address);
+    await addressesProvider.setPriceOracle(prestareOracle.address);
 
     // 6. deploy CounterCollateralManager
-    // const collateralManager = await deployCounterCollateralManager(admin);
-    // await addressesProvider.setCounterCollateralManager(collateralManager.address);
+    console.log();
+    console.log("Deploy CounterCollateralManager....");
+    const collateralManager = await deployCounterCollateralManager(admin);
+    await addressesProvider.setCounterCollateralManager(collateralManager.address);
 
-    // const treasuryAddress = await admin.getAddress();
+    const treasuryAddress = await admin.getAddress();
 
-    // // 8. deploy pToken for each asset & initialize all token
-    // await initReservesByHelper(
-    //     MainnetFork.ReservesConfig,
-    //     allTokenAddresses,
-    //     admin,
-    //     treasuryAddress,
-    // )
-    // await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses, admin);
+    // 8. deploy pToken for each asset & initialize all token
+    await initReservesByHelper(
+        MainnetFork.ReservesConfig,
+        allTokenAddresses,
+        admin,
+        treasuryAddress,
+    )
+    await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses, admin);
 
-    // // 9. WETHGateway
-    // // console.log("WETH is: ", [mockTokensAddress['WETH']]);
-    // const WETHGateway = await deployWETHGateway([ReserveAssetsAddress['WETH']]);
-    // console.log('WETH Gateway address is: ', WETHGateway.address);
-    // await authorizeWETHGateway(WETHGateway.address, CounterAddress);
+    // 9. WETHGateway
+    // console.log("WETH is: ", [mockTokensAddress['WETH']]);
+    const WETHGateway = await deployWETHGateway([ReserveAssetsAddress['WETH']]);
+    console.log('WETH Gateway address is: ', WETHGateway.address);
+    await authorizeWETHGateway(WETHGateway.address, CounterAddress);
     
-    // // 10. deploy set CRT
-    // const CRT = await deployCRT(admin);
-    // await CounterConfigurator.connect(admin).setCRT(CRT.address);
+    // 10. deploy set CRT
+    const CRT = await deployCRT(admin);
+    await CounterConfigurator.connect(admin).setCRT(CRT.address);
     
-    // await CounterConfigurator.connect(admin).setPoolPause(false);
+    await CounterConfigurator.connect(admin).setPoolPause(false);
     
 }
 
