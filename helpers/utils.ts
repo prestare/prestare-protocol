@@ -6,6 +6,7 @@ import { token } from '../typechain-types/@openzeppelin/contracts';
 import { ZERO_ADDRESS } from './constants';
 import { 
   deployPToken, 
+  deployPTokenAAVE, 
   deployRateStrategy,
   deployVariableDebtToken 
 } from './contracts-deployments';
@@ -161,7 +162,13 @@ export const initReservesByHelper = async (
     }
     console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
-    let pTokenContract = await deployPToken(admin, symbol);
+    let pTokenContract;
+    if (symbol.charAt(0) == 'a') {
+      console.log("find AToken ", symbol);
+      pTokenContract = await deployPTokenAAVE(admin, symbol);
+    } else {
+      pTokenContract = await deployPToken(admin, symbol);
+    }
     let variableDebtContract = await deployVariableDebtToken(admin, symbol);
     initInputParams.push({
       pToken: pTokenContract.address,

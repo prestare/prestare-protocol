@@ -752,7 +752,6 @@ contract Counter is ICounter, CounterStorage {
     address variableDebtAddress,
     address interestRateStrategyAddress
   ) external override onlyCounterConfigurator {
-    console.log(asset);
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     _reserves[asset].init(
       pTokenAddress,

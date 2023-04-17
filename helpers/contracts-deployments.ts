@@ -184,6 +184,16 @@ export const deployPToken = async (
     )
 };
 
+export const deployPTokenAAVE = async (
+  admin: Signer,
+  symbol: string) => {
+    const ContractFac = await hre.ethers.getContractFactory("PTokenAAVE");
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      `p${symbol}`
+    )
+};
+
 export const deployVariableDebtToken = async (
   admin: Signer,
   symbol: string) => {

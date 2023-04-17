@@ -10,6 +10,7 @@ import {Errors} from '../libraries/helpers/Errors.sol';
 
 import {IncentivizedERC20} from './IncentivizedERC20.sol';
 import {ILendingPool} from '../../interfaces/aaveInterface/ILendingPool.sol';
+import {IAToken} from '../../interfaces/aaveInterface/IAToken.sol';
 import "hardhat/console.sol";
 
 /**
@@ -29,7 +30,7 @@ contract PTokenAAVE is
   bytes32 public constant PERMIT_TYPEHASH =
     keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
 
-  uint256 public constant PTOKEN_REVISION = 0x1;
+  // uint256 public constant PTOKEN_REVISION = 0x1;
 
   /// @dev owner => next valid nonce to submit with permit()
   mapping(address => uint256) public _nonces;
@@ -37,20 +38,25 @@ contract PTokenAAVE is
   bytes32 public DOMAIN_SEPARATOR;
 
   ICounter internal _counter;
-  ILendingPool internal _pool;
+  ILendingPool internal _pool = ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
   address internal _treasury;
   address internal _underlyingAtoken;
   address internal _underlyingAsset;
+  bool private initializing;
 
   modifier onlyCounter {
     require(_msgSender() == address(_counter), Errors.CT_CALLER_MUST_BE_Counter);
     _;
   }
 
+  modifier initializer {
+    require(initializing == false, 'Contract instance has already been initialized');
+    _;
+  }
+
   /**
    * @dev Initializes the pToken
    * @param counter The address of the Counter where this pToken will be used
-   * @param pool The address of the AAVE Lending Pool
    * @param treasury The address of the treasury, receiving the fees on this pToken
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
    * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
@@ -59,15 +65,13 @@ contract PTokenAAVE is
    */
   function initialize(
     ICounter counter,
-    ILendingPool pool,
     address treasury,
-    address underlyingAToken,
     address underlyingAsset,
     uint8 pTokenDecimals,
     string calldata pTokenName,
     string calldata pTokenSymbol,
     bytes calldata params
-  ) external {
+  ) external initializer{
     uint256 chainId;
 
     //solium-disable-next-line
@@ -90,10 +94,11 @@ contract PTokenAAVE is
     _setDecimals(pTokenDecimals);
 
     _counter = counter;
-    _pool = pool;
     _treasury = treasury;
-    _underlyingAtoken = underlyingAToken;
-    _underlyingAsset = underlyingAsset;
+    _underlyingAtoken = underlyingAsset;
+    _underlyingAsset = IAToken(_underlyingAtoken).UNDERLYING_ASSET_ADDRESS();
+    console.log("underlyingAsset is ", _underlyingAsset);
+    initializing = !initializing;
   }
 
   /**

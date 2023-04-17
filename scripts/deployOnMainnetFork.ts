@@ -85,7 +85,6 @@ async function main() {
     // console.log(mockAggregators);
 
     const allTokenAddresses = ReserveAssetsAddress;
-
     const [tokens, aggregator] = getPairsTokenAggregator(
         allTokenAddresses,
         ChainlinkAggregator,
@@ -112,7 +111,7 @@ async function main() {
     await addressesProvider.setCounterCollateralManager(collateralManager.address);
 
     const treasuryAddress = await admin.getAddress();
-
+    console.log(allTokenAddresses);
     // 8. deploy pToken for each asset & initialize all token
     await initReservesByHelper(
         MainnetFork.ReservesConfig,

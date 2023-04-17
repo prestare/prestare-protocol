@@ -5,7 +5,7 @@ import {
     strategyUSDT,
     strategyBUSD,
 } from "./reserveConfig";
-import { MOCK_CHAINLINK_AGGREGATORS_PRICES, oneUSD } from "../../helpers/constants";
+import { MOCK_CHAINLINK_AGGREGATORS_PRICES, oneUSD, ZERO_ADDRESS } from "../../helpers/constants";
 import { EthereumNetwork } from "../../helpers/types";
 
 export const MainnetFork = {
@@ -31,7 +31,7 @@ export const MainnetFork = {
     },
     ReserveAssetsAddress: {
         [EthereumNetwork.MainnetFork]: {
-            USD: '0x0000000000000000000000000000000000000000',
+            USD: ZERO_ADDRESS,
             DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
             USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
             USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
