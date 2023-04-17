@@ -1,6 +1,7 @@
 import {ethers} from 'ethers';
 export const oneRay = ethers.utils.parseUnits('1.0', 27);
 export const oneEther = ethers.utils.parseUnits('1.0', 18);
+export const oneUSD = ethers.utils.parseUnits('1.0', 8);
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
 export const MOCK_CHAINLINK_AGGREGATORS_PRICES = {

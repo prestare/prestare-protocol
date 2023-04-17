@@ -62,6 +62,19 @@ export const deployAndSave = async (
     return contract;
 }
 
+export const getAllAssetTokens = async (reserveAddress: any) => {
+    const tokens: any = await Object.keys(TokenContractName).reduce(
+      async (acc, tokenSymbol) => {
+        const accumulator: any = await acc;
+        const address = reserveAddress.tokenSymbol;
+        accumulator[tokenSymbol] = await getMintableERC20(address);
+        return Promise.resolve(acc);
+      },
+      Promise.resolve({})
+    );
+    return tokens;
+}
+
 export const getAllMockedTokens = async () => {
     const db = getDb();
     const tokens: any = await Object.keys(TokenContractName).reduce(
