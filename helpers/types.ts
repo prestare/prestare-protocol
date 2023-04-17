@@ -33,7 +33,10 @@ export enum TokenContractName {
     WETH = 'WETH',
     USDC = 'USDC',
     USDT = 'USDT',
-    BUSD = 'BUSD',
+    aDAI = 'aDAI',
+    aWETH = 'aWETH',
+    aUSDC = 'aUSDC',
+    aUSDT = 'aUSDT'
 }
 
 export interface IInterestRateStrategyParams {
