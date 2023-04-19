@@ -3,12 +3,14 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
-import { mintToken, depositToken } from './helper/operationHelper';
-import { aDAIHolder } from "../helpers/holder";
+import { mintToken, depositToken } from '../helper/operationHelper';
+import { aDAIHolder, DAIHolder } from "../../helpers/holder";
 
 async function main() {
     await impersonateAccount(aDAIHolder);
     const fakeSigner: SignerWithAddress = await hre.ethers.getSigner(aDAIHolder);
+    await impersonateAccount(DAIHolder);
+    const fakeSigner2: SignerWithAddress = await hre.ethers.getSigner(DAIHolder);
     let amount = '200';
     let half = '100';
     // let tokens = Object.keys(TokenContractName)
@@ -20,6 +22,8 @@ async function main() {
     let tokenSymbol = 'aDAI';
     await depositToken(fakeSigner, tokenSymbol, half);
     // await depositToken(signer2, tokenSymbol, half);
+    tokenSymbol = 'DAI';
+    await depositToken(fakeSigner2, tokenSymbol, amount);
 
 }
 

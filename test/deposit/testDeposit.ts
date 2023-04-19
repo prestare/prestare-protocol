@@ -1,8 +1,8 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { TokenContractName } from '../helpers/types';
+import { TokenContractName } from '../../helpers/types';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
-import { mintToken, depositToken } from './helper/operationHelper';
+import { mintToken, depositToken } from '../helper/operationHelper';
 
 async function main() {
     let amount = '200';

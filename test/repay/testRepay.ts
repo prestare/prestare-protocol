@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { TokenContractName } from '../helpers/types';
+import { TokenContractName } from '../../helpers/types';
 
-import { repayToken } from './helper/operationHelper';
+import { repayToken } from '../helper/operationHelper';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
