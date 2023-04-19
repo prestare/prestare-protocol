@@ -69,12 +69,12 @@ export const deployAndSave = async (
 }
 
 export const getAllAssetTokens = async (reserveAddress: any) => {
-    const tokens: any = await Object.keys(TokenContractName).reduce(
+    const tokens: {[key: string]: Contract} = await Object.keys(TokenContractName).reduce(
       async (acc, tokenSymbol) => {
         const accumulator: any = await acc;
-        console.log(tokenSymbol);
+        // console.log(tokenSymbol);
         const address = reserveAddress[tokenSymbol];
-        console.log(address);
+        // console.log(address);
         accumulator[tokenSymbol] = await getMintableERC20(address);
         return Promise.resolve(acc);
       },
@@ -179,6 +179,15 @@ export const getCRT = async (address?: string) => {
     address ||
       (
         await getDb().get(`${ContractName.CRT}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
+export const getPrestareOracle = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("PrestareOracle")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.PrestareOracle}.${hre.network.name}`).value()
       ).address,
   );
 }

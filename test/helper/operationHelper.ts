@@ -67,7 +67,9 @@ export async function borrowToken(signer: SignerWithAddress,tokenName: string, a
     const token: Contract = await getTokenContract(tokenName);
     const debtToken: Contract = await getVariableDebtTokenContract(tokenName);
 
+    const name = await token.name();
     const decimals = await token.decimals();
+    console.log("Token is: ", name);
     console.log("   Token decimals is: ", decimals);
     console.log("   Before Borrow ");
     await checkBalance(token, signer.address);

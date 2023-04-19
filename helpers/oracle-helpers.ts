@@ -15,4 +15,4 @@ export const setInitialAssetPricesInOracle = async (
       ];
       await priceOracleInstance.setAssetPrice(assetAddress, price);
     }
-  };
+};
