@@ -123,7 +123,7 @@ library CRTLogic {
         vars.cf = reserve.configuration.getLtv();
         console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
         if (vars.newltv <= vars.cf) {
-            return (userlockBalance, PercentageMath.BASIC_POINT);
+            return (userlockBalance, PercentageMath.PERCENTAGE_FACTOR);
         }
         // problem userStateVars.currentLtv may scaled by 18, so treat it carefully
         vars.newCrtPerValue = calculateCRTValue(vars.newltv, vars.cf);
@@ -156,7 +156,7 @@ library CRTLogic {
         console.log("ltv is ", ltv);
         console.log("collateral factor is ", cf);
         if (ltv < cf) {
-            return PercentageMath.BASIC_POINT;
+            return PercentageMath.PERCENTAGE_FACTOR;
         }
         // first is represent in percentage and max is 10000 = 100.00
         int256 first = int256(cf.percentMul(ltv - cf));
@@ -172,7 +172,7 @@ library CRTLogic {
         // 原式太过复杂，因此使用泰勒展开来逼近实际结果
         // exp(-x); x == first
         // 1 - x + x^2/2 - x^3/6
-        int256 second = int256(PercentageMath.BASIC_POINT) - first;
+        int256 second = int256(PercentageMath.PERCENTAGE_FACTOR) - first;
         console.log("second is...");
         console.logInt(second);
         second = second + first.percentMul(first)/ 2;
