@@ -297,7 +297,8 @@ contract PTokenAAVE is
     onlyCounter
     returns (uint256)
   {
-    IERC20(_underlyingAtoken).safeTransfer(target, amount);
+    uint256 underlyingAssetAmount = _pool.withdraw(_underlyingAsset, amount, address(this));
+    IERC20(_underlyingAsset).safeTransfer(target, amount);
     return amount;
   }
 
