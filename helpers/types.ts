@@ -18,6 +18,7 @@ export enum ContractName {
     CounterCollateralManager = 'CounterCollateralManager',
     WETHGateway = 'WETHGateway',
     DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
+    PlatformTokenInterestRateModel = 'PlatformTokenInterestRateModel',
     CRT = 'CRT',
 }
 
@@ -47,6 +48,13 @@ export interface IInterestRateStrategyParams {
     variableRateSlope2: string;
 };
 
+export interface IPlatformInterestRateStrategyParams {
+    name: string;
+    opSupplyIndex: string;
+    opBorrowIndex: string;
+    poolSupplyIndex: string;
+    poolBorrowIndex: string;
+}
 export interface IReserveBorrowParams {
     borrowingEnabled: boolean;
     reserveDecimals: string;
@@ -60,8 +68,8 @@ export interface IReserveCollateralParams {
 export interface IReserveParams extends IReserveBorrowParams, IReserveCollateralParams {
     pToken: ContractName;
     reserveFactor: string;
-    strategy: IInterestRateStrategyParams;
-  }
+    strategy: IInterestRateStrategyParams | IPlatformInterestRateStrategyParams;
+}
 
 export enum Prestare {
     MainnetFork = 'MainnetFork',

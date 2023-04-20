@@ -19,9 +19,12 @@ import {
 } from './contracts-helpers';
 import { 
   TokenMap,
-  IReserveParams
+  IReserveParams,
+  IInterestRateStrategyParams
 } from './types';
-
+import {
+  getaTokenRateModel
+} from './contracts-getter';
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
 export const getAllTokenAddresses = (mockTokens: TokenMap) =>
@@ -91,6 +94,7 @@ export const initReservesByHelper = async (
   treasuryAddress: string,
   ) => {
   const addressProvider = await getCounterAddressesProvider();
+  const aTokenIRModel = await getaTokenRateModel();
   let reserveSymbols: string[] = [];
   
   let initInputParams: {
@@ -137,15 +141,16 @@ export const initReservesByHelper = async (
 
     let rateStrategies: Record<string, typeof strategyRates> = {};
     let strategyAddresses: Record<string, string> = {};
+ 
+    strategyAddresses["aTokenrateStrategy"] = aTokenIRModel.address;
+    if (!strategyAddresses[strategy.name] && strategy.name.charAt(0) != 'a') {
+      const {
+        optimalUtilizationRate,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+      } = strategy as IInterestRateStrategyParams;
 
-    const {
-      optimalUtilizationRate,
-      baseVariableBorrowRate,
-      variableRateSlope1,
-      variableRateSlope2,
-    } = strategy;
-
-    if (!strategyAddresses[strategy.name]) {
       rateStrategies[strategy.name] = [
         addressProvider.address,
         optimalUtilizationRate,
@@ -179,18 +184,27 @@ export const initReservesByHelper = async (
       treasury: treasuryAddress,
       incentivesController: ZERO_ADDRESS,
       underlyingAssetName: symbol,
-      pTokenName: `p ${symbol}`,
+      pTokenName: `prestare ${symbol}`,
       pTokenSymbol: `p${symbol}`,
       variableDebtTokenName: `variableDebt Prestare ${symbol}`,
       variableDebtTokenSymbol: `variableDebt ${symbol}`,
       params: '0x10',
     });
   }
+  
   console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
     console.log(initInputParams[index]);
     await configurator.connect(admin).initReserve(initInputParams[index]);
+    if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
+      console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
+      aTokenIRModel.connect(admin).createMarket(
+        initInputParams[index].underlyingAsset,
+        initInputParams[index].pToken,
+        "5000"
+      )
+    }
   }
   console.log("finish initReserve.");
 };

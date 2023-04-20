@@ -4,6 +4,7 @@ import {
     strategyUSDC,
     strategyUSDT,
     strategyBUSD,
+    aTokenStrategy
 } from "./reserveConfig";
 import { MOCK_CHAINLINK_AGGREGATORS_PRICES, oneUSD, ZERO_ADDRESS } from "../../helpers/constants";
 import { EthereumNetwork } from "../../helpers/types";
@@ -19,10 +20,10 @@ export const MainnetFork = {
         USDC: strategyUSDC,
         USDT: strategyUSDT,
         // BUSD: strategyBUSD,
-        aDAI: strategyDAI,
-        aWETH: strategyWETH,
-        aUSDC: strategyUSDC,
-        aUSDT: strategyUSDT
+        aDAI: aTokenStrategy,
+        aWETH: aTokenStrategy,
+        aUSDC: aTokenStrategy,
+        aUSDT: aTokenStrategy
     },
     Mocks: {
         AllMockAssetPrice: {
