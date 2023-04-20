@@ -94,7 +94,7 @@ library Errors {
   string public constant MATH_MULTIPLICATION_UNDERFLOW = "201";
   string public constant MATH_PERCENTAGE_DIVISION_OVERFLOW = "202";
 
-
+  string public constant ZERO_ADDRESS = "300";
   enum CollateralManagerErrors {
     NO_ERROR,
     NO_COLLATERAL_AVAILABLE,

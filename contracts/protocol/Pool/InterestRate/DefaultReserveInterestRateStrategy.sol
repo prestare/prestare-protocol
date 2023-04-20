@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
-import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
+import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {ICounterAddressesProvider} from '../../../interfaces/ICounterAddressesProvider.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import "hardhat/console.sol";
 
@@ -183,7 +183,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       vars.currentVariableBorrowRate
     )
       .rayMul(vars.utilizationRate)
-      .percentMul(PercentageMath.BASIC_POINT - reserveFactor);
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR - reserveFactor);
 
     return (
       vars.currentLiquidityRate,
