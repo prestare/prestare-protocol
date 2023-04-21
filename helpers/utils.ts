@@ -23,7 +23,7 @@ import {
   IInterestRateStrategyParams
 } from './types';
 import {
-  getaTokenRateModel
+  getPlatformInterestRateModel
 } from './contracts-getter';
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
@@ -94,7 +94,7 @@ export const initReservesByHelper = async (
   treasuryAddress: string,
   ) => {
   const addressProvider = await getCounterAddressesProvider();
-  const aTokenIRModel = await getaTokenRateModel();
+  const aTokenIRModel = await getPlatformInterestRateModel();
   let reserveSymbols: string[] = [];
   
   let initInputParams: {
@@ -199,8 +199,10 @@ export const initReservesByHelper = async (
     await configurator.connect(admin).initReserve(initInputParams[index]);
     if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
       console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
+      let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
+      console.log("underlyingAsset is", underlyingAsset);
       aTokenIRModel.connect(admin).createMarket(
-        initInputParams[index].underlyingAsset,
+        underlyingAsset,
         initInputParams[index].pToken,
         "5000"
       )

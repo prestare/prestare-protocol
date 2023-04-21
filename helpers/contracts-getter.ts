@@ -3,6 +3,7 @@ import { getMintableERC20, getPToken, getVariableDebtToken, getATokenRateModel }
 import { ContractName } from './types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Signer } from 'ethers';
+import { PlatformTokenInterestRateModel } from '../typechain-types';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -84,9 +85,9 @@ export const getATokenRateModelAddress = async () => {
     return Address;
 }
 
-export const getaTokenRateModel = async () => {
+export const getPlatformInterestRateModel = async () => {
     let aTokenRateModelAddress = await getATokenRateModelAddress();
-    var aTokenRateModel = await getATokenRateModel(aTokenRateModelAddress);
+    var aTokenRateModel: PlatformTokenInterestRateModel = await getATokenRateModel(aTokenRateModelAddress);
     return aTokenRateModel;
 }
 

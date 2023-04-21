@@ -27,8 +27,15 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
   mapping(address => uint256) public p2pSupplyIndex; // Current index from supply peer-to-peer unit to underlying (in ray).
   mapping(address => uint256) public p2pBorrowIndex; // Current index from borrow peer-to-peer unit to underlying (in ray).
   mapping(address => PoolIndexes) public poolIndexes; // Last pool index stored.
-
+  mapping(address => Market) public markets; // underlying => Market
   /// STRUCTS ///
+
+  struct Market {
+        address underlyingToken; // The address of the market's underlying token.
+        address pToken;
+  //       uint16 reserveFactor; // Proportion of the additional interest earned being matched peer-to-peer on Morpho compared to being on the pool. It is sent to the DAO for each market. The default value is 0. In basis point (100% = 10 000).
+  //       uint16 p2pIndexCursor; // Position of the peer-to-peer rate in the pool's spread. Determine the weights of the weighted arithmetic average in the indexes computations ((1 - p2pIndexCursor) * r^S + p2pIndexCursor * r^B) (in basis point).
+  }
 
   struct GrowthFactors {
       uint256 poolSupplyGrowthFactor; // The pool supply index growth factor (in ray).
@@ -83,9 +90,9 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
 
   ICounterAddressesProvider public immutable addressesProvider;
 
-  uint256 internal pSupplyIndex;
-  uint256 internal opBorrowIndex;
-  PoolIndexes internal poolIndex;
+  // uint256 internal pSupplyIndex;
+  // uint256 internal opBorrowIndex;
+  // PoolIndexes internal poolIndex;
   
   constructor(
     ICounterAddressesProvider provider
@@ -105,9 +112,16 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       PoolIndexes storage poolIndexes = poolIndexes[_pToken];
       poolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
       poolIndexes.poolSupplyIndex = uint112(_pool.getReserveNormalizedIncome(_underlyingToken));
+      console.log("poolSupplyIndex is",poolIndexes.poolSupplyIndex);
       poolIndexes.poolBorrowIndex = uint112(
           _pool.getReserveNormalizedVariableDebt(_underlyingToken)
       );
+      console.log("poolBorrowIndex is",poolIndexes.poolBorrowIndex);
+
+      markets[_underlyingToken] = Market({
+        underlyingToken: _underlyingToken,
+        pToken: _pToken
+      });
   }
   
   struct IRindex {
@@ -116,6 +130,20 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       uint256 newP2PSupplyIndex;
       uint256 newP2PBorrowIndex;
   }
+
+  function getReserveIRIndex(address pToken) external view returns (
+      uint256 nowP2PSupplyIndex,
+      uint256 nowP2PBorrowIndex,
+      uint112 poolSupplyIndex,
+      uint112 poolBorrowIndex
+    ) {
+      PoolIndexes memory marketPoolIndexs = poolIndexes[pToken];
+      nowP2PSupplyIndex = p2pSupplyIndex[pToken];
+      nowP2PBorrowIndex = p2pBorrowIndex[pToken];
+      poolSupplyIndex = marketPoolIndexs.poolSupplyIndex;
+      poolBorrowIndex = marketPoolIndexs.poolBorrowIndex;
+  }
+
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations
    * @param reserve The address of the reserve
@@ -123,8 +151,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
    * @param liquidityTaken The liquidity taken during the operation
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
-   * @return newP2PSupplyIndex liquidity rate,  
-   * @return newP2PBorrowIndex variable borrow rate
+   * @return The liquidity rate,  borrow rate
    **/
   function calculateInterestRates(
     address reserve,
@@ -137,39 +164,24 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
     external
     override
     returns (
-      uint256 newP2PSupplyIndex,
-      uint256 newP2PBorrowIndex
+      uint256,
+      uint256
     )
   {
-    PoolIndexes storage marketPoolIndexes = poolIndexes[pToken];
-    IRindex memory vars;
-    (vars.newPoolSupplyIndex, vars.newPoolBorrowIndex) = _getPoolIndexes(reserve);
-    
-    uint256 p2pIndexCursor = PercentageMath.HALF_PERCENTAGE_FACTOR;
-    (vars.newP2PSupplyIndex, vars.newP2PBorrowIndex) = _computeP2PIndexes(
-        Params({
-          lastP2PSupplyIndex: p2pSupplyIndex[pToken],
-          lastP2PBorrowIndex: p2pBorrowIndex[pToken],
-          poolSupplyIndex: vars.newPoolSupplyIndex,
-          poolBorrowIndex: vars.newPoolBorrowIndex,
-          lastPoolIndexes: marketPoolIndexes,
-          reserveFactor: reserveFactor,
-          p2pIndexCursor: p2pIndexCursor
-        })
-    );
+    uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
+    //avoid stack too deep
+    console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
+    console.log("calculateInterestRates - liquidityAdded is ", liquidityAdded);
+    console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
 
-    p2pSupplyIndex[pToken] = newP2PSupplyIndex;
-    p2pBorrowIndex[pToken] = newP2PBorrowIndex;
-    marketPoolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
-    marketPoolIndexes.poolSupplyIndex = uint112(vars.newPoolSupplyIndex);
-    marketPoolIndexes.poolBorrowIndex = uint112(vars.newPoolBorrowIndex);
-    emit P2PIndexesUpdated(
-            pToken,
-            vars.newP2PSupplyIndex,
-            vars.newP2PBorrowIndex,
-            vars.newPoolSupplyIndex,
-            vars.newPoolBorrowIndex
-        );
+    availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
+    return
+      calculateInterestRates(
+        reserve,
+        availableLiquidity,
+        totalVariableDebt,
+        reserveFactor
+      );
   }
 
   struct CalcInterestRatesLocalVars {
@@ -195,6 +207,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       uint256 p2pIndexCursor; // The peer-to-peer index cursor (10 000 = 100%).
       // Types.Delta delta; // The deltas and peer-to-peer amounts.
   }
+
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations.
    * NOTE This function is kept for compatibility with the previous DefaultInterestRateStrategy interface.
@@ -203,7 +216,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
    * @param availableLiquidity The liquidity available in the corresponding pToken
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
-   * @return The liquidity rate, the stable borrow rate and the variable borrow rate
+   * @return The liquidity rate, the variable borrow rate
    **/
   function calculateInterestRates(
     address reserve,
@@ -212,40 +225,46 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
     uint256 reserveFactor
   )
     public
-    view
     override
     returns (
       uint256,
       uint256
     )
   {
-    // PoolIndexes storage marketPoolIndexes = poolIndexes[reserve];
-    // (uint256 newPoolSupplyIndex, uint256 newPoolBorrowIndex) = _getPoolIndexes(reserve);
-    // uint256 p2pIndexCursor = PercentageMath.HALF_PERCENTAGE_FACTOR;
-    // (uint256 newP2PSupplyIndex, uint256 newP2PBorrowIndex) = _computeP2PIndexes(
-    //     Params({
-    //       lastP2PSupplyIndex: p2pSupplyIndex[_poolToken],
-    //       lastP2PBorrowIndex: p2pBorrowIndex[_poolToken],
-    //       poolSupplyIndex: newPoolSupplyIndex,
-    //       poolBorrowIndex: newPoolBorrowIndex,
-    //       lastPoolIndexes: marketPoolIndexes,
-    //       reserveFactor: reserveFactor,
-    //       p2pIndexCursor: p2pIndexCursor,
-    //     })
-    // );
+    address pToken = markets[reserve].pToken;
+    console.log("calculateInterestRates - pToken:", pToken);
+    PoolIndexes storage marketPoolIndexes = poolIndexes[pToken];
+    IRindex memory vars;
+    (vars.newPoolSupplyIndex, vars.newPoolBorrowIndex) = _getPoolIndexes(reserve);
+    console.log("calculateInterestRates - newPoolSupplyIndex:", vars.newPoolSupplyIndex);
+    console.log("calculateInterestRates - newPoolBorrowIndex:", vars.newPoolBorrowIndex);
 
-    // p2pSupplyIndex[_poolToken] = newP2PSupplyIndex;
-    // p2pBorrowIndex[_poolToken] = newP2PBorrowIndex;
-    // marketPoolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
-    // marketPoolIndexes.poolSupplyIndex = uint112(newPoolSupplyIndex);
-    // marketPoolIndexes.poolBorrowIndex = uint112(newPoolBorrowIndex);
-    // emit P2PIndexesUpdated(
-    //         _poolToken,
-    //         newP2PSupplyIndex,
-    //         newP2PBorrowIndex,
-    //         newPoolSupplyIndex,
-    //         newPoolBorrowIndex
-    //     );
+    uint256 p2pIndexCursor = PercentageMath.HALF_PERCENTAGE_FACTOR;
+    (vars.newP2PSupplyIndex, vars.newP2PBorrowIndex) = _computeP2PIndexes(
+        Params({
+          lastP2PSupplyIndex: p2pSupplyIndex[pToken],
+          lastP2PBorrowIndex: p2pBorrowIndex[pToken],
+          poolSupplyIndex: vars.newPoolSupplyIndex,
+          poolBorrowIndex: vars.newPoolBorrowIndex,
+          lastPoolIndexes: marketPoolIndexes,
+          reserveFactor: reserveFactor,
+          p2pIndexCursor: p2pIndexCursor
+        })
+    );
+
+    p2pSupplyIndex[pToken] = vars.newP2PSupplyIndex;
+    p2pBorrowIndex[pToken] = vars.newP2PBorrowIndex;
+    marketPoolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
+    marketPoolIndexes.poolSupplyIndex = uint112(vars.newPoolSupplyIndex);
+    marketPoolIndexes.poolBorrowIndex = uint112(vars.newPoolBorrowIndex);
+    emit P2PIndexesUpdated(
+            pToken,
+            vars.newP2PSupplyIndex,
+            vars.newP2PBorrowIndex,
+            vars.newPoolSupplyIndex,
+            vars.newPoolBorrowIndex
+        );
+    return (vars.newP2PSupplyIndex, vars.newP2PBorrowIndex);
   }
 
 
