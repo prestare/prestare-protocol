@@ -1,5 +1,5 @@
 import { getCounter, getDbProperty, getPrestareOracle } from './contracts-helpers';
-import { getMintableERC20, getPToken, getVariableDebtToken } from './contracts-helpers';
+import { getMintableERC20, getPToken, getVariableDebtToken, getATokenRateModel } from './contracts-helpers';
 import { ContractName } from './types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Signer } from 'ethers';
@@ -77,5 +77,16 @@ export const getCounterAssetInfo = async (user: Signer, reserveAddress: string) 
     console.log("   interestRateStrategyAddress: ", reserveData.interestRateStrategyAddress.toString());
     console.log("");
     return reserveData;
+}
+
+export const getATokenRateModelAddress = async () => {
+    let Address = (await getDbProperty(ContractName.PlatformTokenInterestRateModel, hre.network.name)).address;
+    return Address;
+}
+
+export const getaTokenRateModel = async () => {
+    let aTokenRateModelAddress = await getATokenRateModelAddress();
+    var aTokenRateModel = await getATokenRateModel(aTokenRateModelAddress);
+    return aTokenRateModel;
 }
 

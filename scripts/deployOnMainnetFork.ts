@@ -10,7 +10,8 @@ import {
     deployPrestareOracle,
     deployCounterCollateralManager,
     deployWETHGateway,
-    deployCRT
+    deployCRT,
+    deployPlatformTokenInterestRateModel
 } from "../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
@@ -114,6 +115,10 @@ async function main() {
 
     const treasuryAddress = await admin.getAddress();
     console.log(allTokenAddresses);
+
+    // 7. deploy AToken IR model
+    await deployPlatformTokenInterestRateModel(addressesProvider.address);
+
     // 8. deploy pToken for each asset & initialize all token
     await initReservesByHelper(
         MainnetFork.ReservesConfig,

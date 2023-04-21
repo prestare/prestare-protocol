@@ -192,6 +192,15 @@ export const getPrestareOracle = async (address?: string) => {
   );
 }
 
+export const getATokenRateModel =async (address:string) => {
+  return await (await hre.ethers.getContractFactory("PlatformTokenInterestRateModel")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.PlatformTokenInterestRateModel}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
 export const getContractAddressWithJsonFallback = async (
   id: string,
 ): Promise<string> => {

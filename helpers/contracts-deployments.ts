@@ -232,6 +232,16 @@ export const deployRateStrategy = async (
   }
 };
 
+export const deployPlatformTokenInterestRateModel = async (
+  provider: string,
+) => {
+  const ContractFac = await hre.ethers.getContractFactory("PlatformTokenInterestRateModel");
+  return deployAndSave(
+    await ContractFac.deploy(provider),
+    ContractName.PlatformTokenInterestRateModel
+  )
+};
+
 export const deployDefaultReserveInterestRateStrategy = async (
   args: [string, string, string, string, string],
 ) => {
