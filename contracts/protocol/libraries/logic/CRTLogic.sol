@@ -8,7 +8,7 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
-import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IBaseRateModel} from '../../../interfaces/IBaseRateModel.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
 import {ICRT} from '../../../CRT/ICRT.sol';

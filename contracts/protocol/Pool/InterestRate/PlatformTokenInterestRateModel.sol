@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
-import {IPlatformIRModel} from '../../../interfaces/IPlatformIRModel.sol';
+import {IBaseRateModel} from '../../../interfaces/IBaseRateModel.sol';
 import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
 import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
 import {ICounterAddressesProvider} from '../../../interfaces/ICounterAddressesProvider.sol';
@@ -19,7 +19,7 @@ import "hardhat/console.sol";
  * @dev The model of interest rate is based on 2 slopes, one before the `OPTIMAL_UTILIZATION_RATE`
  * point of utilization and another from that one to 100%
  **/
-contract PlatformTokenInterestRateModel is IPlatformIRModel {
+contract PlatformTokenInterestRateModel is IBaseRateModel {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using WadRayMath for uint256;
   using PercentageMath for uint256;

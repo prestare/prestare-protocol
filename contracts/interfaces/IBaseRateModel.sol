@@ -5,7 +5,7 @@ pragma solidity ^0.8.10;
  * @title IReserveInterestRateStrategyInterface interface
  * @dev Interface for the calculation of the interest rates
  */
-interface IPlatformIRModel {
+interface IBaseRateModel {
 
   function calculateInterestRates(
     address reserve,

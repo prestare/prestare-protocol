@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import {IPToken} from '../../../interfaces/IPToken.sol';
-import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IBaseRateModel} from '../../../interfaces/IBaseRateModel.sol';
 import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {DataTypes} from '../types/DataTypes.sol';
@@ -179,7 +179,7 @@ library ReserveLogic {
     (
       vars.newLiquidityRate,
       vars.newVariableRate
-    ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
+    ) = IBaseRateModel(reserve.interestRateStrategyAddress).calculateInterestRates(
       reserveAddress,
       pTokenAddress,
       liquidityAdded,
