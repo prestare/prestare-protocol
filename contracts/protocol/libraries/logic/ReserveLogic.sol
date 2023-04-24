@@ -10,6 +10,8 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {WadRayMath} from '../math/WadRayMath.sol';
 import {MathUtils} from '../math/MathUtils.sol';
 import {Errors} from '../helpers/Errors.sol';
+import "hardhat/console.sol";
+
 /**
  * @title ReserveLogic library
  * @notice Implements the logic to update the reserves state
@@ -187,6 +189,8 @@ library ReserveLogic {
     );
     require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
+    console.log("vars.newLiquidityRate: ", vars.newLiquidityRate);
+    console.log("vars.newLiquidityRate: ", vars.newVariableRate);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentVariableBorrowRate = uint128(vars.newVariableRate);

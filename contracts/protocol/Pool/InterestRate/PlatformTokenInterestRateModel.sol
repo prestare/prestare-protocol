@@ -24,10 +24,10 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
   using WadRayMath for uint256;
   using PercentageMath for uint256;
   ILendingPool internal _pool = ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
-  mapping(address => uint256) public p2pSupplyIndex; // Current index from supply peer-to-peer unit to underlying (in ray).
-  mapping(address => uint256) public p2pBorrowIndex; // Current index from borrow peer-to-peer unit to underlying (in ray).
-  mapping(address => PoolIndexes) public poolIndexes; // Last pool index stored.
-  mapping(address => Market) public markets; // underlying => Market
+  mapping(address => uint256) internal p2pSupplyIndex; // Current index from supply peer-to-peer unit to underlying (in ray).
+  mapping(address => uint256) internal p2pBorrowIndex; // Current index from borrow peer-to-peer unit to underlying (in ray).
+  mapping(address => PoolIndexes) internal poolIndexes; // Last pool index stored. paToken => Poolindexes
+  mapping(address => Market) internal markets; // underlying => Market (like ausdt => (usdt, paUsdt))
   /// STRUCTS ///
 
   struct Market {
@@ -102,6 +102,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
 
   function createMarket(
       address _underlyingToken,
+      address platformToken,
       address _pToken,
       uint16 _p2pIndexCursor
   ) external {
@@ -118,7 +119,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       );
       console.log("poolBorrowIndex is",poolIndexes.poolBorrowIndex);
 
-      markets[_underlyingToken] = Market({
+      markets[platformToken] = Market({
         underlyingToken: _underlyingToken,
         pToken: _pToken
       });
@@ -168,18 +169,18 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       uint256
     )
   {
-    uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
-    //avoid stack too deep
-    console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
-    console.log("calculateInterestRates - liquidityAdded is ", liquidityAdded);
-    console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
+    // uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
+    // //avoid stack too deep
+    // // console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
+    // // console.log("calculateInterestRates - liquidityAdded is ", liquidityAdded);
+    // // console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
 
-    availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
+    // availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
     return
       calculateInterestRates(
         reserve,
-        availableLiquidity,
-        totalVariableDebt,
+        0,
+        0,
         reserveFactor
       );
   }
@@ -231,11 +232,13 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
       uint256
     )
   {
+    console.log("PlatformTokenInterestRateModel calculateInterestRates - reserve:", reserve);
     address pToken = markets[reserve].pToken;
-    console.log("calculateInterestRates - pToken:", pToken);
+    console.log("PlatformTokenInterestRateModel calculateInterestRates - pToken:", pToken);
     PoolIndexes storage marketPoolIndexes = poolIndexes[pToken];
+    address underlying = markets[reserve].underlyingToken;
     IRindex memory vars;
-    (vars.newPoolSupplyIndex, vars.newPoolBorrowIndex) = _getPoolIndexes(reserve);
+    (vars.newPoolSupplyIndex, vars.newPoolBorrowIndex) = _getPoolIndexes(underlying);
     console.log("calculateInterestRates - newPoolSupplyIndex:", vars.newPoolSupplyIndex);
     console.log("calculateInterestRates - newPoolBorrowIndex:", vars.newPoolBorrowIndex);
 
@@ -251,12 +254,25 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
           p2pIndexCursor: p2pIndexCursor
         })
     );
-
     p2pSupplyIndex[pToken] = vars.newP2PSupplyIndex;
-    p2pBorrowIndex[pToken] = vars.newP2PBorrowIndex;
+
+    console.log("gas: ", gasleft());
+    console.log("calculateInterestRates - newP2PSupplyIndex:", vars.newP2PSupplyIndex);
+    console.log("gas: ", gasleft());
+    console.log("calculateInterestRates - newP2PBorrowIndex:", vars.newP2PBorrowIndex);
+    console.log("finish");
+    // p2pSupplyIndex[pToken] = vars.newP2PSupplyIndex;
+    console.log("calculateInterestRates - p2pSupplyIndex:", p2pSupplyIndex[pToken]);
+    console.log("gas: ", gasleft());
+    // p2pBorrowIndex[pToken] = vars.newP2PBorrowIndex;
+    console.log("calculateInterestRates - p2pBorrowIndex:", p2pBorrowIndex[pToken]);
+
     marketPoolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
     marketPoolIndexes.poolSupplyIndex = uint112(vars.newPoolSupplyIndex);
+    // console.log("calculateInterestRates - poolSupplyIndex:", marketPoolIndexes.poolSupplyIndex);
     marketPoolIndexes.poolBorrowIndex = uint112(vars.newPoolBorrowIndex);
+    // console.log("calculateInterestRates - poolBorrowIndex:", marketPoolIndexes.poolBorrowIndex);
+    console.log("set finish....");
     emit P2PIndexesUpdated(
             pToken,
             vars.newP2PSupplyIndex,
@@ -280,6 +296,9 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
   {
     poolSupplyIndex = _pool.getReserveNormalizedIncome(_underlyingToken);
     poolBorrowIndex = _pool.getReserveNormalizedVariableDebt(_underlyingToken);
+    console.log("_getPoolIndexes poolSupplyIndex: ", poolSupplyIndex);
+    console.log("_getPoolIndexes poolBorrowIndex: ", poolBorrowIndex);
+
   }
 
   /**
@@ -290,9 +309,11 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
    */
   function _computeP2PIndexes(Params memory _params)
     internal
-    pure
+    view
     returns (uint256 newP2PSupplyIndex, uint256 newP2PBorrowIndex)
   {
+    console.log("");
+    console.log("_computeP2PIndexes...");
     GrowthFactors memory growthFactors = computeGrowthFactors(
         _params.poolSupplyIndex,
         _params.poolBorrowIndex,
@@ -321,6 +342,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
             // p2pAmount: _params.delta.p2pBorrowAmount
         })
     );
+    console.log("finish _computeP2PIndexes");
   }
   /**
    * @notice Computes and returns the new supply/borrow growth factors associated to the given market's pool & peer-to-peer indexes.
@@ -337,7 +359,9 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
         PoolIndexes memory _lastPoolIndexes,
         uint256 _p2pIndexCursor,
         uint256 _reserveFactor
-  ) internal pure returns (GrowthFactors memory growthFactors) {
+  ) internal view returns (GrowthFactors memory growthFactors) {
+      console.log("");
+      console.log("computeGrowthFactors...");
       growthFactors.poolSupplyGrowthFactor = _newPoolSupplyIndex.rayDiv(
           _lastPoolIndexes.poolSupplyIndex
       );
@@ -365,6 +389,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
           growthFactors.p2pSupplyGrowthFactor = growthFactors.poolBorrowGrowthFactor;
           growthFactors.p2pBorrowGrowthFactor = growthFactors.poolBorrowGrowthFactor;
       }
+      console.log("finish computeGrowthFactors");
   }
   /**
    * @notice Computes and returns the new peer-to-peer supply/borrow index of a market given its parameters.
@@ -373,7 +398,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
    */
   function computeP2PIndex(P2PIndexComputeParams memory _params)
     internal
-    pure
+    view
     returns (uint256 newP2PIndex)
   {
     // if (_params.p2pAmount == 0 || _params.p2pDelta == 0) {
@@ -391,6 +416,7 @@ contract PlatformTokenInterestRateModel is IPlatformIRModel {
     //           shareOfTheDelta.rayMul(_params.poolGrowthFactor)
     //     );
     // }
+    console.log("computeP2PIndex...");
     uint256 shareOfTheDelta = WadRayMath.halfRAY;
     newP2PIndex = _params.lastP2PIndex.rayMul(
         (WadRayMath.RAY - shareOfTheDelta).rayMul(_params.p2pGrowthFactor) +

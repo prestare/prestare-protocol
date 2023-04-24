@@ -17,7 +17,6 @@ interface IReserveInterestRateStrategy {
     uint256 reserveFactor
   )
     external
-    view
     returns (
       uint256,
       uint256
@@ -32,7 +31,6 @@ interface IReserveInterestRateStrategy {
     uint256 reserveFactor
   )
     external
-    view
     returns (
       uint256 liquidityRate,
       uint256 variableBorrowRate

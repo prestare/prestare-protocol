@@ -101,15 +101,20 @@ contract Counter is ICounter, CounterStorage {
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
+    console.log("");
+    console.log("Counter deposit....");
+    console.log("asset address is ", asset);
     DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
 
     address pToken = reserve.pTokenAddress;
-
+    console.log("pToken is ", pToken);
+    console.log("reserve updateState...");
     reserve.updateState();
+    console.log("reserve updateInterestRates");
     reserve.updateInterestRates(asset, pToken, amount, 0);
-
+    console.log("reserve update success");
     IERC20(asset).transferFrom(msg.sender, pToken, amount);
 
     bool isFirstDeposit = IPToken(pToken).mint(onBehalfOf, amount, reserve.liquidityIndex);

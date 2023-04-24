@@ -2,7 +2,6 @@ import { BigNumber, Signer, BigNumberish } from 'ethers';
 import { getContractAddress } from 'ethers/lib/utils';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import { token } from '../typechain-types/@openzeppelin/contracts';
 import { ZERO_ADDRESS } from './constants';
 import { 
   deployPToken, 
@@ -200,9 +199,11 @@ export const initReservesByHelper = async (
     if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
       console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
       let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
+      let aToken = initInputParams[index].underlyingAsset;
       console.log("underlyingAsset is", underlyingAsset);
       aTokenIRModel.connect(admin).createMarket(
         underlyingAsset,
+        aToken,
         initInputParams[index].pToken,
         "5000"
       )
