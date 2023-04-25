@@ -242,9 +242,9 @@ interface ICounter {
   /**
    * @dev Returns the user account data across all the reserves
    * @param user The address of the user
-   * @return totalCollateralETH the total collateral in ETH of the user
-   * @return totalDebtETH the total debt in ETH of the user
-   * @return availableBorrowsETH the borrowing power left of the user
+   * @return totalCollateralUSD the total collateral in USD of the user
+   * @return totalDebtUSD the total debt in USD of the user
+   * @return availableBorrowsUSD the borrowing power left of the user
    * @return currentLiquidationThreshold the liquidation threshold of the user
    * @return ltv the loan to value of the user
    * @return healthFactor the current health factor of the user
@@ -253,9 +253,9 @@ interface ICounter {
     external
     view
     returns (
-      uint256 totalCollateralETH,
-      uint256 totalDebtETH,
-      uint256 availableBorrowsETH,
+      uint256 totalCollateralUSD,
+      uint256 totalDebtUSD,
+      uint256 availableBorrowsUSD,
       uint256 currentLiquidationThreshold,
       uint256 ltv,
       uint256 healthFactor

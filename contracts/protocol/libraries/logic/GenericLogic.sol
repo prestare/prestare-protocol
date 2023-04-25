@@ -187,6 +187,10 @@ library GenericLogic {
 
       vars.tokenUnit = 10**vars.decimals;
       vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+      console.log("calculateUserAccountData - pToken is", currentReserve.pTokenAddress);
+      console.log("calculateUserAccountData - reserve is", vars.currentReserveAddress);
+
+      console.log("calculateUserAccountData - Price is", vars.reserveUnitPrice);
       console.log("user Config:");
       console.log(userConfig.isUsingAsCollateral(vars.i));
       console.log("liquidationThreshold");

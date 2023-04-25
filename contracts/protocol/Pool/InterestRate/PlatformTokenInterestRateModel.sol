@@ -169,6 +169,7 @@ contract PlatformTokenInterestRateModel is IBaseRateModel {
       uint256
     )
   {
+    console.log("Using PlatformTokenInterestRateModel...");
     // uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
     // //avoid stack too deep
     // // console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);

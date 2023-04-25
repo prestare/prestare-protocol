@@ -107,6 +107,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       uint256
     )
   {
+    console.log("Using DefaultReserveInterestRateStrategy...");
+
     uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
     //avoid stack too deep
     console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
@@ -114,7 +116,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
 
     availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
-
+    console.log("calculateInterestRates - availableLiquidity is ", liquidityTaken);
+    console.log("calculateInterestRates - totalVariableDebt is ", totalVariableDebt);
     return
       calculateInterestRates(
         reserve,

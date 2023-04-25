@@ -45,11 +45,11 @@ library PercentageMath {
     if (amount == 0 || bps == 0) {
       return 0;
     }
-    require(bps < 10000, Errors.MATH_PERCENTAGE_DIVISION_OVERFLOW);
+    require(bps < 10001, Errors.MATH_PERCENTAGE_DIVISION_OVERFLOW);
 
     return (amount * 10000) / bps;
   }
-    function percentDiv(int256 amount, int256 bps) internal pure returns (int256) {
+  function percentDiv(int256 amount, int256 bps) internal pure returns (int256) {
     if (amount == 0 || bps == 0) {
       return 0;
     }

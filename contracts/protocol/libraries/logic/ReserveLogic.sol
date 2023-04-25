@@ -122,12 +122,15 @@ library ReserveLogic {
   function updateState(
     DataTypes.ReserveData storage reserve
   ) internal {
+    console.log("");
+    console.log("updateState...");
+    console.log("reserve.variableDebtTokenAddress: ", reserve.variableDebtTokenAddress);
     uint256 scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+    console.log("scaledVariableDebt is: ",scaledVariableDebt);
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
-
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
       _updateIndexes(
         reserve,
@@ -136,7 +139,6 @@ library ReserveLogic {
         previousVariableBorrowIndex,
         lastUpdatedTimestamp
       );
-    
     _mintToTreasury(
       reserve,
       scaledVariableDebt,
@@ -243,7 +245,7 @@ library ReserveLogic {
 
     //calculate the new total supply after accumulation of the index
     vars.currentVariableDebt = scaledVariableDebt.rayMul(newVariableBorrowIndex);
-
+    console.log("currentVariableDebt is: ", vars.currentVariableDebt);
     //debt accrued is the sum of the current debt minus the sum of the debt at the last update
     vars.totalDebtAccrued = vars.currentVariableDebt - vars.previousVariableDebt;
 
@@ -268,6 +270,7 @@ library ReserveLogic {
     uint256 variableBorrowIndex,
     uint40 timestamp
   ) internal returns (uint256, uint256) {
+    console.log("_updateIndexes...");
     uint256 currentLiquidityRate = reserve.currentLiquidityRate;
 
     uint256 newLiquidityIndex = liquidityIndex;
