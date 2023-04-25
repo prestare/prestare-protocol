@@ -95,7 +95,7 @@ export async function mintCRT(signer: SignerWithAddress, amount: string, address
     console.log("Mint CRT...")
     const balanceT0 = await crt.balanceOf(signer.address);
     console.log("   Before mint, signer CRT balance is: ", balanceT0);
-    const tx = crt.connect(signer).mint(signer.address, mintAmount);
+    const tx = await crt.connect(signer).mint(signer.address, mintAmount);
     const balanceT1 = await crt.balanceOf(signer.address);
     console.log("   After mint, signer CRT balance is: ", balanceT1);
 };
