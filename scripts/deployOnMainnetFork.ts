@@ -31,7 +31,7 @@ import { MainnetFork } from '../markets/mainnet';
 import { ZERO_ADDRESS } from "../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-async function main() {
+export const deployOnMainnetFork = async function() {
 
     const admin: Signer = (await hre.ethers.getSigners())[0];
     console.log("admin is: ", admin.getAddress());
@@ -142,9 +142,13 @@ async function main() {
     
 }
 
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+// async function main() {
+//     await deployOnMainnetFork();
+// }
+
+// main()
+//     .then(() => process.exit(0))
+//     .catch((error) => {
+//         console.error(error);
+//         process.exit(1);
+//     });

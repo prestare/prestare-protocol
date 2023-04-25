@@ -23,7 +23,7 @@ export const getReserveAssetsAddress = (pool: Prestare) => {
 }
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
     const currentNetwork = hre.network.name;
-    const FORK = process.env.FORK;
+    const FORK: boolean = process.env.FORK === 'true' ? true : false;
     if (FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
       console.log(`*** ${contractId} ***\n`);
       console.log(`Network: ${currentNetwork}`);
