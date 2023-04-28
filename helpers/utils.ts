@@ -164,11 +164,11 @@ export const initReservesByHelper = async (
 
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
-    console.log("token is: ", symbol);
+    // console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
     let pTokenContract;
     if (symbol.charAt(0) == 'a') {
-      console.log("find AToken ", symbol);
+      // console.log("find AToken ", symbol);
       pTokenContract = await deployPTokenAAVE(admin, symbol);
     } else {
       pTokenContract = await deployPToken(admin, symbol);
@@ -191,16 +191,16 @@ export const initReservesByHelper = async (
     });
   }
   
-  console.log("finish initInputParams");
+  // console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
-    console.log(initInputParams[index]);
+    // console.log(initInputParams[index]);
     await configurator.connect(admin).initReserve(initInputParams[index]);
     if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
-      console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
+      // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
       let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
       let aToken = initInputParams[index].underlyingAsset;
-      console.log("underlyingAsset is", underlyingAsset);
+      // console.log("underlyingAsset is", underlyingAsset);
       aTokenIRModel.connect(admin).createMarket(
         underlyingAsset,
         aToken,
@@ -209,7 +209,7 @@ export const initReservesByHelper = async (
       )
     }
   }
-  console.log("finish initReserve.");
+  // console.log("finish initReserve.");
 };
 
 export const configureReservesByHelper =async (
@@ -269,7 +269,7 @@ export const configureReservesByHelper =async (
   if (tokens.length) {
     const configurator = await getCounterConfigurator();
     for (let index = 0; index < inputParams.length; index++) {
-      console.log(inputParams[index]);
+      // console.log(inputParams[index]);
       await configurator.connect(admin).configureReserveAsCollateral(
         inputParams[index].asset,
         inputParams[index].baseLTV,
@@ -284,7 +284,7 @@ export const configureReservesByHelper =async (
       }
       await configurator.setReserveFactor(inputParams[index].asset, inputParams[index].reserveFactor);
     }
-    console.log("finish configure Reserve.");
+    // console.log("finish configure Reserve.");
   }
 }
 

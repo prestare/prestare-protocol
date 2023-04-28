@@ -127,9 +127,13 @@ export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: st
     
     const balanceT1: BigNumber = await token.balanceOf(signer.address);
     const debtT1: BigNumber = await debtToken.balanceOf(signer.address);
+    const scaledTotalSupplyT1: BigNumber = await debtToken.scaledTotalSupply();
+    const TotalSupplyT1: BigNumber = await debtToken.totalSupply();
+
     console.log("   After Borrow borrower balance is: ", balanceT1.toString());
     console.log("   After Borrow, borrower debt balance is: ", debtT1.toString());
-
+    console.log("   After Borrow, scaled debt token totalSupply is: ", scaledTotalSupplyT1.toString());
+    console.log("   After Borrow, debt token totalSupply is: ", TotalSupplyT1.toString());
     const counterInfo = await getCounterAssetInfo(signer, token.address);
     console.log("");
 

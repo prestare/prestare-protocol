@@ -116,7 +116,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
 
     availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
-    console.log("calculateInterestRates - availableLiquidity is ", liquidityTaken);
+    console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
     console.log("calculateInterestRates - totalVariableDebt is ", totalVariableDebt);
     return
       calculateInterestRates(
@@ -167,6 +167,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.utilizationRate = vars.totalDebt == 0
       ? 0
       : vars.totalDebt.rayDiv(availableLiquidity + vars.totalDebt);
+    console.log("calculateInterestRates - utilizationRate", vars.utilizationRate);
 
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
       uint256 excessUtilizationRateRatio =
@@ -180,13 +181,17 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
         vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE)
       );
     }
-
+    console.log("calculateInterestRates - currentVariableBorrowRate", vars.currentVariableBorrowRate);
     vars.currentLiquidityRate = _getOverallBorrowRate(
       totalVariableDebt,
       vars.currentVariableBorrowRate
     )
       .rayMul(vars.utilizationRate)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - reserveFactor);
+    console.log("calculateInterestRates - _getOverallBorrowRate:", _getOverallBorrowRate(
+      totalVariableDebt,
+      vars.currentVariableBorrowRate
+    ));
 
     return (
       vars.currentLiquidityRate,
@@ -212,7 +217,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
     uint256 overallBorrowRate =
       weightedVariableRate.rayDiv(totalDebt.wadToRay());
-
     return overallBorrowRate;
+    // return currentVariableBorrowRate;
   }
 }

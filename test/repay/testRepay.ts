@@ -12,8 +12,9 @@ async function main() {
 
     let tokenSymbol = 'DAI';
 
-    let repayAmount = '20';
-    await repayToken(signer, tokenSymbol, repayAmount);
+    let repayAmount = '120';
+
+    // await repayToken(signer, tokenSymbol, repayAmount);
 }
 
 main()

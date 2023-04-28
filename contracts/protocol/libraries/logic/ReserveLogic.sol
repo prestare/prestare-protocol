@@ -127,6 +127,7 @@ library ReserveLogic {
     console.log("reserve.variableDebtTokenAddress: ", reserve.variableDebtTokenAddress);
     uint256 scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+    console.log("reserve.variableDebtTokenAddress: ", reserve.variableDebtTokenAddress);
     console.log("scaledVariableDebt is: ",scaledVariableDebt);
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
@@ -139,6 +140,10 @@ library ReserveLogic {
         previousVariableBorrowIndex,
         lastUpdatedTimestamp
       );
+    console.log("updateState - newLiquidityIndex:", newLiquidityIndex);
+    console.log("updateState - newVariableBorrowIndex:", newVariableBorrowIndex);
+    console.log("updateState - scaledVariableDebt:", scaledVariableDebt);
+
     _mintToTreasury(
       reserve,
       scaledVariableDebt,
@@ -147,6 +152,10 @@ library ReserveLogic {
       newVariableBorrowIndex,
       lastUpdatedTimestamp
     );
+    scaledVariableDebt =
+      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+    console.log("updateState - after mintToTressury scaledVariableDebt:", scaledVariableDebt);
+
   }
 
   struct UpdateInterestRatesLocalVars {
@@ -169,6 +178,7 @@ library ReserveLogic {
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
+    console.log("updateInterestRates...");
     UpdateInterestRatesLocalVars memory vars;
 
     //calculates the total variable debt locally using the scaled total supply instead
@@ -177,7 +187,11 @@ library ReserveLogic {
     vars.totalVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress)
       .scaledTotalSupply()
       .rayMul(reserve.variableBorrowIndex);
-
+    console.log("updateInterestRates - variableDebtTokenAddress", reserve.variableDebtTokenAddress);
+    console.log("updateInterestRates - Debt scaledTotalSupply:", IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply());
+    console.log("updateInterestRates - reserve.variableBorrowIndex", reserve.variableBorrowIndex);
+    console.log("updateInterestRates - vars.totalVariableDebt:", vars.totalVariableDebt);
+    console.log("updateInterestRates - reserve.interestRateStrategyAddress:", reserve.interestRateStrategyAddress);
     (
       vars.newLiquidityRate,
       vars.newVariableRate
@@ -192,7 +206,7 @@ library ReserveLogic {
     require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
     console.log("vars.newLiquidityRate: ", vars.newLiquidityRate);
-    console.log("vars.newLiquidityRate: ", vars.newVariableRate);
+    console.log("vars.newVariableRate: ", vars.newVariableRate);
 
     reserve.currentLiquidityRate = uint128(vars.newLiquidityRate);
     reserve.currentVariableBorrowRate = uint128(vars.newVariableRate);

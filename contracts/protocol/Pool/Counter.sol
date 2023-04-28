@@ -417,7 +417,7 @@ contract Counter is ICounter, CounterStorage {
     }
 
     reserve.updateState();
-
+    console.log("update state finish");
     IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
         onBehalfOf,
         paybackAmount,

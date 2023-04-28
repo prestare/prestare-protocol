@@ -44,7 +44,7 @@ async function main() {
     await addressesProvider.connect(admin).setCounter(Counter.address);
     await Counter.connect(admin).initialize(addressesProvider.address);
     const CounterAddress: string = await addressesProvider.getCounter();
-    console.log("Counter is deploy to: ", CounterAddress);
+    // console.log("Counter is deploy to: ", CounterAddress);
     
     // 3. deploy CounterConfigurator
     const CounterConfigurator = await deployCounterConfigurator(admin);
@@ -52,7 +52,7 @@ async function main() {
     await addressesProvider.setCounterConfigurator(CounterConfigurator.address);
     const CounterConfiguratorAddress = await addressesProvider.getCounterConfigurator();
 
-    console.log("CounterConfiguratorAddress is deploy to: ", CounterConfiguratorAddress);
+    // console.log("CounterConfiguratorAddress is deploy to: ", CounterConfiguratorAddress);
 
     // 4. deploy All Mock Token
     await deployAllMockTokens(admin);

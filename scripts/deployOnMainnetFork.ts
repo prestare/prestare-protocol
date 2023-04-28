@@ -32,9 +32,9 @@ import { ZERO_ADDRESS } from "../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const deployOnMainnetFork = async function() {
-
+    console.log("deploy Contract...");
     const admin: Signer = (await hre.ethers.getSigners())[0];
-    console.log("admin is: ", admin.getAddress());
+    // console.log("admin is: ", admin.getAddress());
     // 1. deploy addressesProvider
     const addressesProvider = await deployCounterAddressesProvider("Prestare Market", admin);
 
@@ -47,7 +47,7 @@ export const deployOnMainnetFork = async function() {
     await addressesProvider.connect(admin).setCounter(Counter.address);
     await Counter.connect(admin).initialize(addressesProvider.address);
     const CounterAddress: string = await addressesProvider.getCounter();
-    console.log("Counter is deploy to: ", CounterAddress);
+    // console.log("Counter is deploy to: ", CounterAddress);
     
     // 3. deploy CounterConfigurator
     const CounterConfigurator = await deployCounterConfigurator(admin);
@@ -55,7 +55,7 @@ export const deployOnMainnetFork = async function() {
     await addressesProvider.setCounterConfigurator(CounterConfigurator.address);
     const CounterConfiguratorAddress = await addressesProvider.getCounterConfigurator();
 
-    console.log("CounterConfiguratorAddress is deploy to: ", CounterConfiguratorAddress);
+    // console.log("CounterConfiguratorAddress is deploy to: ", CounterConfiguratorAddress);
 
     // 4. get All assetToken
     // await deployAllMockTokens(admin);
@@ -64,7 +64,7 @@ export const deployOnMainnetFork = async function() {
         ...Object.fromEntries(Object.keys(TokenContractName).map((symbol) => [symbol, '']))
     }
     const ReserveAssetsAddress = MainnetFork.ReserveAssetsAddress.MainnetFork;
-    console.log(ReserveAssetsAddress);
+    // console.log(ReserveAssetsAddress);
     const assetTokens = await getAllAssetTokens(ReserveAssetsAddress);
     // const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
     //     (prev, curr) => {
@@ -94,8 +94,8 @@ export const deployOnMainnetFork = async function() {
         MainnetFork.oracleQuoteCurrency
     )
 
-    console.log("token list: ", tokens);
-    console.log("Aggregator list: ", aggregator);
+    // console.log("token list: ", tokens);
+    // console.log("Aggregator list: ", aggregator);
 
     const prestareOracle = await deployPrestareOracle([
         tokens,
@@ -109,12 +109,12 @@ export const deployOnMainnetFork = async function() {
 
     // 6. deploy CounterCollateralManager
     console.log();
-    console.log("Deploy CounterCollateralManager....");
+    // console.log("Deploy CounterCollateralManager....");
     const collateralManager = await deployCounterCollateralManager(admin);
     await addressesProvider.setCounterCollateralManager(collateralManager.address);
 
     const treasuryAddress = await admin.getAddress();
-    console.log(allTokenAddresses);
+    // console.log(allTokenAddresses);
 
     // 7. deploy AToken IR model
     await deployPlatformTokenInterestRateModel(addressesProvider.address);
@@ -131,7 +131,7 @@ export const deployOnMainnetFork = async function() {
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
     const WETHGateway = await deployWETHGateway([ReserveAssetsAddress['WETH']]);
-    console.log('WETH Gateway address is: ', WETHGateway.address);
+    // console.log('WETH Gateway address is: ', WETHGateway.address);
     await authorizeWETHGateway(WETHGateway.address, CounterAddress);
     
     // 10. deploy set CRT
@@ -139,7 +139,7 @@ export const deployOnMainnetFork = async function() {
     await CounterConfigurator.connect(admin).setCRT(CRT.address);
     
     await CounterConfigurator.connect(admin).setPoolPause(false);
-    
+    console.log("Deploy finished...");
 }
 
 // async function main() {
