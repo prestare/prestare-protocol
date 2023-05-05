@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { TokenContractName } from '../helpers/types';
+import { TokenContractName } from '../../helpers/types';
 
-import { repayToken } from './helper/operationHelper';
+import { repayToken } from '../helper/operationHelper';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
@@ -12,8 +12,9 @@ async function main() {
 
     let tokenSymbol = 'DAI';
 
-    let repayAmount = '20';
-    await repayToken(signer, tokenSymbol, repayAmount);
+    let repayAmount = '120';
+
+    // await repayToken(signer, tokenSymbol, repayAmount);
 }
 
 main()

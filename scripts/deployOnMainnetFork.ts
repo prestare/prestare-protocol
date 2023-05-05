@@ -10,11 +10,14 @@ import {
     deployPrestareOracle,
     deployCounterCollateralManager,
     deployWETHGateway,
-    deployCRT
+    deployCRT,
+    deployPlatformTokenInterestRateModel
 } from "../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
-    authorizeWETHGateway
+    authorizeWETHGateway,
+    getAllAssetTokens,
+    insertAllAssetToken
 } from '../helpers/contracts-helpers';
 import { getAllTokenAddresses,
     getPairsTokenAggregator,
@@ -28,10 +31,10 @@ import { MainnetFork } from '../markets/mainnet';
 import { ZERO_ADDRESS } from "../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-async function main() {
-
+export const deployOnMainnetFork = async function() {
+    console.log("deploy Contract...");
     const admin: Signer = (await hre.ethers.getSigners())[0];
-    console.log("admin is: ", admin.getAddress());
+    // console.log("admin is: ", admin.getAddress());
     // 1. deploy addressesProvider
     const addressesProvider = await deployCounterAddressesProvider("Prestare Market", admin);
 
@@ -54,39 +57,45 @@ async function main() {
 
     // console.log("CounterConfiguratorAddress is deploy to: ", CounterConfiguratorAddress);
 
-    // 4. deploy All Mock Token
-    await deployAllMockTokens(admin);
+    // 4. get All assetToken
+    // await deployAllMockTokens(admin);
+    await insertAllAssetToken();
     const defaultTokenList: { [key: string]: string} = {
         ...Object.fromEntries(Object.keys(TokenContractName).map((symbol) => [symbol, '']))
     }
-
-    const mockTokens = await getAllMockedTokens();
-    const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
-        (prev, curr) => {
-          prev[curr] = mockTokens[curr].address;
-          return prev;
-        },
-        defaultTokenList
-      );
+    const ReserveAssetsAddress = MainnetFork.ReserveAssetsAddress.MainnetFork;
+    // console.log(ReserveAssetsAddress);
+    const assetTokens = await getAllAssetTokens(ReserveAssetsAddress);
+    // const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
+    //     (prev, curr) => {
+    //       prev[curr] = mockTokens[curr].address;
+    //       return prev;
+    //     },
+    //     defaultTokenList
+    //   );
     
     // 5. deploy Oracle 
+    console.log();
+    console.log("Deploy Oracle....");
     const fallbackOracle = await deployPriceOracle(admin);
     await fallbackOracle.setEthUsdPrice(MainnetFork.MockUsdPriceInWei);
-    await setInitialAssetPricesInOracle(MainnetFork.Mocks.AllMockAssetPrice, mockTokensAddress, fallbackOracle);
+    await setInitialAssetPricesInOracle(MainnetFork.Mocks.AllMockAssetPrice, ReserveAssetsAddress, fallbackOracle);
     
-    const mockAggregators = await deployAllMockAggregators(MainnetFork.Mocks.AllMockAssetPrice);
+    console.log();
+    console.log("Deploy Prestare Oracle....");
+    // const mockAggregators = await deployAllMockAggregators(MainnetFork.Mocks.AllMockAssetPrice);
+    const ChainlinkAggregator = MainnetFork.ChainlinkAggregator.MainnetFork;
     // console.log(mockAggregators);
 
-    const allTokenAddresses = getAllTokenAddresses(mockTokens);
-
+    const allTokenAddresses = ReserveAssetsAddress;
     const [tokens, aggregator] = getPairsTokenAggregator(
         allTokenAddresses,
-        mockAggregators,
-        MainnetFork.OracleQuoteUnit
+        ChainlinkAggregator,
+        MainnetFork.oracleQuoteCurrency
     )
 
-    console.log("token list: ", tokens);
-    console.log("Aggregator list: ", aggregator);
+    // console.log("token list: ", tokens);
+    // console.log("Aggregator list: ", aggregator);
 
     const prestareOracle = await deployPrestareOracle([
         tokens,
@@ -99,10 +108,16 @@ async function main() {
     await addressesProvider.setPriceOracle(prestareOracle.address);
 
     // 6. deploy CounterCollateralManager
+    console.log();
+    // console.log("Deploy CounterCollateralManager....");
     const collateralManager = await deployCounterCollateralManager(admin);
     await addressesProvider.setCounterCollateralManager(collateralManager.address);
 
     const treasuryAddress = await admin.getAddress();
+    // console.log(allTokenAddresses);
+
+    // 7. deploy AToken IR model
+    await deployPlatformTokenInterestRateModel(addressesProvider.address);
 
     // 8. deploy pToken for each asset & initialize all token
     await initReservesByHelper(
@@ -115,8 +130,8 @@ async function main() {
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
-    const WETHGateway = await deployWETHGateway([mockTokensAddress['WETH']]);
-    console.log('WETH Gateway address is: ', WETHGateway.address);
+    const WETHGateway = await deployWETHGateway([ReserveAssetsAddress['WETH']]);
+    // console.log('WETH Gateway address is: ', WETHGateway.address);
     await authorizeWETHGateway(WETHGateway.address, CounterAddress);
     
     // 10. deploy set CRT
@@ -124,12 +139,16 @@ async function main() {
     await CounterConfigurator.connect(admin).setCRT(CRT.address);
     
     await CounterConfigurator.connect(admin).setPoolPause(false);
-    
+    console.log("Deploy finished...");
 }
 
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+// async function main() {
+//     await deployOnMainnetFork();
+// }
+
+// main()
+//     .then(() => process.exit(0))
+//     .catch((error) => {
+//         console.error(error);
+//         process.exit(1);
+//     });

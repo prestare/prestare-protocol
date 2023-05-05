@@ -2,10 +2,10 @@ import { BigNumber, Signer, BigNumberish } from 'ethers';
 import { getContractAddress } from 'ethers/lib/utils';
 import low from 'lowdb';
 import FileSync from 'lowdb/adapters/FileSync';
-import { token } from '../typechain-types/@openzeppelin/contracts';
 import { ZERO_ADDRESS } from './constants';
 import { 
   deployPToken, 
+  deployPTokenAAVE, 
   deployRateStrategy,
   deployVariableDebtToken 
 } from './contracts-deployments';
@@ -18,9 +18,12 @@ import {
 } from './contracts-helpers';
 import { 
   TokenMap,
-  IReserveParams
+  IReserveParams,
+  IInterestRateStrategyParams
 } from './types';
-
+import {
+  getPlatformInterestRateModel
+} from './contracts-getter';
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
 export const getAllTokenAddresses = (mockTokens: TokenMap) =>
@@ -90,6 +93,7 @@ export const initReservesByHelper = async (
   treasuryAddress: string,
   ) => {
   const addressProvider = await getCounterAddressesProvider();
+  const aTokenIRModel = await getPlatformInterestRateModel();
   let reserveSymbols: string[] = [];
   
   let initInputParams: {
@@ -136,15 +140,16 @@ export const initReservesByHelper = async (
 
     let rateStrategies: Record<string, typeof strategyRates> = {};
     let strategyAddresses: Record<string, string> = {};
+ 
+    strategyAddresses["aTokenrateStrategy"] = aTokenIRModel.address;
+    if (!strategyAddresses[strategy.name] && strategy.name.charAt(0) != 'a') {
+      const {
+        optimalUtilizationRate,
+        baseVariableBorrowRate,
+        variableRateSlope1,
+        variableRateSlope2,
+      } = strategy as IInterestRateStrategyParams;
 
-    const {
-      optimalUtilizationRate,
-      baseVariableBorrowRate,
-      variableRateSlope1,
-      variableRateSlope2,
-    } = strategy;
-
-    if (!strategyAddresses[strategy.name]) {
       rateStrategies[strategy.name] = [
         addressProvider.address,
         optimalUtilizationRate,
@@ -159,9 +164,15 @@ export const initReservesByHelper = async (
 
       rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     }
-    console.log("token is: ", symbol);
+    // console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
-    let pTokenContract = await deployPToken(admin, symbol);
+    let pTokenContract;
+    if (symbol.charAt(0) == 'a') {
+      // console.log("find AToken ", symbol);
+      pTokenContract = await deployPTokenAAVE(admin, symbol);
+    } else {
+      pTokenContract = await deployPToken(admin, symbol);
+    }
     let variableDebtContract = await deployVariableDebtToken(admin, symbol);
     initInputParams.push({
       pToken: pTokenContract.address,
@@ -176,16 +187,33 @@ export const initReservesByHelper = async (
       pTokenSymbol: `p${symbol}-C`,
       variableDebtTokenName: `variableDebt Prestare ${symbol}-C`,
       variableDebtTokenSymbol: `variableDebt ${symbol}-C`,
+      //pTokenName: `prestare ${symbol}`,
+      //pTokenSymbol: `p${symbol}`,
+      //variableDebtTokenName: `variableDebt Prestare ${symbol}`,
+      //variableDebtTokenSymbol: `variableDebt ${symbol}`,
       params: '0x10',
     });
   }
-  console.log("finish initInputParams");
+  
+  // console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
-    console.log(initInputParams[index]);
+    // console.log(initInputParams[index]);
     await configurator.connect(admin).initReserve(initInputParams[index]);
+    if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
+      // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
+      let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
+      let aToken = initInputParams[index].underlyingAsset;
+      // console.log("underlyingAsset is", underlyingAsset);
+      aTokenIRModel.connect(admin).createMarket(
+        underlyingAsset,
+        aToken,
+        initInputParams[index].pToken,
+        "5000"
+      )
+    }
   }
-  console.log("finish initReserve.");
+  // console.log("finish initReserve.");
 };
 
 export const configureReservesByHelper =async (
@@ -245,7 +273,7 @@ export const configureReservesByHelper =async (
   if (tokens.length) {
     const configurator = await getCounterConfigurator();
     for (let index = 0; index < inputParams.length; index++) {
-      console.log(inputParams[index]);
+      // console.log(inputParams[index]);
       await configurator.connect(admin).configureReserveAsCollateral(
         inputParams[index].asset,
         inputParams[index].baseLTV,
@@ -260,7 +288,7 @@ export const configureReservesByHelper =async (
       }
       await configurator.setReserveFactor(inputParams[index].asset, inputParams[index].reserveFactor);
     }
-    console.log("finish configure Reserve.");
+    // console.log("finish configure Reserve.");
   }
 }
 

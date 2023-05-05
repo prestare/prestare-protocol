@@ -5,6 +5,7 @@ import { getDb } from './utils';
 import { getCounterAddress } from './contracts-getter';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
+import {MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -14,10 +15,15 @@ export const getReservesConfigByPool = (pool: Prestare) => {
             return MainnetFork.ReservesConfig;
     }
 }
-
+export const getReserveAssetsAddress = (pool: Prestare) => {
+  switch (pool) {
+      case Prestare.MainnetFork:
+          return MainnetFork.ReserveAssetsAddress;
+  }
+}
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
     const currentNetwork = hre.network.name;
-    const FORK = process.env.FORK;
+    const FORK: boolean = process.env.FORK === 'true' ? true : false;
     if (FORK || (currentNetwork !== 'hardhat' && !currentNetwork.includes('coverage'))) {
       console.log(`*** ${contractId} ***\n`);
       console.log(`Network: ${currentNetwork}`);
@@ -62,6 +68,21 @@ export const deployAndSave = async (
     return contract;
 }
 
+export const getAllAssetTokens = async (reserveAddress: any) => {
+    const tokens: {[key: string]: Contract} = await Object.keys(TokenContractName).reduce(
+      async (acc, tokenSymbol) => {
+        const accumulator: any = await acc;
+        // console.log(tokenSymbol);
+        const address = reserveAddress[tokenSymbol];
+        // console.log(address);
+        accumulator[tokenSymbol] = await getMintableERC20(address);
+        return Promise.resolve(acc);
+      },
+      Promise.resolve({})
+    );
+    return tokens;
+}
+
 export const getAllMockedTokens = async () => {
     const db = getDb();
     const tokens: any = await Object.keys(TokenContractName).reduce(
@@ -76,6 +97,17 @@ export const getAllMockedTokens = async () => {
     return tokens;
 };
 
+export const insertAllAssetToken = async () => {
+    const tokens: { [symbol: string]: Contract | MintableERC20} = {};
+
+    const protocolReserveAsset = getReserveAssetsAddress(Prestare.MainnetFork).MainnetFork;
+
+    for (const tokenSymbol of Object.keys(TokenContractName)) {
+        let decimals = '18';
+        let assetAddress = (<any>protocolReserveAsset)[tokenSymbol];
+        await rawInsertContractAddressInDb(tokenSymbol, assetAddress);
+    }
+};
 
 export const getMintableERC20 = async (address: string) =>
   await (await hre.ethers.getContractFactory("MintableERC20")).attach(
@@ -151,6 +183,24 @@ export const getCRT = async (address?: string) => {
   );
 }
 
+export const getPrestareOracle = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("PrestareOracle")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.PrestareOracle}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
+export const getATokenRateModel =async (address:string) => {
+  return await (await hre.ethers.getContractFactory("PlatformTokenInterestRateModel")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.PlatformTokenInterestRateModel}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
 export const getContractAddressWithJsonFallback = async (
   id: string,
 ): Promise<string> => {
@@ -169,7 +219,7 @@ export const approveToken4Counter = async (signer: Signer, token: Contract, amou
   const balanceBefore = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("token %s", token.address);
   console.log("   Before Approve, allowance is: ", balanceBefore.toString());
-  console.log(counterAddress.address);
+  // console.log(counterAddress.address);
   let tx = await token.connect(signer).approve(counterAddress.address, amount);
   // console.log(tx);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);

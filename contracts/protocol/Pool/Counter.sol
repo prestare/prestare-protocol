@@ -95,15 +95,21 @@ contract Counter is ICounter, CounterStorage {
     address onBehalfOf,
     uint16 referralCode
   ) external override whenNotPaused {
+    console.log("");
+    console.log("Counter deposit....");
+    console.log("asset address is ", asset);
     DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
+    // DataTypes.ReserveData storage reserve = _reserves[asset];
 
     ValidationLogic.validateDeposit(reserve, amount);
 
     address pToken = reserve.pTokenAddress;
-
+    console.log("pToken is ", pToken);
+    console.log("reserve updateState...");
     reserve.updateState();
+    console.log("reserve updateInterestRates");
     reserve.updateInterestRates(asset, pToken, amount, 0);
-
+    console.log("reserve update success");
     IERC20(asset).transferFrom(msg.sender, pToken, amount);
 
     bool isFirstDeposit = IPToken(pToken).mint(onBehalfOf, amount, reserve.liquidityIndex);
@@ -179,7 +185,11 @@ contract Counter is ICounter, CounterStorage {
     address onBehalfOf,
     bool crtenable
   ) external override whenNotPaused {
+    console.log("");
+    console.log("borrow...");
     DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
+
+    // DataTypes.ReserveData storage reserve = _reserves[asset];
 
     _executeBorrow(
       ExecuteBorrowParams(
@@ -209,6 +219,7 @@ contract Counter is ICounter, CounterStorage {
   }
 
   function _executeBorrow(ExecuteBorrowParams memory vars) internal {
+    console.log("_executeBorrow");
     DataTypes.ReserveData storage reserve = _reserves[vars.asset];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[vars.onBehalfOf];
 
@@ -218,7 +229,9 @@ contract Counter is ICounter, CounterStorage {
       IPriceOracleGetter(oracle).getAssetPrice(vars.asset) * vars.amount / (
         10**reserve.configuration.getDecimals()
       );
-    
+    console.log("asset address:", vars.asset);
+    console.log("price is:", IPriceOracleGetter(oracle).getAssetPrice(vars.asset));
+    console.log("amount in USD:", amountInUSD);
     // get User Account Stata
     DataTypes.UserAccountVars memory userStatVar;
     // include crt value
@@ -290,7 +303,7 @@ contract Counter is ICounter, CounterStorage {
     reserve.updateInterestRates(
       vars.asset,
       vars.pTokenAddress,
-      vars.crtenable ? crtValue :0,
+      0,
       vars.releaseUnderlying ? vars.amount : 0
     );
 
@@ -319,7 +332,11 @@ contract Counter is ICounter, CounterStorage {
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
+    console.log("");
+    console.log("repay...");
     DataTypes.ReserveData storage reserve = _reserves[asset][assetTier];
+
+    // DataTypes.ReserveData storage reserve = _reserves[asset];
     DataTypes.UserCreditData storage userCredit = _usersCredit[onBehalfOf];
 
     uint256 variableDebt = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
@@ -381,7 +398,7 @@ contract Counter is ICounter, CounterStorage {
     }
 
     reserve.updateState();
-
+    console.log("update state finish");
     IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
         onBehalfOf,
         paybackAmount,
@@ -389,6 +406,7 @@ contract Counter is ICounter, CounterStorage {
       );
 
     address pToken = reserve.pTokenAddress;
+    console.log("update asset ir:", asset);
     reserve.updateInterestRates(asset, pToken, paybackAmount, 0);
 
     if (variableDebt - paybackAmount == 0) {

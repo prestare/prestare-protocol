@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: none
 pragma solidity ^0.8.10;
 
-import {IReserveInterestRateStrategy} from '../../interfaces/IReserveInterestRateStrategy.sol';
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {PercentageMath} from '../libraries/math/PercentageMath.sol';
-import {ICounterAddressesProvider} from '../../interfaces/ICounterAddressesProvider.sol';
+import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {WadRayMath} from '../../libraries/math/WadRayMath.sol';
+import {PercentageMath} from '../../libraries/math/PercentageMath.sol';
+import {ICounterAddressesProvider} from '../../../interfaces/ICounterAddressesProvider.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import "hardhat/console.sol";
 
@@ -107,6 +107,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
       uint256
     )
   {
+    console.log("Using DefaultReserveInterestRateStrategy...");
+
     uint256 availableLiquidity = IERC20(reserve).balanceOf(pToken);
     //avoid stack too deep
     console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
@@ -114,7 +116,8 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     console.log("calculateInterestRates - liquidityTaken is ", liquidityTaken);
 
     availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
-
+    console.log("calculateInterestRates - availableLiquidity is ", availableLiquidity);
+    console.log("calculateInterestRates - totalVariableDebt is ", totalVariableDebt);
     return
       calculateInterestRates(
         reserve,
@@ -164,6 +167,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.utilizationRate = vars.totalDebt == 0
       ? 0
       : vars.totalDebt.rayDiv(availableLiquidity + vars.totalDebt);
+    console.log("calculateInterestRates - utilizationRate", vars.utilizationRate);
 
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
       uint256 excessUtilizationRateRatio =
@@ -177,13 +181,17 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
         vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE)
       );
     }
-
+    console.log("calculateInterestRates - currentVariableBorrowRate", vars.currentVariableBorrowRate);
     vars.currentLiquidityRate = _getOverallBorrowRate(
       totalVariableDebt,
       vars.currentVariableBorrowRate
     )
       .rayMul(vars.utilizationRate)
-      .percentMul(PercentageMath.BASIC_POINT - reserveFactor);
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR - reserveFactor);
+    console.log("calculateInterestRates - _getOverallBorrowRate:", _getOverallBorrowRate(
+      totalVariableDebt,
+      vars.currentVariableBorrowRate
+    ));
 
     return (
       vars.currentLiquidityRate,
@@ -209,7 +217,7 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
 
     uint256 overallBorrowRate =
       weightedVariableRate.rayDiv(totalDebt.wadToRay());
-
     return overallBorrowRate;
+    // return currentVariableBorrowRate;
   }
 }

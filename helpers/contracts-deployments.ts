@@ -184,6 +184,16 @@ export const deployPToken = async (
     )
 };
 
+export const deployPTokenAAVE = async (
+  admin: Signer,
+  symbol: string) => {
+    const ContractFac = await hre.ethers.getContractFactory("PTokenAAVE");
+    return deployAndSave(
+      await ContractFac.connect(admin).deploy(),
+      `p${symbol}`
+    )
+};
+
 export const deployVariableDebtToken = async (
   admin: Signer,
   symbol: string) => {
@@ -220,6 +230,16 @@ export const deployRateStrategy = async (
         await deployDefaultReserveInterestRateStrategy(args)
       ).address;
   }
+};
+
+export const deployPlatformTokenInterestRateModel = async (
+  provider: string,
+) => {
+  const ContractFac = await hre.ethers.getContractFactory("PlatformTokenInterestRateModel");
+  return deployAndSave(
+    await ContractFac.deploy(provider),
+    ContractName.PlatformTokenInterestRateModel
+  )
 };
 
 export const deployDefaultReserveInterestRateStrategy = async (

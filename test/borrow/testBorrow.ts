@@ -1,5 +1,5 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { borrowToken } from './helper/operationHelper';
+import { borrowToken } from '../helper/operationHelper';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {

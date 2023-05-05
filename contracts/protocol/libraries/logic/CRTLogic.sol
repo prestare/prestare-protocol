@@ -8,7 +8,7 @@ import {PercentageMath} from '../math/PercentageMath.sol';
 import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
 import {UserConfiguration} from '../configuration/UserConfiguration.sol';
 import {Errors} from '../helpers/Errors.sol';
-import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
+import {IBaseRateModel} from '../../../interfaces/IBaseRateModel.sol';
 import {DataTypes} from '../types/DataTypes.sol';
 
 import {ICRT} from '../../../CRT/ICRT.sol';
@@ -123,11 +123,11 @@ library CRTLogic {
         vars.cf = reserve.configuration.getLtv();
         console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
         if (vars.newltv <= vars.cf) {
-            return (userlockBalance, PercentageMath.BASIC_POINT);
+            return (userlockBalance, PercentageMath.PERCENTAGE_FACTOR);
         }
         // problem userStateVars.currentLtv may scaled by 18, so treat it carefully
         vars.newCrtPerValue = calculateCRTValue(vars.newltv, vars.cf);
-        vars.newCrtValue = userlockBalance * vars.newCrtPerValue;
+        vars.newCrtValue = userlockBalance.percentMul(vars.newCrtPerValue);
         console.log("calculateCRTRepay - crtValue is ", userCredit.crtValue);
         console.log("calculateCRTRepay - newCrtValue is ", vars.newCrtValue);
 
@@ -135,7 +135,7 @@ library CRTLogic {
             return (0, userCredit.crtValue);
         }
 
-        uint idleCRT = (vars.newCrtValue - userCredit.crtValue) / vars.newCrtPerValue;
+        uint idleCRT = (vars.newCrtValue - userCredit.crtValue).percentDiv(vars.newCrtPerValue);
         console.log("idelCRT value is: ", idleCRT);
         // todo it need more validation? like check the user health factor?
         return (idleCRT,  vars.newCrtValue);
@@ -156,12 +156,14 @@ library CRTLogic {
         console.log("ltv is ", ltv);
         console.log("collateral factor is ", cf);
         if (ltv < cf) {
-            return PercentageMath.BASIC_POINT;
+            return PercentageMath.PERCENTAGE_FACTOR;
         }
+        uint256 score = PercentageMath.PERCENTAGE_FACTOR;
+        uint256 crtValue = PercentageMath.PERCENTAGE_FACTOR - PercentageMath.HALF_PERCENTAGE_FACTOR.percentMul(ltv - cf).percentDiv(score);
         // first is represent in percentage and max is 10000 = 100.00
-        int256 first = int256(cf.percentMul(ltv - cf));
-        console.log("first is ");
-        console.logInt(first);
+        // int256 first = int256(cf.percentMul(ltv - cf));
+        // console.log("first is ");
+        // console.logInt(first);
 
         // scaled by 18
         // TODO !! there may be error that caused by conversion
@@ -172,31 +174,31 @@ library CRTLogic {
         // 原式太过复杂，因此使用泰勒展开来逼近实际结果
         // exp(-x); x == first
         // 1 - x + x^2/2 - x^3/6
-        int256 second = int256(PercentageMath.BASIC_POINT) - first;
-        console.log("second is...");
-        console.logInt(second);
-        second = second + first.percentMul(first)/ 2;
-        console.logInt(second);
-        second = second - first.percentMul(first).percentMul(first) / 6;
-        // second = PercentageMath.BASIC_POINT * WadRayMath.GWEI - first + first.gweiMul(first).gweiDiv(2e9) - first.gweiMul(first).gweiDiv(6e9).gweiMul(first);
-        console.logInt(second);
+        // int256 second = int256(PercentageMath.PERCENTAGE_FACTOR) - first;
+        // console.log("second is...");
+        // console.logInt(second);
+        // second = second + first.percentMul(first)/ 2;
+        // console.logInt(second);
+        // second = second - first.percentMul(first).percentMul(first) / 6;
+        // // second = PercentageMath.BASIC_POINT * WadRayMath.GWEI - first + first.gweiMul(first).gweiDiv(2e9) - first.gweiMul(first).gweiDiv(6e9).gweiMul(first);
+        // console.logInt(second);
 
         // log(1+x); x = exp(-x);
         // x - x^2/2 + x^3/3
         // console.log(second);
         // console.log(second.percentMul(second) / 2);
         // console.log(second.percentMul(second).percentMul(second) / 3);
-        uint256 crtvalue = uint256(second - second.percentMul(second ) / 2 + second.percentMul(second).percentMul(second) / 3);
+        // uint256 crtvalue = uint256(second - second.percentMul(second ) / 2 + second.percentMul(second).percentMul(second) / 3);
         // console.log("crtvalue is ", crtvalue);
 
-        require(crtvalue > 0, "Crt value lower than 0");
+        require(crtValue > 0, "Crt value lower than 0");
         // uint256 crtvalue = ABDKMath64x64.toUInt(crtvalue_128);
-        if (crtvalue < FLOODPRICE){
-            crtvalue = FLOODPRICE;
+        if (crtValue < FLOODPRICE){
+            crtValue = FLOODPRICE;
         }
-        console.log("crtvalue is ", crtvalue);
+        console.log("crtvalue is ", crtValue);
 
-        return uint256(crtvalue);
+        return uint256(crtValue);
     }
 
 }

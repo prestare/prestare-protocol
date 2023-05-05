@@ -9,7 +9,7 @@ export async function checkBalance(contract: Contract, address: string) {
     const tokenName = await contract.name();
     const balance = await contract.balanceOf(address);
     console.log(`   Token %s user %s`, tokenName, address);
-    console.log(`   balance is %d`, balance);
+    console.log(`   balance is %s`, balance.toString());
 }
 
 export async function mintToken(signer: SignerWithAddress, tokenName: string, amount: string) {
@@ -43,8 +43,9 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
     const token: Contract = await getTokenContract(tokenName);
     const pToken: Contract = await getPTokenContract(tokenName);
 
+    const name = await token.name();
     const decimals = await token.decimals();
-    // console.log("Token decimals is: ", decimals);
+    console.log("Token is: ", name);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
     const approveTx = await approveToken4Counter(signer, token, depositAmount);
     console.log("   Before deposit, ");
@@ -66,7 +67,9 @@ export async function borrowToken(signer: SignerWithAddress,tokenName: string, a
     const token: Contract = await getTokenContract(tokenName);
     const debtToken: Contract = await getVariableDebtTokenContract(tokenName);
 
+    const name = await token.name();
     const decimals = await token.decimals();
+    console.log("Token is: ", name);
     console.log("   Token decimals is: ", decimals);
     console.log("   Before Borrow ");
     await checkBalance(token, signer.address);
@@ -92,7 +95,7 @@ export async function mintCRT(signer: SignerWithAddress, amount: string, address
     console.log("Mint CRT...")
     const balanceT0 = await crt.balanceOf(signer.address);
     console.log("   Before mint, signer CRT balance is: ", balanceT0);
-    const tx = crt.connect(signer).mint(signer.address, mintAmount);
+    const tx = await crt.connect(signer).mint(signer.address, mintAmount);
     const balanceT1 = await crt.balanceOf(signer.address);
     console.log("   After mint, signer CRT balance is: ", balanceT1);
 };
@@ -124,9 +127,13 @@ export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: st
     
     const balanceT1: BigNumber = await token.balanceOf(signer.address);
     const debtT1: BigNumber = await debtToken.balanceOf(signer.address);
+    const scaledTotalSupplyT1: BigNumber = await debtToken.scaledTotalSupply();
+    const TotalSupplyT1: BigNumber = await debtToken.totalSupply();
+
     console.log("   After Borrow borrower balance is: ", balanceT1.toString());
     console.log("   After Borrow, borrower debt balance is: ", debtT1.toString());
-
+    console.log("   After Borrow, scaled debt token totalSupply is: ", scaledTotalSupplyT1.toString());
+    console.log("   After Borrow, debt token totalSupply is: ", TotalSupplyT1.toString());
     const counterInfo = await getCounterAssetInfo(signer, token.address);
     console.log("");
 
