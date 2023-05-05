@@ -31,7 +31,7 @@ library GenericLogic {
     uint256 totalCollateralInUSD;
     uint256 totalDebtInUSD;
     uint256 avgLiquidationThreshold;
-    uint256 amountToDecreaseInETH;
+    uint256 amountToDecreaseInUSD;
     uint256 collateralBalanceAfterDecrease;
     uint256 liquidationThresholdAfterDecrease;
     uint256 healthFactorAfterDecrease;
@@ -60,7 +60,7 @@ library GenericLogic {
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap calldata userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
@@ -90,11 +90,11 @@ library GenericLogic {
       return true;
     }
 
-    vars.amountToDecreaseInETH = IPriceOracleGetter(oracle).getAssetPrice(asset) * amount / (
+    vars.amountToDecreaseInUSD = IPriceOracleGetter(oracle).getAssetPrice(asset) * amount / (
       10**vars.decimals
     );
 
-    vars.collateralBalanceAfterDecrease = vars.totalCollateralInUSD - vars.amountToDecreaseInETH;
+    vars.collateralBalanceAfterDecrease = vars.totalCollateralInUSD - vars.amountToDecreaseInUSD;
 
     //if there is a borrow, there can't be 0 collateral
     if (vars.collateralBalanceAfterDecrease == 0) {
@@ -104,7 +104,7 @@ library GenericLogic {
     vars.liquidationThresholdAfterDecrease = vars
       .totalCollateralInUSD
       * vars.avgLiquidationThreshold
-      - (vars.amountToDecreaseInETH * vars.liquidationThreshold)
+      - (vars.amountToDecreaseInUSD * vars.liquidationThreshold)
       / vars.collateralBalanceAfterDecrease;
 
     uint256 healthFactorAfterDecrease =
@@ -134,13 +134,14 @@ library GenericLogic {
     uint256 reservesLength;
     bool healthFactorBelowThreshold;
     address currentReserveAddress;
+    uint8 currentReserveTier;
     bool usageAsCollateralEnabled;
     bool userUsesReserveAsCollateral;
   }
 
   /**
    * @dev Calculates the user data across the reserves.
-   * this includes the total liquidity/collateral/borrow balances in ETH,
+   * this includes the total liquidity/collateral/borrow balances in USD,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
    * @param user The address of the user
    * @param reservesData Data of all the reserves
@@ -148,14 +149,14 @@ library GenericLogic {
    * @param userCredit The credit Data of the user
    * @param reserves The list of the available reserves
    * @param oracle The price oracle address
-   * @return The total collateral and total debt of the user in ETH, the avg ltv, liquidation threshold and the HF
+   * @return The total collateral and total debt of the user in USD, the avg ltv, liquidation threshold and the HF
    **/
   function calculateUserAccountData(
     address user,
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
     uint256 reservesCount,
     address oracle
   )
@@ -180,8 +181,9 @@ library GenericLogic {
         continue;
       }
 
-      vars.currentReserveAddress = reserves[vars.i];
-      DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress];
+      vars.currentReserveAddress = reserves[vars.i].reserveAddress;
+      vars.currentReserveTier =  reserves[vars.i].tier;
+      DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress][vars.currentReserveTier];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
         .configuration
@@ -195,8 +197,7 @@ library GenericLogic {
       console.log("calculateUserAccountData - Price is", vars.reserveUnitPrice);
       console.log("user Config:");
       console.log(userConfig.isUsingAsCollateral(vars.i));
-      console.log("liquidationThreshold");
-      console.log(vars.liquidationThreshold);
+      console.log("liquidationThreshold: ", vars.liquidationThreshold);
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         console.log("calculateUserAccountData calculate asset %s value", vars.i);
@@ -267,19 +268,19 @@ library GenericLogic {
    * @param ltv The average loan to value
    * @return the amount available to borrow in ETH for the user
    **/
-  function calculateAvailableBorrowsETH(
+  function calculateAvailableBorrowsUSD(
     uint256 totalCollateralInUSD,
     uint256 totalDebtInUSD,
     uint256 ltv
   ) internal pure returns (uint256) {
-    uint256 availableBorrowsETH = totalCollateralInUSD.percentMul(ltv);
+    uint256 availableBorrowsUSD = totalCollateralInUSD.percentMul(ltv);
 
-    if (availableBorrowsETH < totalDebtInUSD) {
+    if (availableBorrowsUSD < totalDebtInUSD) {
       return 0;
     }
 
-    availableBorrowsETH = availableBorrowsETH - totalDebtInUSD;
-    return availableBorrowsETH;
+    availableBorrowsUSD = availableBorrowsUSD - totalDebtInUSD;
+    return availableBorrowsUSD;
   }
   
 }

@@ -63,7 +63,7 @@ library ValidationLogic {
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view {
@@ -130,8 +130,8 @@ library ValidationLogic {
     }
 
     uint256 availableLiquidity = IERC20(asset).balanceOf(reserve.pTokenAddress);
-    console.log(asset);
-    console.log(reserve.pTokenAddress);
+    // console.log(asset);
+    // console.log(reserve.pTokenAddress);
     console.log("validateBorrow - availableLiquidity is: ", availableLiquidity);
     console.log("validateBorrow - amountInUSD is: ", amountInUSD);
     require(availableLiquidity > amountInUSD, 
@@ -171,7 +171,7 @@ library ValidationLogic {
     console.log("validateBorrow currentLtv is: ", userStateVars.currentLtv);
     console.log("validateBorrow amountOfCollateralNeededUSD is: ", vars.amountOfCollateralNeededUSD);
 
-    uint256 userTotalCredit = userStateVars.userCollateralBalanceUSD + crtValue;
+    uint256 userTotalCredit = userStateVars.userCollateralBalanceUSD + userStateVars.userLockCRTValue + crtValue;
     console.log("validateBorrow userCollateralBalanceUSD is: ", userStateVars.userCollateralBalanceUSD);
     console.log("validateBorrow crt value is: ", crtValue);
     console.log("validateBorrow userTotalCredit is: ", userTotalCredit);
@@ -227,21 +227,22 @@ library ValidationLogic {
     DataTypes.ReserveData memory reserve,
     address reserveAddress,
     bool useAsCollateral,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
     uint256 reservesCount,
     address oracle
   ) external view {
     uint256 underlyingBalance = IERC20(reserve.pTokenAddress).balanceOf(msg.sender);
-
+    uint8 reserveTier = reserves[reserve.id].tier;
     require(underlyingBalance > 0, Errors.VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0);
 
     require(
       useAsCollateral ||
         GenericLogic.balanceDecreaseAllowed(
           reserveAddress,
+          reserveTier,
           msg.sender,
           underlyingBalance,
           reservesData,
@@ -318,10 +319,10 @@ library ValidationLogic {
    */
   function validateTransfer(
     address from,
-    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => address) storage reserves,
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
     uint256 reservesCount,
     address oracle
   ) internal view {

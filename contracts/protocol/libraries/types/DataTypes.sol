@@ -48,6 +48,11 @@ library DataTypes {
     uint256 crtValue;
   }
 
+  struct RerserveAdTier { 
+    address reserveAddress;
+    uint8 tier; 
+  }
+
   enum InterestRateMode {NONE, STABLE, VARIABLE}
 
   struct UserAccountVars {
@@ -56,6 +61,7 @@ library DataTypes {
       uint256 currentLtv;
       uint256 currentLiquidationThreshold;
       uint256 healthFactor;
+      uint256 userLockCRTValue;
       uint256 newCrtValue;
       uint256 idleCRT;
   }

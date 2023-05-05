@@ -36,6 +36,7 @@ contract PToken is
   bytes32 public DOMAIN_SEPARATOR;
 
   ICounter internal _counter;
+  uint8 internal _riskTier;
   address internal _treasury;
   address internal _underlyingAsset;
 
@@ -49,6 +50,7 @@ contract PToken is
    * @param counter The address of the Counter where this pToken will be used
    * @param treasury The address of the treasury, receiving the fees on this pToken
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
+   * @param riskTier The risk tier of the underlying asset
    * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
    * @param pTokenName The name of the pToken
    * @param pTokenSymbol The symbol of the pToken
@@ -57,6 +59,7 @@ contract PToken is
     ICounter counter,
     address treasury,
     address underlyingAsset,
+    uint8 riskTier,
     uint8 pTokenDecimals,
     string calldata pTokenName,
     string calldata pTokenSymbol,
@@ -86,6 +89,7 @@ contract PToken is
     _counter = counter;
     _treasury = treasury;
     _underlyingAsset = underlyingAsset;
+    _riskTier = riskTier;
 
   }
 
@@ -191,7 +195,7 @@ contract PToken is
     override(IncentivizedERC20, IERC20)
     returns (uint256)
   {
-    return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
+    return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset, _riskTier));
   }
 
   /**
@@ -232,7 +236,7 @@ contract PToken is
       return 0;
     }
 
-    return currentSupplyScaled.rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset));
+    return currentSupplyScaled.rayMul(_counter.getReserveNormalizedIncome(_underlyingAsset, _riskTier));
   }
 
   /**
@@ -343,7 +347,7 @@ contract PToken is
     address underlyingAsset = _underlyingAsset;
     ICounter counter = _counter;
 
-    uint256 index = counter.getReserveNormalizedIncome(underlyingAsset);
+    uint256 index = counter.getReserveNormalizedIncome(underlyingAsset, _riskTier);
 
     uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
     uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
@@ -351,7 +355,7 @@ contract PToken is
     super._transfer(from, to, amount.rayDiv(index));
 
     if (validate) {
-      counter.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
+      counter.finalizeTransfer(underlyingAsset, _riskTier, from, to, amount, fromBalanceBefore, toBalanceBefore);
     }
 
     emit BalanceTransfer(from, to, amount, index);

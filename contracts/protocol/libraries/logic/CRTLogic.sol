@@ -40,7 +40,7 @@ library CRTLogic {
 
     struct CrtBorrowVars {
         uint256 cf;
-        uint256 collateralNotBeBorrowed;
+        uint256 collateralNotBeMortgage;
         uint256 crtltv;
         uint256 additionalAmount;
         uint256 crtNeed;
@@ -49,41 +49,41 @@ library CRTLogic {
 
     function calculateCRTBorrow(
         address userAddress,
-        DataTypes.ReserveData storage reserve,
-        uint256 amount,
+        // DataTypes.ReserveData storage reserve,
+        uint256 ltv,
+        // uint256 amount,
         uint256 amountInUSD,
         DataTypes.UserAccountVars memory userStateVars,
         address oracle
     ) external returns (uint256, uint256) {
         CrtBorrowVars memory vars;
         // todo add the crt logic how to calculate the idle amount
-        vars.cf = reserve.configuration.getLtv();
+        vars.cf = ltv;
         console.log("calculateCRTBorrow - amountInUSD: ", amountInUSD);
 
         console.log("calculateCRTBorrow - collateral Factor is: ", vars.cf);
         console.log("calculateCRTBorrow - userCollateralBalanceUSD is: ", userStateVars.userCollateralBalanceUSD);
         console.log("calculateCRTBorrow - userBorrowBalanceUSD is: ", userStateVars.userBorrowBalanceUSD);
-        // scaled by 18, against Eth
+        // scaled by 8, which is the decimal of chainlink price oracle
         // problem userBorrowBalance may be a multi-asset debt, but cf is a specific collateral factor, will be attack by other?
-        vars.collateralNotBeBorrowed = userStateVars.userCollateralBalanceUSD - (userStateVars.userBorrowBalanceUSD).percentDiv(vars.cf);
-        // amountInTETH is a 18 decimals number if they scaled by 18 again, it will be overflow problem? 
-        // vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
+        vars.collateralNotBeMortgage = userStateVars.userCollateralBalanceUSD - (userStateVars.userBorrowBalanceUSD).percentDiv(vars.cf);
+        // vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeMortgage) * 10000 / WadRayMath.WAD;
         // crtltv is represented in percentage form
-        vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeBorrowed) * 10000 / WadRayMath.WAD;
+        vars.crtltv = amountInUSD.wadDiv(vars.collateralNotBeMortgage) * 10000 / WadRayMath.WAD;
         
         // PROBLEM: when crtltv is represented in percentage form, but currentLtv is scaled by 18, 
         // there is a Accuracy problem
         
         console.log("calculateCRTBorrow - crtltv is: ", vars.crtltv);
         // sclaed by 18, against usd
-        // uint256 canBorrowAmount = (vars.collateralNotBeBorrowed).percentMul(vars.cf);
+        // uint256 canBorrowAmount = (vars.collateralNotBeMortgage).percentMul(vars.cf);
         uint256 amountOfCollateralNeedUSD = amountInUSD.percentDiv(vars.cf);
         console.log("calculateCRTBorrow - amountOfCollateralNeedUSD: ", amountOfCollateralNeedUSD);
 
         // calculate the gap between use want to borrow and can Borrow Amount, which will be fill by the crt
         vars.additionalAmount = 0;
-        if (vars.collateralNotBeBorrowed < amountOfCollateralNeedUSD) {
-            vars.additionalAmount = amountOfCollateralNeedUSD -  vars.collateralNotBeBorrowed;
+        if (vars.collateralNotBeMortgage < amountOfCollateralNeedUSD) {
+            vars.additionalAmount = amountOfCollateralNeedUSD - vars.collateralNotBeMortgage;
         }
         // problem: when amountInUSD < canBorrowAmount, if it can use crt to lower the ltv?
         console.log("calculateCRTBorrow - additionalAmount needed: ", vars.additionalAmount);
@@ -104,8 +104,9 @@ library CRTLogic {
     }
     function calculateCRTRepay(
         address userAddress,
-        DataTypes.ReserveData storage reserve,
-        uint256 amount,
+        // DataTypes.ReserveData storage reserve,
+        uint256 ltv,
+        // uint256 amount,
         uint256 amountInUSD,
         DataTypes.UserAccountVars memory userStateVars,
         DataTypes.UserCreditData memory userCredit,
@@ -120,7 +121,7 @@ library CRTLogic {
         vars.newdebt = userStateVars.userBorrowBalanceUSD - amountInUSD;
         vars.newltv = vars.newdebt.wadDiv(userStateVars.userCollateralBalanceUSD + userCredit.crtValue) * 10000 / WadRayMath.WAD;
         console.log("calculateCRTRepay - newltv is", vars.newltv);
-        vars.cf = reserve.configuration.getLtv();
+        vars.cf = ltv;
         console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
         if (vars.newltv <= vars.cf) {
             return (userlockBalance, PercentageMath.PERCENTAGE_FACTOR);

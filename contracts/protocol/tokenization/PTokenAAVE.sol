@@ -40,6 +40,7 @@ contract PTokenAAVE is
   ICounter internal _counter;
   ILendingPool internal _pool = ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
   address internal _treasury;
+  uint8 internal _riskTier;
   address internal _underlyingAtoken;
   address internal _underlyingAsset;
   bool private initializing;
@@ -59,6 +60,7 @@ contract PTokenAAVE is
    * @param counter The address of the Counter where this pToken will be used
    * @param treasury The address of the treasury, receiving the fees on this pToken
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
+   * @param riskTier The risk tier of the underlying asset 
    * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
    * @param pTokenName The name of the pToken
    * @param pTokenSymbol The symbol of the pToken
@@ -67,6 +69,7 @@ contract PTokenAAVE is
     ICounter counter,
     address treasury,
     address underlyingAsset,
+    uint8 riskTier,
     uint8 pTokenDecimals,
     string calldata pTokenName,
     string calldata pTokenSymbol,
@@ -96,6 +99,7 @@ contract PTokenAAVE is
     _counter = counter;
     _treasury = treasury;
     _underlyingAtoken = underlyingAsset;
+    _riskTier = riskTier;
     _underlyingAsset = IAToken(_underlyingAtoken).UNDERLYING_ASSET_ADDRESS();
     console.log("underlyingAsset is ", _underlyingAsset);
     initializing = !initializing;
@@ -203,7 +207,7 @@ contract PTokenAAVE is
     override(IncentivizedERC20, IERC20)
     returns (uint256)
   {
-    return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAtoken)).rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset));
+    return super.balanceOf(user).rayMul(_counter.getReserveNormalizedIncome(_underlyingAtoken, _riskTier)).rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset));
   }
 
   /**
@@ -244,7 +248,7 @@ contract PTokenAAVE is
       return 0;
     }
 
-    return currentSupplyScaled.rayMul(_counter.getReserveNormalizedIncome(_underlyingAtoken));
+    return currentSupplyScaled.rayMul(_counter.getReserveNormalizedIncome(_underlyingAtoken, _riskTier));
   }
 
   /**
@@ -363,7 +367,7 @@ contract PTokenAAVE is
     address underlyingAToken = _underlyingAtoken;
     ICounter counter = _counter;
 
-    uint256 index = counter.getReserveNormalizedIncome(underlyingAToken);
+    uint256 index = counter.getReserveNormalizedIncome(underlyingAToken, _riskTier);
 
     uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
     uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
@@ -371,7 +375,7 @@ contract PTokenAAVE is
     super._transfer(from, to, amount.rayDiv(index));
 
     if (validate) {
-      counter.finalizeTransfer(underlyingAToken, from, to, amount, fromBalanceBefore, toBalanceBefore);
+      counter.finalizeTransfer(underlyingAToken, _riskTier, from, to, amount, fromBalanceBefore, toBalanceBefore);
     }
 
     emit BalanceTransfer(from, to, amount, index);

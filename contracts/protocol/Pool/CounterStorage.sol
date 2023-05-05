@@ -18,7 +18,7 @@ contract CounterStorage {
 
   ICounterAddressesProvider public _addressesProvider;
 
-  // Map of reserves and their data (underlyingAssetOfReserve (Tier => reserveData))
+  // Map of reserves and map of their risk tier and their data (underlyingAssetOfReserve (Tier => reserveData))
   mapping(address => mapping(uint8 => DataTypes.ReserveData)) internal _reserves;
   // Map of asset and their class
   mapping(address => uint8) internal _assetClass;
@@ -29,8 +29,9 @@ contract CounterStorage {
   mapping(address => DataTypes.UserCreditData) internal _usersCredit;
   // List of reserves as a map (reserveId => reserve).
   // It is structured as a mapping for gas savings reasons, using the reserve id as index
-  mapping(uint256 => address) internal _reservesList;
+  mapping(uint256 => DataTypes.RerserveAdTier) internal _reservesList;
 
+  // count how many different asset and different risk tier was added in _reservesList
   uint256 internal _reservesCount;
 
   bool internal _paused;

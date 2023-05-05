@@ -68,13 +68,15 @@ contract CounterCollateralManager is
    **/
   function liquidationCall(
     address collateralAsset,
+    uint8 collateralRiskTier,
     address debtAsset,
+    uint8 debtRiskTier,
     address user,
     uint256 debtToCover,
     bool receivePToken
   ) external override returns (uint256, string memory) {
-    DataTypes.ReserveData storage collateralReserve = _reserves[collateralAsset];
-    DataTypes.ReserveData storage debtReserve = _reserves[debtAsset];
+    DataTypes.ReserveData storage collateralReserve = _reserves[collateralAsset][collateralRiskTier];
+    DataTypes.ReserveData storage debtReserve = _reserves[debtAsset][debtRiskTier];
     DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user];
     DataTypes.UserCreditData storage userCredit = _usersCredit[user];
     LiquidationCallLocalVars memory vars;

@@ -19,6 +19,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
 
   ICounter internal _counter;
   address internal _underlyingAsset;
+  uint8 internal _assetRiskTier;
 
   /**
    * @dev Initializes the debt token.
@@ -31,6 +32,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
   function initialize(
     ICounter counter,
     address underlyingAsset,
+    uint8 assetRiskTier,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
     string memory debtTokenSymbol,
@@ -41,6 +43,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
     _setDecimals(debtTokenDecimals);
 
     _counter = counter;
+    _assetRiskTier = assetRiskTier;
     _underlyingAsset = underlyingAsset;
   }
 
@@ -63,7 +66,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
       return 0;
     }
 
-    return scaledBalance.rayMul(_counter.getReserveNormalizedVariableDebt(_underlyingAsset));
+    return scaledBalance.rayMul(_counter.getReserveNormalizedVariableDebt(_underlyingAsset, _assetRiskTier));
   }
 
   /**
@@ -132,7 +135,7 @@ contract VariableDebtToken is DebtTokenBase, IVariableDebtToken {
    * @return The total supply
    **/
   function totalSupply() public view virtual override returns (uint256) {
-    return super.totalSupply().rayMul(_counter.getReserveNormalizedVariableDebt(_underlyingAsset));
+    return super.totalSupply().rayMul(_counter.getReserveNormalizedVariableDebt(_underlyingAsset, _assetRiskTier));
   }
 
   /**

@@ -36,30 +36,34 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @dev deposits WETH into the reserve, using native ETH. A corresponding amount of the overlying asset (pTokens)
    * is minted.
    * @param counter address of the targeted underlying Counter
+   * @param riskTier The risk tier of WETH user want to deposit
    * @param onBehalfOf address of the user who will receive the pTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
   function depositETH(
     address counter,
+    uint8 riskTier,
     address onBehalfOf,
     uint16 referralCode
   ) external payable override {
     WETH.deposit{value: msg.value}();
-    ICounter(counter).deposit(address(WETH), msg.value, onBehalfOf, referralCode);
+    ICounter(counter).deposit(address(WETH), riskTier,msg.value, onBehalfOf, referralCode);
   }
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
    * @param counter address of the targeted underlying Counter
+   * @param riskTier The risk tier of WETH user want to deposit
    * @param amount amount of aWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
   function withdrawETH(
     address counter,
+    uint8 riskTier,
     uint256 amount,
     address to
   ) external override {
-    IPToken pWETH = IPToken(ICounter(counter).getReserveData(address(WETH)).pTokenAddress);
+    IPToken pWETH = IPToken(ICounter(counter).getReserveData(address(WETH), riskTier).pTokenAddress);
     uint256 userBalance = pWETH.balanceOf(msg.sender);
     uint256 amountToWithdraw = amount;
 
@@ -68,7 +72,7 @@ contract WETHGateway is IWETHGateway, Ownable {
       amountToWithdraw = userBalance;
     }
     pWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
-    ICounter(counter).withdraw(address(WETH), amountToWithdraw, address(this));
+    ICounter(counter).withdraw(address(WETH), riskTier, amountToWithdraw, address(this));
     WETH.withdraw(amountToWithdraw);
     _safeTransferETH(to, amountToWithdraw);
   }
@@ -76,12 +80,14 @@ contract WETHGateway is IWETHGateway, Ownable {
   /**
    * @dev repays a borrow on the WETH reserve, for the specified amount (or for the whole amount, if uint256(-1) is specified).
    * @param counter address of the targeted underlying Counter
+   * @param riskTier The risk tier of WETH user want to deposit
    * @param amount the amount to repay, or uint256(-1) if the user wants to repay everything
    * @param rateMode the rate mode to repay
    * @param onBehalfOf the address for which msg.sender is repaying
    */
   function repayETH(
     address counter,
+    uint8 riskTier,
     uint256 amount,
     uint256 rateMode,
     address onBehalfOf
@@ -89,7 +95,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint256 variableDebt =
       Helpers.getUserCurrentDebtMemory(
         onBehalfOf,
-        ICounter(counter).getReserveData(address(WETH))
+        ICounter(counter).getReserveData(address(WETH), riskTier)
       );
 
     uint256 paybackAmount = variableDebt;
@@ -99,7 +105,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     }
     require(msg.value >= paybackAmount, 'msg.value is less than repayment amount');
     WETH.deposit{value: paybackAmount}();
-    ICounter(counter).repay(address(WETH), msg.value, rateMode, onBehalfOf);
+    ICounter(counter).repay(address(WETH), riskTier, msg.value, rateMode, onBehalfOf);
 
     // refund remaining dust eth
     if (msg.value > paybackAmount) _safeTransferETH(msg.sender, msg.value - paybackAmount);
@@ -108,12 +114,14 @@ contract WETHGateway is IWETHGateway, Ownable {
   /**
    * @dev borrow WETH, unwraps to ETH and send both the ETH and DebtTokens to msg.sender, via `approveDelegation` and onBehalf argument in `Counter.borrow`.
    * @param counter address of the targeted underlying Counter
+   * @param riskTier The risk tier of WETH user want to deposit
    * @param amount the amount of ETH to borrow
    * @param interesRateMode the interest rate mode
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards
    */
   function borrowETH(
     address counter,
+    uint8 riskTier,
     uint256 amount,
     uint256 interesRateMode,
     uint16 referralCode,
@@ -121,6 +129,7 @@ contract WETHGateway is IWETHGateway, Ownable {
   ) external override {
     ICounter(counter).borrow(
       address(WETH),
+      riskTier,
       amount,
       interesRateMode,
       referralCode,

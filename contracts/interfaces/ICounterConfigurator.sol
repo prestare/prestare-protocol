@@ -81,25 +81,25 @@ interface ICounterConfigurator {
    * @dev Emitted when a reserve is activated
    * @param asset The address of the underlying asset of the reserve
    **/
-  event ReserveActivated(address indexed asset);
+  event ReserveActivated(address indexed asset, uint8 indexed riskTier);
 
   /**
    * @dev Emitted when a reserve is deactivated
    * @param asset The address of the underlying asset of the reserve
    **/
-  event ReserveDeactivated(address indexed asset);
+  event ReserveDeactivated(address indexed asset, uint8 indexed riskTier);
 
   /**
    * @dev Emitted when a reserve is frozen
    * @param asset The address of the underlying asset of the reserve
    **/
-  event ReserveFrozen(address indexed asset);
+  event ReserveFrozen(address indexed asset, uint8 indexed riskTier);
 
   /**
    * @dev Emitted when a reserve is unfrozen
    * @param asset The address of the underlying asset of the reserve
    **/
-  event ReserveUnfrozen(address indexed asset);
+  event ReserveUnfrozen(address indexed asset, uint8 indexed riskTier);
 
   /**
    * @dev Emitted when a reserve factor is updated

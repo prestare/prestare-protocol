@@ -24,8 +24,8 @@ contract CounterConfigurator is ICounterConfigurator {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
 
   ICounterAddressesProvider internal addressesProvider;
-  ICounter internal counter;
-  uint8 internal initAssetTier;
+  ICounter internal _counter;
+  uint8 internal _initAssetTier;
 
   modifier onlyPoolAdmin {
     require(addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
@@ -51,12 +51,12 @@ contract CounterConfigurator is ICounterConfigurator {
   function initialize(ICounterAddressesProvider provider) public {
     addressesProvider = provider;
     // D Tier
-    initAssetTier = 3;
-    counter = ICounter(addressesProvider.getCounter());
+    _initAssetTier = 3;
+    _counter = ICounter(addressesProvider.getCounter());
   }
 
   function initReserve(InitReserveInput calldata input) external {
-    ICounter cache = counter;
+    ICounter cache = _counter;
     IInitializablePToken(input.pToken).initialize(
       cache,
       input.treasury,
@@ -76,21 +76,22 @@ contract CounterConfigurator is ICounterConfigurator {
       input.params
     );
     
-    counter.initReserve(
+    _counter.initReserve(
       input.underlyingAsset,
+      _initAssetTier,
       input.pToken,
       input.variableDebtToken,
       input.interestRateStrategyAddress
     );
     DataTypes.ReserveConfigurationMap memory currentConfig =
-    counter.getConfiguration(input.underlyingAsset, initAssetTier);
+    _counter.getConfiguration(input.underlyingAsset, _initAssetTier);
 
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    counter.setConfiguration(input.underlyingAsset, currentConfig.data);
+    _counter.setConfiguration(input.underlyingAsset, _initAssetTier, currentConfig.data);
 
     emit ReserveInitialized(
       input.underlyingAsset,
@@ -101,7 +102,7 @@ contract CounterConfigurator is ICounterConfigurator {
   }
 
   function upgradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
-    ICounter cache = counter;
+    ICounter cache = _counter;
     IInitializablePToken(input.pToken).initialize(
       cache,
       input.treasury,
@@ -121,26 +122,26 @@ contract CounterConfigurator is ICounterConfigurator {
       input.params
     );
 
-    counter.upgradeAssetClass(
+    _counter.upgradeAssetClass(
       input.underlyingAsset,
       input.pToken,
       input.variableDebtToken,
       input.interestRateStrategyAddress
     );
 
-    uint8 upgradeAssetClass = counter.getAssetClass();
+    uint8 upgradeAssetClass = _counter.getAssetClass(input.underlyingAsset);
     DataTypes.ReserveConfigurationMap memory currentConfig =
-    counter.getConfiguration(input.underlyingAsset, upgradeAssetClass);
+    _counter.getConfiguration(input.underlyingAsset, upgradeAssetClass);
 
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    counter.setConfiguration(input.underlyingAsset, upgradeAssetClass, currentConfig.data);
+    _counter.setConfiguration(input.underlyingAsset, upgradeAssetClass, currentConfig.data);
 
     emit ReserveClassUpdate(
-      input.asset,
+      input.underlyingAsset,
       upgradeAssetClass,
       1,
       input.pToken,
@@ -151,18 +152,19 @@ contract CounterConfigurator is ICounterConfigurator {
   /**
    * @dev Enables borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    * @param stableBorrowRateEnabled True if stable borrow rate needs to be enabled by default on this reserve
    **/
-  function enableBorrowingOnReserve(address asset, bool stableBorrowRateEnabled)
+  function enableBorrowingOnReserve(address asset, uint8 riskTier, bool stableBorrowRateEnabled)
     external
     onlyPoolAdmin
   {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset , riskTier);
 
     currentConfig.setBorrowingEnabled(true);
     currentConfig.setStableRateBorrowingEnabled(stableBorrowRateEnabled);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
     emit BorrowingEnabledOnReserve(asset, stableBorrowRateEnabled);
   }
@@ -170,13 +172,14 @@ contract CounterConfigurator is ICounterConfigurator {
   /**
    * @dev Disables borrowing on a reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    **/
-  function disableBorrowingOnReserve(address asset) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+  function disableBorrowingOnReserve(address asset, uint8 riskTier) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setBorrowingEnabled(false);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
     emit BorrowingDisabledOnReserve(asset);
   }
 
@@ -184,6 +187,7 @@ contract CounterConfigurator is ICounterConfigurator {
    * @dev Configures the reserve collateralization parameters
    * all the values are expressed in percentages with two decimals of precision. A valid value is 10000, which means 100.00%
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    * @param ltv The loan to value of the asset when used as collateral
    * @param liquidationThreshold The threshold at which loans using this asset as collateral will be considered undercollateralized
    * @param liquidationBonus The bonus liquidators receive to liquidate this asset. The values is always above 100%. A value of 105%
@@ -191,11 +195,12 @@ contract CounterConfigurator is ICounterConfigurator {
    **/
   function configureReserveAsCollateral(
     address asset,
+    uint8 riskTier,
     uint256 ltv,
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   ) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold
@@ -221,14 +226,14 @@ contract CounterConfigurator is ICounterConfigurator {
       //if the liquidation threshold is being set to 0,
       // the reserve is being disabled as collateral. To do so,
       //we need to ensure no liquidity is deposited
-      _checkNoLiquidity(asset);
+      _checkNoLiquidity(asset, riskTier);
     }
 
     currentConfig.setLtv(ltv);
     currentConfig.setLiquidationThreshold(liquidationThreshold);
     currentConfig.setLiquidationBonus(liquidationBonus);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
     emit CollateralConfigurationChanged(asset, ltv, liquidationThreshold, liquidationBonus);
   }
@@ -237,72 +242,75 @@ contract CounterConfigurator is ICounterConfigurator {
    * @dev Activates a reserve
    * @param asset The address of the underlying asset of the reserve
    **/
-  function activateReserve(address asset) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+  function activateReserve(address asset, uint8 riskTier) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setActive(true);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
-    emit ReserveActivated(asset);
+    emit ReserveActivated(asset, riskTier);
   }
 
   /**
    * @dev Deactivates a reserve
    * @param asset The address of the underlying asset of the reserve
    **/
-  function deactivateReserve(address asset) external onlyPoolAdmin {
-    _checkNoLiquidity(asset);
+  function deactivateReserve(address asset, uint8 riskTier) external onlyPoolAdmin {
+    _checkNoLiquidity(asset, riskTier);
 
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setActive(false);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
-    emit ReserveDeactivated(asset);
+    emit ReserveDeactivated(asset, riskTier);
   }
 
   /**
    * @dev Freezes a reserve. A frozen reserve doesn't allow any new deposit, borrow or rate swap
    *  but allows repayments, liquidations, rate rebalances and withdrawals
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    **/
-  function freezeReserve(address asset) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+  function freezeReserve(address asset, uint8 riskTier) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setFrozen(true);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
-    emit ReserveFrozen(asset);
+    emit ReserveFrozen(asset, riskTier);
   }
 
   /**
    * @dev Unfreezes a reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    **/
-  function unfreezeReserve(address asset) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+  function unfreezeReserve(address asset, uint8 riskTier) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setFrozen(false);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
-    emit ReserveUnfrozen(asset);
+    emit ReserveUnfrozen(asset, riskTier);
   }
 
   /**
    * @dev Updates the reserve factor of a reserve
    * @param asset The address of the underlying asset of the reserve
    * @param reserveFactor The new reserve factor of the reserve
+   * @param riskTier The risk tier of the asset
    **/
-  function setReserveFactor(address asset, uint256 reserveFactor) external onlyPoolAdmin {
-    DataTypes.ReserveConfigurationMap memory currentConfig = counter.getConfiguration(asset);
+  function setReserveFactor(address asset, uint8 riskTier, uint256 reserveFactor) external onlyPoolAdmin {
+    DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
 
     currentConfig.setReserveFactor(reserveFactor);
 
-    counter.setConfiguration(asset, currentConfig.data);
+    _counter.setConfiguration(asset, riskTier, currentConfig.data);
 
     emit ReserveFactorChanged(asset, reserveFactor);
   }
@@ -310,13 +318,14 @@ contract CounterConfigurator is ICounterConfigurator {
   /**
    * @dev Sets the interest rate strategy of a reserve
    * @param asset The address of the underlying asset of the reserve
+   * @param riskTier The risk tier of the asset
    * @param rateStrategyAddress The new address of the interest strategy contract
    **/
-  function setReserveInterestRateStrategyAddress(address asset, address rateStrategyAddress)
+  function setReserveInterestRateStrategyAddress(address asset, uint8 riskTier, address rateStrategyAddress)
     external
     onlyPoolAdmin
   {
-    counter.setReserveInterestRateStrategyAddress(asset, rateStrategyAddress);
+    _counter.setReserveInterestRateStrategyAddress(asset, riskTier, rateStrategyAddress);
     emit ReserveInterestRateStrategyChanged(asset, rateStrategyAddress);
   }
 
@@ -325,15 +334,15 @@ contract CounterConfigurator is ICounterConfigurator {
    * @param val true if protocol needs to be paused, false otherwise
    **/
   function setPoolPause(bool val) external onlyEmergencyAdmin {
-    counter.setPause(val);
+    _counter.setPause(val);
   }
 
   function setCRT(address crt) external onlyEmergencyAdmin {
-    counter.setCRT(crt);
+    _counter.setCRT(crt);
   }
 
-  function _checkNoLiquidity(address asset) internal view {
-    DataTypes.ReserveData memory reserveData = counter.getReserveData(asset);
+  function _checkNoLiquidity(address asset, uint8 riskTier) internal view {
+    DataTypes.ReserveData memory reserveData = _counter.getReserveData(asset, riskTier);
 
     uint256 availableLiquidity = IERC20(asset).balanceOf(reserveData.pTokenAddress);
 
