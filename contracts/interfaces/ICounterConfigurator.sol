@@ -5,7 +5,6 @@ interface ICounterConfigurator {
   struct InitReserveInput {
     address pToken;
     address variableDebtToken;
-    uint8 underlyingAssetDecimals;
     address interestRateStrategyAddress;
     address underlyingAsset;
     address treasury;
@@ -15,6 +14,8 @@ interface ICounterConfigurator {
     string pTokenSymbol;
     string variableDebtTokenName;
     string variableDebtTokenSymbol;
+    uint8 assetRiskTier;
+    uint8 underlyingAssetDecimals;
     bytes params;
   }
 

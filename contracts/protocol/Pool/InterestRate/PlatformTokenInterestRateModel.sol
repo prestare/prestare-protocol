@@ -108,6 +108,7 @@ contract PlatformTokenInterestRateModel is IBaseRateModel {
   ) external {
       require(_underlyingToken != address(0), Errors.ZERO_ADDRESS);
       // require(_pool.getConfiguration(_underlyingToken).getActive(), Errors.VL_NO_ACTIVE_RESERVE);
+      console.log("_underlyingToken: ", _underlyingToken);
       p2pSupplyIndex[_pToken] = WadRayMath.RAY;
       p2pBorrowIndex[_pToken] = WadRayMath.RAY;
       PoolIndexes storage poolIndex = poolIndexes[_pToken];

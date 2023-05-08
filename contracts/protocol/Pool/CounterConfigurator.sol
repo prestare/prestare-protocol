@@ -57,25 +57,29 @@ contract CounterConfigurator is ICounterConfigurator {
 
   function initReserve(InitReserveInput calldata input) external {
     ICounter cache = _counter;
+    require(input.assetRiskTier == _initAssetTier, "Init Reserve in wrong risk Tier");
+    // console.log("init pToken");
     IInitializablePToken(input.pToken).initialize(
       cache,
       input.treasury,
       input.underlyingAsset,
+      input.assetRiskTier,
       input.underlyingAssetDecimals,
       input.pTokenName,
       input.pTokenSymbol,
       input.params
     );
-
+    // console.log("init variableDebtToken");
     IInitializableDebtToken(input.variableDebtToken).initialize(
       cache, 
       input.underlyingAsset, 
+      input.assetRiskTier,
       input.underlyingAssetDecimals, 
       input.variableDebtTokenName, 
       input.variableDebtTokenSymbol, 
       input.params
     );
-    
+
     _counter.initReserve(
       input.underlyingAsset,
       _initAssetTier,
@@ -107,6 +111,7 @@ contract CounterConfigurator is ICounterConfigurator {
       cache,
       input.treasury,
       input.underlyingAsset,
+      input.assetRiskTier,
       input.underlyingAssetDecimals,
       input.pTokenName,
       input.pTokenSymbol,
@@ -116,6 +121,7 @@ contract CounterConfigurator is ICounterConfigurator {
     IInitializableDebtToken(input.variableDebtToken).initialize(
       cache, 
       input.underlyingAsset, 
+      input.assetRiskTier,
       input.underlyingAssetDecimals, 
       input.variableDebtTokenName, 
       input.variableDebtTokenSymbol, 

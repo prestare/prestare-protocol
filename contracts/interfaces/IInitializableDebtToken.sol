@@ -30,6 +30,7 @@ interface IInitializableDebtToken {
    * @dev Initializes the debt token.
    * @param counter The address of the Counter where this pToken will be used
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for pWETH)
+   * @param assetTier The asset of this variable debt token
    * @param debtTokenDecimals The decimals of the debtToken, same as the underlying asset's
    * @param debtTokenName The name of the token
    * @param debtTokenSymbol The symbol of the token
@@ -37,6 +38,7 @@ interface IInitializableDebtToken {
   function initialize(
     ICounter counter,
     address underlyingAsset,
+    uint8 assetTier,
     uint8 debtTokenDecimals,
     string memory debtTokenName,
     string memory debtTokenSymbol,

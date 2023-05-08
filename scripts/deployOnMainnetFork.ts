@@ -109,24 +109,28 @@ export const deployOnMainnetFork = async function() {
 
     // 6. deploy CounterCollateralManager
     console.log();
-    // console.log("Deploy CounterCollateralManager....");
+    console.log("Deploy CounterCollateralManager....");
     const collateralManager = await deployCounterCollateralManager(admin);
     await addressesProvider.setCounterCollateralManager(collateralManager.address);
 
     const treasuryAddress = await admin.getAddress();
-    // console.log(allTokenAddresses);
+    console.log(allTokenAddresses);
 
     // 7. deploy AToken IR model
     await deployPlatformTokenInterestRateModel(addressesProvider.address);
 
     // 8. deploy pToken for each asset & initialize all token
+    console.log("Deploy pToken and variableDebt...");
+    const assetTiers = MainnetFork.AssetTier;
     await initReservesByHelper(
         MainnetFork.ReservesConfig,
         allTokenAddresses,
+        assetTiers,
         admin,
         treasuryAddress,
     )
-    await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses, admin);
+    console.log("configure Reserves By Helper...");
+    await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses,assetTiers, admin);
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
@@ -142,13 +146,13 @@ export const deployOnMainnetFork = async function() {
     console.log("Deploy finished...");
 }
 
-// async function main() {
-//     await deployOnMainnetFork();
-// }
+async function main() {
+    await deployOnMainnetFork();
+}
 
-// main()
-//     .then(() => process.exit(0))
-//     .catch((error) => {
-//         console.error(error);
-//         process.exit(1);
-//     });
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

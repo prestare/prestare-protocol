@@ -33,6 +33,7 @@ interface IInitializablePToken {
    * @param counter The address of the lending pool where this pToken will be used
    * @param treasury The address of the treasury, receiving the fees on this pToken
    * @param underlyingAsset The address of the underlying asset of this pToken (E.g. WETH for aWETH)
+   * @param assetRiskTier The risk tier of this pToken
    * @param pTokenDecimals The decimals of the pToken, same as the underlying asset's
    * @param pTokenName The name of the pToken
    * @param pTokenSymbol The symbol of the pToken
@@ -41,6 +42,7 @@ interface IInitializablePToken {
     ICounter counter,
     address treasury,
     address underlyingAsset,
+    uint8 assetRiskTier,
     uint8 pTokenDecimals,
     string calldata pTokenName,
     string calldata pTokenSymbol,

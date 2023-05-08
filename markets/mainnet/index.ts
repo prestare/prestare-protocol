@@ -25,6 +25,17 @@ export const MainnetFork = {
         aUSDC: aTokenStrategy,
         aUSDT: aTokenStrategy
     },
+    AssetTier: {
+        DAI: 2,
+        WETH: 2,
+        USDC: 1,
+        USDT: 1,
+        // BUSD: strategyBUSD,
+        aDAI: 2,
+        aWETH: 2,
+        aUSDC: 2,
+        aUSDT: 2
+    },
     Mocks: {
         AllMockAssetPrice: {
             ...MOCK_CHAINLINK_AGGREGATORS_PRICES,
@@ -33,14 +44,14 @@ export const MainnetFork = {
     ReserveAssetsAddress: {
         [EthereumNetwork.MainnetFork]: {
             USD: ZERO_ADDRESS,
-            DAI: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+            DAI:  '0x6B175474E89094C44Da98b954EedeAC495271d0F',
             WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
             USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
             USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-            aDAI: '0x028171bCA77440897B824Ca71D1c56caC55b68A3',
-            aWETH: '0x030bA81f1c18d280636F32af80b9AAd02Cf0854e',
-            aUSDC: '0xBcca60bB61934080951369a648Fb03DF4F96263C',
-            aUSDT: '0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811'
+            aDAI:  "0x028171bCA77440897B824Ca71D1c56caC55b68A3",
+            aWETH: "0x030bA81f1c18d280636F32af80b9AAd02Cf0854e",
+            aUSDC: "0xBcca60bB61934080951369a648Fb03DF4F96263C",
+            aUSDT: "0x3Ed3B47Dd13EC9a98b44e6204A523E766B225811",
         },
     },
     ChainlinkAggregator: {

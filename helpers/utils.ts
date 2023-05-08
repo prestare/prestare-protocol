@@ -89,6 +89,7 @@ export const getPairsTokenAggregator = (
 export const initReservesByHelper = async (
   reservesParams:{ [key: string]: IReserveParams},
   tokenAddresses: { [symbol: string]: string },
+  assetTiers: {[symbol: string]: number},
   admin: Signer,
   treasuryAddress: string,
   ) => {
@@ -99,6 +100,7 @@ export const initReservesByHelper = async (
   let initInputParams: {
     pToken: string;
     variableDebtToken: string;
+    assetRiskTier: BigNumber;
     underlyingAssetDecimals: BigNumber;
     interestRateStrategyAddress: string;
     underlyingAsset: string;
@@ -121,15 +123,16 @@ export const initReservesByHelper = async (
   ];
 
   const reserves = Object.entries(reservesParams);
-
+  
   for (let [symbol, params] of reserves) {
+    console.log(tokenAddresses);
     if (!tokenAddresses[symbol]) {
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
     }
     const Counter = await getCounter(admin, await addressProvider.getCounter());
 
-    const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol]);
+    const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol], 3);
 
     if (CounterReserve.pTokenAddress !== ZERO_ADDRESS) {
       console.log(`- Skipping init of ${symbol} due is already initialized`);
@@ -177,7 +180,6 @@ export const initReservesByHelper = async (
     initInputParams.push({
       pToken: pTokenContract.address,
       variableDebtToken: variableDebtContract.address,
-      underlyingAssetDecimals: BigNumber.from(reserveDecimals),
       interestRateStrategyAddress: strategyAddresses[strategy.name],
       underlyingAsset: tokenAddresses[symbol],
       treasury: treasuryAddress,
@@ -191,6 +193,8 @@ export const initReservesByHelper = async (
       //pTokenSymbol: `p${symbol}`,
       //variableDebtTokenName: `variableDebt Prestare ${symbol}`,
       //variableDebtTokenSymbol: `variableDebt ${symbol}`,
+      assetRiskTier: BigNumber.from(3),
+      underlyingAssetDecimals: BigNumber.from(reserveDecimals),
       params: '0x10',
     });
   }
@@ -198,16 +202,16 @@ export const initReservesByHelper = async (
   // console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
-    // console.log(initInputParams[index]);
+    // console.log("initReserve %s...",initInputParams[index].pTokenName);
     await configurator.connect(admin).initReserve(initInputParams[index]);
     if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
       // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
-      let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
-      let aToken = initInputParams[index].underlyingAsset;
-      // console.log("underlyingAsset is", underlyingAsset);
-      aTokenIRModel.connect(admin).createMarket(
-        underlyingAsset,
-        aToken,
+      let underAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2, -2)];
+      let aTokenAddress = initInputParams[index].underlyingAsset;
+
+      await aTokenIRModel.connect(admin).createMarket(
+        underAsset,
+        aTokenAddress,
         initInputParams[index].pToken,
         "5000"
       )
@@ -219,14 +223,17 @@ export const initReservesByHelper = async (
 export const configureReservesByHelper =async (
   reservesParams:{ [key: string]: IReserveParams},
   tokenAddresses: { [symbol: string]: string },
+  assetTiers: { [symbol: string]: number},
   admin: Signer,
 ) => {
+
   const addressProvider = await getCounterAddressesProvider();
   const tokens: string[] = [];
   const symbols: string[] = [];
 
   const inputParams: {
     asset: string;
+    riskTier: number;
     baseLTV: BigNumberish;
     liquidationThreshold: BigNumberish;
     liquidationBonus: BigNumberish;
@@ -252,22 +259,28 @@ export const configureReservesByHelper =async (
     const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
       (value) => value === reserveSymbol
     );
-
+    // var [, assetTier] = (Object.entries(assetTiers) as [string, number][])[
+    //   assetAddressIndex
+    // ];
+    var assetTier = assetTiers[reserveSymbol];
+    // console.log("assetTier is", assetTier);
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
+    for (; assetTier <= 3; assetTier += 1) {
+      inputParams.push({
+        asset: tokenAddress,
+        riskTier: assetTier,
+        baseLTV: baseLTVAsCollateral,
+        liquidationThreshold: liquidationThreshold,
+        liquidationBonus: liquidationBonus,
+        reserveFactor: reserveFactor,
+        borrowingEnabled: borrowingEnabled,
+      });
 
-    inputParams.push({
-      asset: tokenAddress,
-      baseLTV: baseLTVAsCollateral,
-      liquidationThreshold: liquidationThreshold,
-      liquidationBonus: liquidationBonus,
-      reserveFactor: reserveFactor,
-      borrowingEnabled: borrowingEnabled,
-    });
-
-    tokens.push(tokenAddress);
-    symbols.push(reserveSymbol);
+      tokens.push(tokenAddress);
+      symbols.push(reserveSymbol);
+    }
   }
 
   if (tokens.length) {
@@ -276,6 +289,7 @@ export const configureReservesByHelper =async (
       // console.log(inputParams[index]);
       await configurator.connect(admin).configureReserveAsCollateral(
         inputParams[index].asset,
+        inputParams[index].riskTier,
         inputParams[index].baseLTV,
         inputParams[index].liquidationThreshold,
         inputParams[index].liquidationBonus,
@@ -283,10 +297,11 @@ export const configureReservesByHelper =async (
       if (inputParams[index].borrowingEnabled) {
         await configurator.connect(admin).enableBorrowingOnReserve(
           inputParams[index].asset,
+          inputParams[index].riskTier,
           false
         );
       }
-      await configurator.setReserveFactor(inputParams[index].asset, inputParams[index].reserveFactor);
+      await configurator.setReserveFactor(inputParams[index].asset,inputParams[index].riskTier, inputParams[index].reserveFactor);
     }
     // console.log("finish configure Reserve.");
   }
@@ -294,6 +309,7 @@ export const configureReservesByHelper =async (
 
 export const enableReservesBorrowing = async (
   tokenAddresses: { [symbol: string]: string },
+  assetTiers: { [symbol: string]: number},
   admin: Signer,
   ) => {
     const addressProvider = await getCounterAddressesProvider();
@@ -301,8 +317,16 @@ export const enableReservesBorrowing = async (
     const reserves = Object.entries(tokenAddresses);
 
     for (let [symbol, address] of reserves) {
-      console.log("Enable %s token to be borrowed", symbol);
-      await configurator.connect(admin).enableBorrowingOnReserve(address, false);
+      const assetAddressIndex = Object.keys(tokenAddresses).findIndex(
+        (value) => value === symbol
+      );
+      var [, assetTier] = (Object.entries(assetTiers) as [string, number][])[
+        assetAddressIndex
+      ];
+      for (; assetTier <= 3; assetTier += 1) {
+        console.log("Enable %s token—— %d risk tier  to be borrowed", symbol, assetTier);
+        await configurator.connect(admin).enableBorrowingOnReserve(address, assetTier, false);
+      }
     }
 
   }
