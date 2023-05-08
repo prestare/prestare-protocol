@@ -249,22 +249,26 @@ interface ICounter {
   function setUserUseReserveAsCollateral(address asset, uint8 riskTier, bool useAsCollateral) external;
 
   /**
-   * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
+   * @dev Function to liquidate a position if its Health Factor drops below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
    *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
    * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
+   * @param collateralRiskTier The risk tier of the collateralAsset
    * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
+   * @param debtRiskTier The risk tier of the debtAsset
    * @param user The address of the borrower getting liquidated
    * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param receivepToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
+   * @param receivePToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
    * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
     address collateralAsset,
+    uint8 collateralRiskTier,
     address debtAsset,
+    uint8 debtRiskTier,
     address user,
     uint256 debtToCover,
-    bool receivepToken
+    bool receivePToken
   ) external;
 
   /**

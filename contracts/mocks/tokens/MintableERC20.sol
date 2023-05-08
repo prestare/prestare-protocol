@@ -13,9 +13,9 @@ contract MintableERC20 is ERC20 {
   constructor(
     string memory name,
     string memory symbol,
-    uint8 decimals
+    uint8 decimal
   ) public ERC20(name, symbol) {
-    _decimals = decimals;
+    _decimals = decimal;
   }
 
   function decimals() public view override virtual returns (uint8) {

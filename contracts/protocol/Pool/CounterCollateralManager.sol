@@ -56,33 +56,19 @@ contract CounterCollateralManager is
   }
 
   /**
-   * @dev Function to liquidate a position if its Health Factor drops below 1
-   * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
-   *   a proportionally amount of the `collateralAsset` plus a bonus to cover market risk
-   * @param collateralAsset The address of the underlying asset used as collateral, to receive as result of the liquidation
-   * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
-   * @param user The address of the borrower getting liquidated
-   * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param receivePToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
-   * to receive the underlying collateral asset directly
-   **/
+   * @dev described in ICounterCollateralManager.sol
+   */
   function liquidationCall(
-    address collateralAsset,
-    uint8 collateralRiskTier,
-    address debtAsset,
-    uint8 debtRiskTier,
-    address user,
-    uint256 debtToCover,
-    bool receivePToken
+    ExcuteLiqudationParams memory liqParams
   ) external override returns (uint256, string memory) {
-    DataTypes.ReserveData storage collateralReserve = _reserves[collateralAsset][collateralRiskTier];
-    DataTypes.ReserveData storage debtReserve = _reserves[debtAsset][debtRiskTier];
-    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[user];
-    DataTypes.UserCreditData storage userCredit = _usersCredit[user];
+    DataTypes.ReserveData storage collateralReserve = _reserves[liqParams.collateralAsset][liqParams.collateralRiskTier];
+    DataTypes.ReserveData storage debtReserve = _reserves[liqParams.debtAsset][liqParams.debtRiskTier];
+    DataTypes.UserConfigurationMap storage userConfig = _usersConfig[liqParams.user];
+    DataTypes.UserCreditData storage userCredit = _usersCredit[liqParams.user];
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
-      user,
+      liqParams.user,
       _reserves,
       userConfig,
       userCredit,
@@ -91,7 +77,7 @@ contract CounterCollateralManager is
       _addressesProvider.getPriceOracle()
     );
 
-    vars.userVariableDebt = Helpers.getUserCurrentDebt(user, debtReserve);
+    vars.userVariableDebt = Helpers.getUserCurrentDebt(liqParams.user, debtReserve);
 
     (vars.errorCode, vars.errorMsg) = ValidationLogic.validateLiquidationCall(
       collateralReserve,
@@ -107,15 +93,15 @@ contract CounterCollateralManager is
 
     vars.collateralPtoken = IPToken(collateralReserve.pTokenAddress);
 
-    vars.userCollateralBalance = vars.collateralPtoken.balanceOf(user);
+    vars.userCollateralBalance = vars.collateralPtoken.balanceOf(liqParams.user);
 
     vars.maxLiquidatableDebt = vars.userVariableDebt.percentMul(
       LIQUIDATION_CLOSE_FACTOR_PERCENT
     );
 
-    vars.actualDebtToLiquidate = debtToCover > vars.maxLiquidatableDebt
+    vars.actualDebtToLiquidate = liqParams.debtToCover > vars.maxLiquidatableDebt
       ? vars.maxLiquidatableDebt
-      : debtToCover;
+      : liqParams.debtToCover;
 
     (
       vars.maxCollateralToLiquidate,
@@ -123,8 +109,8 @@ contract CounterCollateralManager is
     ) = _calculateAvailableCollateralToLiquidate(
       collateralReserve,
       debtReserve,
-      collateralAsset,
-      debtAsset,
+      liqParams.collateralAsset,
+      liqParams.debtAsset,
       vars.actualDebtToLiquidate,
       vars.userCollateralBalance
     );
@@ -139,9 +125,9 @@ contract CounterCollateralManager is
 
     // If the liquidator reclaims the underlying asset, we make sure there is enough available liquidity in the
     // collateral reserve
-    if (!receivePToken) {
+    if (!liqParams.receivePToken) {
       uint256 currentAvailableCollateral =
-        IERC20(collateralAsset).balanceOf(address(vars.collateralPtoken));
+        IERC20(liqParams.collateralAsset).balanceOf(address(vars.collateralPtoken));
       if (currentAvailableCollateral < vars.maxCollateralToLiquidate) {
         return (
           uint256(Errors.CollateralManagerErrors.NOT_ENOUGH_LIQUIDITY),
@@ -154,32 +140,32 @@ contract CounterCollateralManager is
 
     if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
-        user,
+        liqParams.user,
         vars.actualDebtToLiquidate,
         debtReserve.variableBorrowIndex
       );
     }
 
     debtReserve.updateInterestRates(
-      debtAsset,
+      liqParams.debtAsset,
       debtReserve.pTokenAddress,
       vars.actualDebtToLiquidate,
       0
     );
 
-    if (receivePToken) {
+    if (liqParams.receivePToken) {
       vars.liquidatorPreviousPTokenBalance = IERC20(vars.collateralPtoken).balanceOf(msg.sender);
-      vars.collateralPtoken.transferOnLiquidation(user, msg.sender, vars.maxCollateralToLiquidate);
+      vars.collateralPtoken.transferOnLiquidation(liqParams.user, msg.sender, vars.maxCollateralToLiquidate);
 
       if (vars.liquidatorPreviousPTokenBalance == 0) {
         DataTypes.UserConfigurationMap storage liquidatorConfig = _usersConfig[msg.sender];
         liquidatorConfig.setUsingAsCollateral(collateralReserve.id, true);
-        emit ReserveUsedAsCollateralEnabled(collateralAsset, msg.sender);
+        emit ReserveUsedAsCollateralEnabled(liqParams.collateralAsset, msg.sender);
       }
     } else {
       collateralReserve.updateState();
       collateralReserve.updateInterestRates(
-        collateralAsset,
+        liqParams.collateralAsset,
         address(vars.collateralPtoken),
         0,
         vars.maxCollateralToLiquidate
@@ -187,7 +173,7 @@ contract CounterCollateralManager is
 
       // Burn the equivalent amount of pToken, sending the underlying to the liquidator
       vars.collateralPtoken.burn(
-        user,
+        liqParams.user,
         msg.sender,
         vars.maxCollateralToLiquidate,
         collateralReserve.liquidityIndex
@@ -198,24 +184,24 @@ contract CounterCollateralManager is
     // we set the currency as not being used as collateral anymore
     if (vars.maxCollateralToLiquidate == vars.userCollateralBalance) {
       userConfig.setUsingAsCollateral(collateralReserve.id, false);
-      emit ReserveUsedAsCollateralDisabled(collateralAsset, user);
+      emit ReserveUsedAsCollateralDisabled(liqParams.collateralAsset, liqParams.user);
     }
 
     // Transfers the debt asset being repaid to the pToken, where the liquidity is kept
-    IERC20(debtAsset).safeTransferFrom(
+    IERC20(liqParams.debtAsset).safeTransferFrom(
       msg.sender,
       debtReserve.pTokenAddress,
       vars.actualDebtToLiquidate
     );
 
     emit LiquidationCall(
-      collateralAsset,
-      debtAsset,
-      user,
+      liqParams.collateralAsset,
+      liqParams.debtAsset,
+      liqParams.user,
       vars.actualDebtToLiquidate,
       vars.maxCollateralToLiquidate,
       msg.sender,
-      receivePToken
+      liqParams.receivePToken
     );
 
     return (uint256(Errors.CollateralManagerErrors.NO_ERROR), Errors.LPCM_NO_ERRORS);

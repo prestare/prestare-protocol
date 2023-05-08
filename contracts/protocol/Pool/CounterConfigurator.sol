@@ -129,20 +129,20 @@ contract CounterConfigurator is ICounterConfigurator {
       input.interestRateStrategyAddress
     );
 
-    uint8 upgradeAssetClass = _counter.getAssetClass(input.underlyingAsset);
+    uint8 assetClass = _counter.getAssetClass(input.underlyingAsset);
     DataTypes.ReserveConfigurationMap memory currentConfig =
-    _counter.getConfiguration(input.underlyingAsset, upgradeAssetClass);
+    _counter.getConfiguration(input.underlyingAsset, assetClass);
 
     currentConfig.setDecimals(input.underlyingAssetDecimals);
 
     currentConfig.setActive(true);
     currentConfig.setFrozen(false);
 
-    _counter.setConfiguration(input.underlyingAsset, upgradeAssetClass, currentConfig.data);
+    _counter.setConfiguration(input.underlyingAsset, assetClass, currentConfig.data);
 
     emit ReserveClassUpdate(
       input.underlyingAsset,
-      upgradeAssetClass,
+      assetClass,
       1,
       input.pToken,
       input.variableDebtToken,

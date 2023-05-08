@@ -102,6 +102,7 @@ library CRTLogic {
         uint256 newCrtPerValue;
         uint256 newCrtValue;
     }
+    
     function calculateCRTRepay(
         address userAddress,
         // DataTypes.ReserveData storage reserve,
@@ -111,7 +112,7 @@ library CRTLogic {
         DataTypes.UserAccountVars memory userStateVars,
         DataTypes.UserCreditData memory userCredit,
         address crtaddress
-    ) external returns (uint256, uint256) {
+    ) external view returns (uint256, uint256) {
         CrtRepayVars memory vars;
         uint userlockBalance = ICRT(crtaddress).lockBalance(userAddress);
         console.log(userlockBalance);
@@ -153,7 +154,7 @@ library CRTLogic {
      * @param ltv in this borrow loan to value, in percentage
      * @param cf The collateral factor of the asset, represent in percentage
     */
-    function calculateCRTValue(uint256 ltv, uint256 cf) internal returns (uint) {
+    function calculateCRTValue(uint256 ltv, uint256 cf) internal view returns (uint) {
         console.log("ltv is ", ltv);
         console.log("collateral factor is ", cf);
         if (ltv < cf) {

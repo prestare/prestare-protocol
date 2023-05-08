@@ -110,14 +110,14 @@ contract PlatformTokenInterestRateModel is IBaseRateModel {
       // require(_pool.getConfiguration(_underlyingToken).getActive(), Errors.VL_NO_ACTIVE_RESERVE);
       p2pSupplyIndex[_pToken] = WadRayMath.RAY;
       p2pBorrowIndex[_pToken] = WadRayMath.RAY;
-      PoolIndexes storage poolIndexes = poolIndexes[_pToken];
-      poolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
-      poolIndexes.poolSupplyIndex = uint112(_pool.getReserveNormalizedIncome(_underlyingToken));
-      console.log("poolSupplyIndex is",poolIndexes.poolSupplyIndex);
-      poolIndexes.poolBorrowIndex = uint112(
+      PoolIndexes storage poolIndex = poolIndexes[_pToken];
+      poolIndex.lastUpdateTimestamp = uint32(block.timestamp);
+      poolIndex.poolSupplyIndex = uint112(_pool.getReserveNormalizedIncome(_underlyingToken));
+      console.log("poolSupplyIndex is",poolIndex.poolSupplyIndex);
+      poolIndex.poolBorrowIndex = uint112(
           _pool.getReserveNormalizedVariableDebt(_underlyingToken)
       );
-      console.log("poolBorrowIndex is",poolIndexes.poolBorrowIndex);
+      console.log("poolBorrowIndex is",poolIndex.poolBorrowIndex);
 
       markets[platformToken] = Market({
         underlyingToken: _underlyingToken,

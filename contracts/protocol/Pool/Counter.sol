@@ -190,7 +190,6 @@ contract Counter is ICounter, CounterStorage {
     address pTokenAddress = _reserves[asset][riskTier].pTokenAddress;
 
     // DataTypes.ReserveData storage reserve = _reserves[asset];
-
     _executeBorrow(
       ExecuteBorrowParams(
         asset,
@@ -334,34 +333,60 @@ contract Counter is ICounter, CounterStorage {
     uint256 rateMode,
     address onBehalfOf
   ) external override whenNotPaused returns (uint256) {
+    address pTokenAddress = _reserves[asset][riskTier].pTokenAddress;
+    return _executeRepay(
+      ExecuteRepayParams(
+        asset,
+        riskTier,
+        msg.sender,
+        onBehalfOf,
+        amount,
+        rateMode,
+        pTokenAddress
+      )
+    );
+  }
+
+  struct ExecuteRepayParams {
+    address asset;
+    uint8 riskTier;
+    address user;
+    address onBehalfOf;
+    uint256 amount;
+    uint256 interestRateMode;
+    address pTokenAddress;
+    // uint16 referralCode;
+  }
+
+  function _executeRepay(ExecuteRepayParams memory vars) internal returns (uint256) {
     console.log("");
     console.log("repay...");
-    DataTypes.ReserveData storage reserve = _reserves[asset][riskTier];
+    DataTypes.ReserveData storage reserve = _reserves[vars.asset][vars.riskTier];
 
     // DataTypes.ReserveData storage reserve = _reserves[asset];
-    DataTypes.UserCreditData storage userCredit = _usersCredit[onBehalfOf];
+    DataTypes.UserCreditData storage userCredit = _usersCredit[vars.onBehalfOf];
 
-    uint256 variableDebt = Helpers.getUserCurrentDebt(onBehalfOf, reserve);
+    uint256 variableDebt = Helpers.getUserCurrentDebt(vars.onBehalfOf, reserve);
 
-    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(rateMode);
+    DataTypes.InterestRateMode interestRateMode = DataTypes.InterestRateMode(vars.interestRateMode);
 
     ValidationLogic.validateRepay(
       reserve,
-      amount,
+      vars.amount,
       interestRateMode,
-      onBehalfOf,
+      vars.onBehalfOf,
       variableDebt
     );
 
     uint256 paybackAmount = variableDebt;
 
-    if (amount < paybackAmount) {
-      paybackAmount = amount;
+    if (vars.amount < paybackAmount) {
+      paybackAmount = vars.amount;
     }
     
     address oracle = _addressesProvider.getPriceOracle();
     uint256 paybackamountInUSD =
-      IPriceOracleGetter(oracle).getAssetPrice(asset) * paybackAmount / (
+      IPriceOracleGetter(oracle).getAssetPrice(vars.asset) * paybackAmount / (
         10**reserve.configuration.getDecimals()
       );
     
@@ -374,9 +399,9 @@ contract Counter is ICounter, CounterStorage {
       userStatVar.currentLiquidationThreshold,
       userStatVar.healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      onBehalfOf,
+      vars.onBehalfOf,
       _reserves,
-      _usersConfig[onBehalfOf],
+      _usersConfig[vars.onBehalfOf],
       userCredit,
       _reservesList,
       _reservesCount,
@@ -384,7 +409,7 @@ contract Counter is ICounter, CounterStorage {
     );
     // CRT 
     (userStatVar.idleCRT, userStatVar.newCrtValue) = CRTLogic.calculateCRTRepay(
-      onBehalfOf,
+      vars.onBehalfOf,
       reserve.configuration.getLtv(),
       // paybackAmount,
       paybackamountInUSD,
@@ -394,35 +419,36 @@ contract Counter is ICounter, CounterStorage {
     );
 
     if (userStatVar.idleCRT > 0) {
-      ICRT(_crtaddress).unlockCRT(msg.sender, userStatVar.idleCRT);
+      ICRT(_crtaddress).unlockCRT(vars.user, userStatVar.idleCRT);
       // fix
-      _usersCredit[msg.sender].crtValue = userStatVar.newCrtValue;
+      _usersCredit[vars.user].crtValue = userStatVar.newCrtValue;
     }
 
     reserve.updateState();
     console.log("update state finish");
     IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
-        onBehalfOf,
+        vars.onBehalfOf,
         paybackAmount,
         reserve.variableBorrowIndex
       );
 
-    address pToken = reserve.pTokenAddress;
-    console.log("update asset ir:", asset);
-    reserve.updateInterestRates(asset, pToken, paybackAmount, 0);
+    // address pToken = reserve.pTokenAddress;
+    console.log("update asset ir:", vars.asset);
+    reserve.updateInterestRates(vars.asset, vars.pTokenAddress, paybackAmount, 0);
 
     if (variableDebt - paybackAmount == 0) {
-      _usersConfig[onBehalfOf].setBorrowing(reserve.id, false);
+      _usersConfig[vars.onBehalfOf].setBorrowing(reserve.id, false);
     }
     console.log("repay payback amount is: ", paybackAmount);
-    IERC20(asset).transferFrom(msg.sender, pToken, paybackAmount);
+    IERC20(vars.asset).transferFrom(vars.user, vars.pTokenAddress, paybackAmount);
 
-    IPToken(pToken).handleRepayment(msg.sender, paybackAmount);
+    IPToken(vars.pTokenAddress).handleRepayment(vars.user, paybackAmount);
 
-    emit Repay(asset, onBehalfOf, msg.sender, paybackAmount);
+    emit Repay(vars.asset, vars.onBehalfOf, vars.user, paybackAmount);
 
     return paybackAmount;
   }
+
 
   /**
    * @dev described in ICounter.sol
@@ -455,6 +481,15 @@ contract Counter is ICounter, CounterStorage {
     }
   }
 
+  struct ExcuteLiqudationParams {
+    address collateralAsset;
+    uint8 collateralRiskTier;
+    address debtAsset;
+    uint8 debtRiskTier;
+    address user;
+    uint256 debtToCover;
+    bool receivePToken;
+  }
   /**
    * @dev Function to liquidate a non-healthy position collateral-wise, with Health Factor below 1
    * - The caller (liquidator) covers `debtToCover` amount of debt of the user getting liquidated, and receives
@@ -463,15 +498,17 @@ contract Counter is ICounter, CounterStorage {
    * @param debtAsset The address of the underlying borrowed asset to be repaid with the liquidation
    * @param user The address of the borrower getting liquidated
    * @param debtToCover The debt amount of borrowed `asset` the liquidator wants to cover
-   * @param receivepToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
+   * @param receivePToken `true` if the liquidators wants to receive the collateral pTokens, `false` if he wants
    * to receive the underlying collateral asset directly
    **/
   function liquidationCall(
     address collateralAsset,
+    uint8 collateralRiskTier,
     address debtAsset,
+    uint8 debtRiskTier,
     address user,
     uint256 debtToCover,
-    bool receivepToken
+    bool receivePToken
   ) external override whenNotPaused {
     address collateralManager = _addressesProvider.getCounterCollateralManager();
 
@@ -479,12 +516,16 @@ contract Counter is ICounter, CounterStorage {
     (bool success, bytes memory result) =
       collateralManager.delegatecall(
         abi.encodeWithSignature(
-          'liquidationCall(address,address,address,uint256,bool)',
-          collateralAsset,
-          debtAsset,
-          user,
-          debtToCover,
-          receivepToken
+          'liquidationCall(ExcuteLiqudationParams memory)',
+          ExcuteLiqudationParams(
+            collateralAsset,
+            collateralRiskTier,
+            debtAsset,
+            debtRiskTier,
+            user,
+            debtToCover,
+            receivePToken
+          )
         )
       );
 
@@ -746,7 +787,7 @@ contract Counter is ICounter, CounterStorage {
     _addReserveToList(asset, initRiskTier);
   }
 
-  function getAssetClass(address asset) external override returns(uint8) {
+  function getAssetClass(address asset) external view override returns(uint8) {
     return _assetClass[asset];
   }
 
@@ -758,13 +799,13 @@ contract Counter is ICounter, CounterStorage {
   ) external override onlyCounterConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     require(_assetClass[asset] > 0, Errors.ASSET_HAVE_BEEN_ACLASS);
-    uint8 upgradeAssetClass = _assetClass[asset] - 1;
-    _reserves[asset][upgradeAssetClass].init(
+    uint8 targetAssetClass = _assetClass[asset] - 1;
+    _reserves[asset][targetAssetClass].init(
       pTokenAddress,
       variableDebtAddress,
       interestRateStrategyAddress
     );
-    _addReserveToList(asset, upgradeAssetClass);
+    _addReserveToList(asset, targetAssetClass);
   }
 
   function degradeAssetClass(
