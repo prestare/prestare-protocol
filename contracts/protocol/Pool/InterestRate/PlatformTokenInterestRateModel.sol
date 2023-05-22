@@ -10,6 +10,7 @@ import {ILendingPool} from '../../../interfaces/aaveInterface/ILendingPool.sol';
 import {Errors} from '../../libraries/helpers/Errors.sol';
 import {ReserveConfiguration} from '../../libraries/configuration/ReserveConfiguration.sol';
 import {DataTypes} from '../../libraries/types/DataTypes.sol';
+import {Ownable} from '../../../CRT/openzeppelin/Ownable.sol';
 
 import "hardhat/console.sol";
 
@@ -19,11 +20,11 @@ import "hardhat/console.sol";
  * @dev The model of interest rate is based on 2 slopes, one before the `OPTIMAL_UTILIZATION_RATE`
  * point of utilization and another from that one to 100%
  **/
-contract PlatformTokenInterestRateModel is IBaseRateModel {
+contract PlatformTokenInterestRateModel is IBaseRateModel, Ownable {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using WadRayMath for uint256;
   using PercentageMath for uint256;
-  ILendingPool internal _pool = ILendingPool(0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9);
+  ILendingPool internal _pool;
   mapping(address => uint256) internal p2pSupplyIndex; // Current index from supply peer-to-peer unit to underlying (in ray).
   mapping(address => uint256) internal p2pBorrowIndex; // Current index from borrow peer-to-peer unit to underlying (in ray).
   mapping(address => PoolIndexes) internal poolIndexes; // Last pool index stored. paToken => Poolindexes
@@ -100,6 +101,10 @@ contract PlatformTokenInterestRateModel is IBaseRateModel {
     addressesProvider = provider;
   }
 
+  function setPool(address pool) external onlyOwner{
+    _pool = ILendingPool(pool);
+  }
+  
   function createMarket(
       address _underlyingToken,
       address platformToken,
@@ -112,6 +117,7 @@ contract PlatformTokenInterestRateModel is IBaseRateModel {
       p2pBorrowIndex[_pToken] = WadRayMath.RAY;
       PoolIndexes storage poolIndexes = poolIndexes[_pToken];
       poolIndexes.lastUpdateTimestamp = uint32(block.timestamp);
+      console.log("begin to query aave ");
       poolIndexes.poolSupplyIndex = uint112(_pool.getReserveNormalizedIncome(_underlyingToken));
       console.log("poolSupplyIndex is",poolIndexes.poolSupplyIndex);
       poolIndexes.poolBorrowIndex = uint112(

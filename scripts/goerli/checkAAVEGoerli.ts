@@ -11,11 +11,11 @@ const GOERLI_AAVE_LENDING_POOL = '0x4bd5643ac6f66a5237E18bfA7d47cF22f1c9F210';
 
 async function main() {
     console.log("Test paToken's balanceOf is equal to the amount of the underlying asset instead of atoken");
-    const provider = new ethers.providers.JsonRpcProvider(hre.network.config.url!);
-    
+    // const provider = new ethers.providers.JsonRpcProvider(hre.network.config.url!);
+    const [signer,] = await hre.ethers.getSigners();    
     // console.log(provider);
     const abi = (await hre.artifacts.readArtifact("ILendingPool")).abi;
-    const LENDING_POOL_GOERLI = new ethers.Contract(GOERLI_AAVE_LENDING_POOL, abi, provider);
+    const LENDING_POOL_GOERLI = new ethers.Contract(GOERLI_AAVE_LENDING_POOL, abi, signer);
     // console.log(LENDING_POOL_GOERLI);
     let tx = await LENDING_POOL_GOERLI.getReserveData("0x65E2fe35C30eC218b46266F89847c63c2eDa7Dc7");
     console.log(tx);

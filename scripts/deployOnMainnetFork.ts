@@ -26,12 +26,14 @@ import { getAllTokenAddresses,
     configureReservesByHelper
  } from "../helpers/utils";
 import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
-import { TokenContractName } from "../helpers/types";
-import { MainnetFork } from '../markets/mainnet';
+import { setPlatformTokenIRModel } from "../helpers/contracts-helpers";
+import { Prestare, TokenContractName } from "../helpers/types";
+import { Mainnet } from '../markets/mainnet';
 import { ZERO_ADDRESS } from "../helpers/constants";
+import { LENDING_POOL_V2 } from "../helpers/addressConstants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
-export const deployOnMainnetFork = async function() {
+export const deployOnMainnet = async function() {
     console.log("deploy Contract...");
     const admin: Signer = (await hre.ethers.getSigners())[0];
     // console.log("admin is: ", admin.getAddress());
@@ -59,11 +61,11 @@ export const deployOnMainnetFork = async function() {
 
     // 4. get All assetToken
     // await deployAllMockTokens(admin);
-    await insertAllAssetToken();
+    await insertAllAssetToken(Prestare.Mainnet);
     const defaultTokenList: { [key: string]: string} = {
         ...Object.fromEntries(Object.keys(TokenContractName).map((symbol) => [symbol, '']))
     }
-    const ReserveAssetsAddress = MainnetFork.ReserveAssetsAddress.MainnetFork;
+    const ReserveAssetsAddress = Mainnet.ReserveAssetsAddress.Mainnet;
     // console.log(ReserveAssetsAddress);
     const assetTokens = await getAllAssetTokens(ReserveAssetsAddress);
     // const mockTokensAddress = Object.keys(mockTokens).reduce<{ [key: string]: string }>(
@@ -78,20 +80,20 @@ export const deployOnMainnetFork = async function() {
     console.log();
     console.log("Deploy Oracle....");
     const fallbackOracle = await deployPriceOracle(admin);
-    await fallbackOracle.setEthUsdPrice(MainnetFork.MockUsdPriceInWei);
-    await setInitialAssetPricesInOracle(MainnetFork.Mocks.AllMockAssetPrice, ReserveAssetsAddress, fallbackOracle);
+    await fallbackOracle.setEthUsdPrice(Mainnet.MockUsdPriceInWei);
+    await setInitialAssetPricesInOracle(Mainnet.Mocks.AllMockAssetPrice, ReserveAssetsAddress, fallbackOracle);
     
     console.log();
     console.log("Deploy Prestare Oracle....");
-    // const mockAggregators = await deployAllMockAggregators(MainnetFork.Mocks.AllMockAssetPrice);
-    const ChainlinkAggregator = MainnetFork.ChainlinkAggregator.MainnetFork;
+    // const mockAggregators = await deployAllMockAggregators(Mainnet.Mocks.AllMockAssetPrice);
+    const ChainlinkAggregator = Mainnet.ChainlinkAggregator.Mainnet;
     // console.log(mockAggregators);
 
     const allTokenAddresses = ReserveAssetsAddress;
     const [tokens, aggregator] = getPairsTokenAggregator(
         allTokenAddresses,
         ChainlinkAggregator,
-        MainnetFork.oracleQuoteCurrency
+        Mainnet.oracleQuoteCurrency
     )
 
     // console.log("token list: ", tokens);
@@ -101,8 +103,8 @@ export const deployOnMainnetFork = async function() {
         tokens,
         aggregator,
         fallbackOracle.address,
-        MainnetFork.ReserveAssetsAddress.MainnetFork.USD,
-        MainnetFork.OracleQuoteUnit,
+        Mainnet.ReserveAssetsAddress.Mainnet.USD,
+        Mainnet.OracleQuoteUnit,
     ]);
 
     await addressesProvider.setPriceOracle(prestareOracle.address);
@@ -118,15 +120,16 @@ export const deployOnMainnetFork = async function() {
 
     // 7. deploy AToken IR model
     await deployPlatformTokenInterestRateModel(addressesProvider.address);
+    await setPlatformTokenIRModel(admin, LENDING_POOL_V2);
 
     // 8. deploy pToken for each asset & initialize all token
     await initReservesByHelper(
-        MainnetFork.ReservesConfig,
+        Mainnet.ReservesConfig,
         allTokenAddresses,
         admin,
         treasuryAddress,
     )
-    await configureReservesByHelper(MainnetFork.ReservesConfig, allTokenAddresses, admin);
+    await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, admin);
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);
@@ -142,13 +145,13 @@ export const deployOnMainnetFork = async function() {
     console.log("Deploy finished...");
 }
 
-// async function main() {
-//     await deployOnMainnetFork();
-// }
+async function main() {
+    await deployOnMainnet();
+}
 
-// main()
-//     .then(() => process.exit(0))
-//     .catch((error) => {
-//         console.error(error);
-//         process.exit(1);
-//     });
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });

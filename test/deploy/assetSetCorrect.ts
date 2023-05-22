@@ -3,11 +3,11 @@ import { BigNumber, Contract } from "ethers";
 import { TokenContractName } from '../../helpers/types';
 import { getCounter } from "../../helpers/contracts-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployOnMainnetFork } from "../../scripts/deployOnMainnetFork";
+import { deployOnMainnet } from "../../scripts/deployOnMainnetFork";
 import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getPTokenContract } from '../../helpers/contracts-getter';
 import { expect } from "chai";
 import { Counter } from "../../typechain-types";
-import { MainnetFork } from "../../markets/mainnet";
+import { Mainnet } from "../../markets/mainnet";
 import { DataTypes } from "../../typechain-types/contracts/interfaces/ICounter";
 import { oneEther, oneRay } from "../../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
@@ -17,10 +17,10 @@ describe("check Asset Configuration", function() {
     var assetToken;
     var admin: SignerWithAddress;
     var tokens = Object.keys(TokenContractName);
-    var tokensAddresses =  Object.values(MainnetFork.ReserveAssetsAddress.MainnetFork);
-    // var tokensAddresses = MainnetFork.ReserveAssetsAddress.MainnetFork;
+    var tokensAddresses =  Object.values(Mainnet.ReserveAssetsAddress.Mainnet);
+    // var tokensAddresses = Mainnet.ReserveAssetsAddress.Mainnet;
     before(async () => {
-        await deployOnMainnetFork();
+        await deployOnMainnet();
         admin = (await hre.ethers.getSigners())[0];
         counter = await getCounter(admin);
     })

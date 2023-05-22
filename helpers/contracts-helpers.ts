@@ -1,24 +1,26 @@
-import { MainnetFork } from "../markets/mainnet";
+import { Mainnet } from "../markets/mainnet";
 import { Contract, ethers, Signer } from "ethers";
 import { ContractName, Prestare, TokenContractName } from "./types";
 import { getDb } from './utils';
 import { getCounterAddress } from './contracts-getter';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
-import {MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
-
+import { MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
+import { getPlatformInterestRateModel } from "./contracts-getter";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const getReservesConfigByPool = (pool: Prestare) => {
     switch (pool) {
-        case Prestare.MainnetFork:
-            return MainnetFork.ReservesConfig;
+        case Prestare.Mainnet:
+            return Mainnet.ReservesConfig;
     }
 }
 export const getReserveAssetsAddress = (pool: Prestare) => {
   switch (pool) {
-      case Prestare.MainnetFork:
-          return MainnetFork.ReserveAssetsAddress;
+      case Prestare.Mainnet:
+          return Mainnet.ReserveAssetsAddress.Mainnet;
+      case Prestare.Goerli:
+          return Mainnet.ReserveAssetsAddress.Goerli;
   }
 }
 export const registerContractInJsonDb = async (contractId: string, contractInstance: Contract) => {
@@ -97,10 +99,10 @@ export const getAllMockedTokens = async () => {
     return tokens;
 };
 
-export const insertAllAssetToken = async () => {
+export const insertAllAssetToken = async (network: Prestare) => {
     const tokens: { [symbol: string]: Contract | MintableERC20} = {};
 
-    const protocolReserveAsset = getReserveAssetsAddress(Prestare.MainnetFork).MainnetFork;
+    const protocolReserveAsset = getReserveAssetsAddress(network);
 
     for (const tokenSymbol of Object.keys(TokenContractName)) {
         let decimals = '18';
@@ -224,4 +226,9 @@ export const approveToken4Counter = async (signer: Signer, token: Contract, amou
   // console.log(tx);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("   After  Approve, allowance is: ", balanceAfter.toString());
+}
+
+export const setPlatformTokenIRModel =async (admin: Signer, PoolAddress:string) => {
+  const PlatformTokenIRModel = await getPlatformInterestRateModel();
+  let tx = await PlatformTokenIRModel.connect(admin).setPool(PoolAddress);
 }
