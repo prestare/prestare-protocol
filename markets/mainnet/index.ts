@@ -1,9 +1,8 @@
 import {
-    strategyDAI,
-    strategyWETH,
-    strategyUSDC,
-    strategyUSDT,
-    strategyBUSD,
+    strategyDAI_C,
+    strategyWETH_C,
+    strategyUSDC_C,
+    strategyUSDT_C,
     aTokenStrategy
 } from "./reserveConfig";
 import { MOCK_CHAINLINK_AGGREGATORS_PRICES, oneUSD, ZERO_ADDRESS } from "../../helpers/constants";
@@ -15,10 +14,10 @@ export const MainnetFork = {
     OracleQuoteUnit: oneUSD.toString(),
     
     ReservesConfig: {
-        DAI: strategyDAI,
-        WETH: strategyWETH,
-        USDC: strategyUSDC,
-        USDT: strategyUSDT,
+        DAI: strategyDAI_C,
+        WETH: strategyWETH_C,
+        USDC: strategyUSDC_C,
+        USDT: strategyUSDT_C,
         // BUSD: strategyBUSD,
         aDAI: aTokenStrategy,
         aWETH: aTokenStrategy,
