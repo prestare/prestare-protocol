@@ -17,7 +17,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200,
+        runs: 20000,
       },
     }
   },
@@ -28,6 +28,9 @@ const config: HardhatUserConfig = {
       forking: {
         url: "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_ID,
         blockNumber: 16802614
+
+        // url: "https://eth-goerli.g.alchemy.com/v2/" + process.env.GOERLI_ID,
+        // blockNumber: 9000000
       },
       gasPrice: 0,
       initialBaseFeePerGas: 0,

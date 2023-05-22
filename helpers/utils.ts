@@ -199,7 +199,7 @@ export const initReservesByHelper = async (
     });
   }
   
-  // console.log("finish initInputParams");
+  console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
     // console.log("initReserve %s...",initInputParams[index].pTokenName);
