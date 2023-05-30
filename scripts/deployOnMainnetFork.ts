@@ -23,7 +23,8 @@ import { getAllTokenAddresses,
     getPairsTokenAggregator,
     initReservesByHelper, 
     enableReservesBorrowing,
-    configureReservesByHelper
+    configureReservesByHelper,
+    upgradeReservesByHelper
  } from "../helpers/utils";
 import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
 import { setPlatformTokenIRModel } from "../helpers/contracts-helpers";
@@ -130,9 +131,18 @@ export const deployOnMainnet = async function() {
         allTokenAddresses,
         assetTiers,
         admin,
-        treasuryAddress,
+        treasuryAddress
     );
-    await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, 3, admin);
+    console.log("config init asset");
+    await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, 2, admin);
+    console.log("");
+    console.log("update asset B class");
+    await upgradeReservesByHelper(Mainnet.assetBClassConfig, allTokenAddresses, assetTiers, admin, treasuryAddress);
+    await configureReservesByHelper(Mainnet.assetBClassConfig, allTokenAddresses, 1, admin);
+    console.log("");
+    console.log("update asset A class");
+    await upgradeReservesByHelper(Mainnet.assetAClassConfig, allTokenAddresses, assetTiers, admin, treasuryAddress);
+    await configureReservesByHelper(Mainnet.assetAClassConfig, allTokenAddresses, 0, admin);
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);

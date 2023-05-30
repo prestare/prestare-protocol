@@ -125,7 +125,9 @@ export const initReservesByHelper = async (
   ];
 
   const reserves = Object.entries(reservesParams);
-  
+  let rateStrategies: Record<string, typeof strategyRates> = {};
+  let strategyAddresses: Record<string, string> = {};
+
   for (let [symbol, params] of reserves) {
     // console.log(tokenAddresses);
     if (!tokenAddresses[symbol]) {
@@ -134,7 +136,7 @@ export const initReservesByHelper = async (
     }
     const Counter = await getCounter(admin, await addressProvider.getCounter());
 
-    const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol], 3);
+    const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol], 2);
 
     if (CounterReserve.pTokenAddress !== ZERO_ADDRESS) {
       console.log(`- Skipping init of ${symbol} due is already initialized`);
@@ -142,15 +144,9 @@ export const initReservesByHelper = async (
     }
 
     const { strategy, pToken, reserveDecimals } = params;
-
-    let rateStrategies: Record<string, typeof strategyRates> = {};
-    let strategyAddresses: Record<string, string> = {};
- 
-    strategyAddresses["aTokenrateStrategy"] = aTokenIRModel.address;
-    console.log("aTokenrateStrategy", strategyAddresses["aTokenrateStrategy"]);
+    // check if we have deploy the interest rate Contract
     let strategyAddress = await getStrategyAddress(strategy.name);
     console.log(strategy.name);
-    console.log("strategyAddress", strategyAddress);
     if (!strategyAddress && strategy.name.charAt(0) != 'a') {
       console.log("null strategyAddress");
       console.log("test deployStrategy");
@@ -160,10 +156,14 @@ export const initReservesByHelper = async (
       strategyAddresses[strategy.name] = obj.strategyAddress;
     } else {
       strategyAddresses[strategy.name] = strategyAddress;
+      console.log("strategyAddress", strategyAddress);
+
     }
     if (strategy.name.charAt(0) == 'a') {
-      console.log(strategyAddresses[strategy.name]);
+      strategyAddresses[strategy.name] = aTokenIRModel.address;
+      console.log("find atoken and ir address is: ", strategyAddresses[strategy.name]);
     }
+
     // console.log(rateStrategies);
     // if (!strategyAddresses[strategy.name] && strategy.name.charAt(0) != 'a') {
     //   const {
@@ -213,7 +213,7 @@ export const initReservesByHelper = async (
       //pTokenSymbol: `p${symbol}`,
       //variableDebtTokenName: `variableDebt Prestare ${symbol}`,
       //variableDebtTokenSymbol: `variableDebt ${symbol}`,
-      assetRiskTier: BigNumber.from(3),
+      assetRiskTier: BigNumber.from(2),
       underlyingAssetDecimals: BigNumber.from(reserveDecimals),
       params: '0x10',
     });
@@ -246,7 +246,133 @@ export const upgradeReservesByHelper = async(
   assetTiers: {[symbol: string]: number},
   admin: Signer,
   treasuryAddress: string,
-) => {}
+) => {
+  const addressProvider = await getCounterAddressesProvider();
+  const aTokenIRModel = await getPlatformInterestRateModel();
+  let reserveSymbols: string[] = [];
+  
+  let upgradeInputParams: {
+    pToken: string;
+    variableDebtToken: string;
+    assetRiskTier: BigNumber;
+    underlyingAssetDecimals: BigNumber;
+    interestRateStrategyAddress: string;
+    underlyingAsset: string;
+    treasury: string;
+    incentivesController: string;
+    underlyingAssetName: string;
+    pTokenName: string;
+    pTokenSymbol: string;
+    variableDebtTokenName: string;
+    variableDebtTokenSymbol: string;
+    params: string;
+  }[] = [];
+
+  let strategyRates: [
+    string, // addresses provider
+    string,
+    string,
+    string,
+    string,
+  ];
+
+  const reserves = Object.entries(reservesParams);
+  let rateStrategies: Record<string, typeof strategyRates> = {};
+  let strategyAddresses: Record<string, string> = {};
+  for (let [symbol, params] of reserves) {
+    // console.log(tokenAddresses);
+    if (!tokenAddresses[symbol]) {
+      console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
+      continue;
+    }
+    const Counter = await getCounter(admin, await addressProvider.getCounter());
+    const target = (await Counter.getAssetClass(tokenAddresses[symbol])) - 1;
+    console.log("target tier is: ", target);
+    let risk_tier = "C";
+    if (target == 1) {
+      risk_tier = "B";
+    } else if (target == 0){
+      risk_tier = "A";
+    }
+    const CounterReserve = await Counter.getReserveData(tokenAddresses[symbol], target);
+
+    if (CounterReserve.pTokenAddress !== ZERO_ADDRESS) {
+      console.log(`- Skipping init of ${symbol} due is already initialized`);
+      continue;
+    }
+
+    const { strategy, pToken, reserveDecimals } = params;
+    // check if we have deploy the interest rate Contract
+    let strategyAddress = await getStrategyAddress(strategy.name);
+    console.log(strategy.name);
+    if (!strategyAddress && strategy.name.charAt(0) != 'a') {
+      console.log("null strategyAddress");
+      console.log("test deployStrategy");
+      let obj = await deployStrategy(strategy as IInterestRateStrategyParams, addressProvider.address);
+      console.log(obj);
+      rateStrategies[strategy.name] = obj.rateStrategy;
+      strategyAddresses[strategy.name] = obj.strategyAddress;
+    } else {
+      strategyAddresses[strategy.name] = strategyAddress;
+      console.log("strategyAddress", strategyAddress);
+    }
+    if (strategy.name.charAt(0) == 'a') {
+      strategyAddresses[strategy.name] = aTokenIRModel.address;
+      console.log("find atoken and ir address is: ", strategyAddresses[strategy.name]);
+    }
+
+    reserveSymbols.push(symbol);
+    let pTokenContract;
+    let symbol_riskTier: string = symbol + "-" + risk_tier;
+    if (symbol_riskTier.charAt(0) == 'a') {
+      // console.log("find AToken ", symbol);
+      pTokenContract = await deployPTokenAAVE(admin, symbol_riskTier);
+    } else {
+      pTokenContract = await deployPToken(admin, symbol_riskTier);
+    }
+    let variableDebtContract = await deployVariableDebtToken(admin, symbol_riskTier);
+    upgradeInputParams.push({
+      pToken: pTokenContract.address,
+      variableDebtToken: variableDebtContract.address,
+      interestRateStrategyAddress: strategyAddresses[strategy.name],
+      underlyingAsset: tokenAddresses[symbol],
+      treasury: treasuryAddress,
+      incentivesController: ZERO_ADDRESS,
+      underlyingAssetName: symbol,
+      pTokenName: `p ${symbol}-${risk_tier}`,
+      pTokenSymbol: `p${symbol}-${risk_tier}`,
+      variableDebtTokenName: `variableDebt Prestare ${symbol}-${risk_tier}`,
+      variableDebtTokenSymbol: `variableDebt ${symbol}-${risk_tier}`,
+      //pTokenName: `prestare ${symbol}`,
+      //pTokenSymbol: `p${symbol}`,
+      //variableDebtTokenName: `variableDebt Prestare ${symbol}`,
+      //variableDebtTokenSymbol: `variableDebt ${symbol}`,
+      assetRiskTier: BigNumber.from(2),
+      underlyingAssetDecimals: BigNumber.from(reserveDecimals),
+      params: '0x10',
+    });
+  }
+
+  console.log("finish initInputParams");
+  const configurator = await getCounterConfigurator();
+  for (let index = 0; index < upgradeInputParams.length; index++) {
+    // console.log("initReserve %s...",initInputParams[index]);
+    await configurator.connect(admin).upgradeAssetClass(upgradeInputParams[index]);
+    // if (upgradeInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
+    //   // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
+    //   let underAsset = tokenAddresses[upgradeInputParams[index].pTokenSymbol.slice(2, -2)];
+    //   let aTokenAddress = upgradeInputParams[index].underlyingAsset;
+
+    //   await aTokenIRModel.connect(admin).createMarket(
+    //     underAsset,
+    //     aTokenAddress,
+    //     upgradeInputParams[index].pToken,
+    //     "5000"
+    //   )
+    // }
+  }
+
+}
 
 // configureReservesByHelper帮助设置tokenaddress中对应的assetTier
 export const configureReservesByHelper =async (
@@ -255,7 +381,7 @@ export const configureReservesByHelper =async (
   assetTiers: number,
   admin: Signer,
 ) => {
-
+  console.log("configureReservesByHelper...");
   const addressProvider = await getCounterAddressesProvider();
   const tokens: string[] = [];
   const symbols: string[] = [];

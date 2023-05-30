@@ -799,6 +799,7 @@ contract Counter is ICounter, CounterStorage {
   ) external override onlyCounterConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     require(_assetClass[asset] > 0, Errors.ASSET_HAVE_BEEN_ACLASS);
+    console.log("before upgrade, asset class is: ", _assetClass[asset]);
     uint8 targetAssetClass = _assetClass[asset] - 1;
     _reserves[asset][targetAssetClass].init(
       pTokenAddress,
@@ -806,47 +807,57 @@ contract Counter is ICounter, CounterStorage {
       interestRateStrategyAddress
     );
     _addReserveToList(asset, targetAssetClass);
+    console.log("After upgrade, asset class is: ", _assetClass[asset]);
+
   }
 
   function degradeAssetClass(
     address asset 
   ) external override onlyCounterConfigurator {
     uint8 nowAssetTier = _assetClass[asset];
-    require(nowAssetTier < _maxAssetClass, Errors.ASSET_CLASS_IS_LOWERST);
+    require(nowAssetTier < _maxAssetClass, Errors.ASSET_CLASS_IS_TOO_LOW);
     // After downgrade, asset Class become nowAssetTier + 1
     uint8 demoteAssetTier = nowAssetTier + 1;
     // get reserve assetTier config
     DataTypes.ReserveData memory reserveData = _reserves[asset][nowAssetTier];
     DataTypes.ReserveConfigurationMap memory currentConfig = reserveData.configuration;
-    address pTokenAddress = reserveData.pTokenAddress;
-    address variableDebtAddress = reserveData.variableDebtTokenAddress;
-    address interestRateStrategyAddress = reserveData.interestRateStrategyAddress;
+    // address pTokenAddress = reserveData.pTokenAddress;
+    // address variableDebtAddress = reserveData.variableDebtTokenAddress;
+    // address interestRateStrategyAddress = reserveData.interestRateStrategyAddress;
     // After downgrading asset Class, the assetTier which is higher than assetClass should be frozen; 
     currentConfig.setFrozen(true);
     _reserves[asset][nowAssetTier].configuration.data = currentConfig.data;
     // Downgrade asset Class by 1;
     _assetClass[asset] = demoteAssetTier;
-    emit ReserveClassUpdate(
-      asset,
-      demoteAssetTier,
-      0,
-      pTokenAddress,
-      variableDebtAddress,
-      interestRateStrategyAddress
-    );
+    // emit ReserveClassUpdate(
+    //   asset,
+    //   demoteAssetTier,
+    //   0,
+    //   pTokenAddress,
+    //   variableDebtAddress,
+    //   interestRateStrategyAddress
+    // );
   }
 
   function _addReserveToList(address asset, uint8 riskTier) internal {
+    console.log("_addReserveToList");
     uint256 reservesCount = _reservesCount;
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
-    bool reserveAlreadyAdded = _reserves[asset][riskTier].id != 0 || _reservesList[0].reserveAddress == asset;
-
+    bool reserveAlreadyAdded = _reserves[asset][riskTier].id != 0 || (_reservesList[0].reserveAddress == asset && _reservesList[0].tier == riskTier);
+    console.log("asset is", asset);
+    console.log("riskTier is", riskTier);
+    console.log("reserveAlreadyAdded", reserveAlreadyAdded);
     if (!reserveAlreadyAdded) {
+      // _assetClass record the lowest risk tier that an asset have
+      // when new asset and its risk tier added, asset's _assetClass will be update
       _assetClass[asset] = riskTier;
       _reserves[asset][riskTier].id = uint8(reservesCount);
+
+      // add asset and its risk tier to _reservesList
       _reservesList[reservesCount].reserveAddress = asset;
+      _reservesList[reservesCount].tier = riskTier;
 
       _reservesCount = reservesCount + 1;
     }

@@ -30,11 +30,21 @@ export const Mainnet = {
         aUSDC: aTokenStrategy,
         aUSDT: aTokenStrategy
     },
+    assetBClassConfig: {
+        DAI: strategyDAI_B,
+        WETH: strategyWETH_B,
+        USDC: strategyUSDC_B,
+        USDT: strategyUSDT_B,
+    },
+    assetAClassConfig: {
+        USDC: strategyUSDC_A,
+        USDT: strategyUSDT_A,
+    },
     AssetTier: {
-        DAI: 2,
-        WETH: 2,
-        USDC: 1,
-        USDT: 1,
+        DAI: 1,
+        WETH: 1,
+        USDC: 0,
+        USDT: 0,
         // BUSD: strategyBUSD,
         aDAI: 2,
         aWETH: 2,

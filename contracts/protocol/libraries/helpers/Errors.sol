@@ -96,7 +96,7 @@ library Errors {
 
   string public constant WRONG_TARGET_ASSET_TIER = "100";
   string public constant ASSET_HAVE_BEEN_ACLASS = '101';
-  string public constant ASSET_CLASS_IS_LOWERST = '102';
+  string public constant ASSET_CLASS_IS_TOO_LOW = '102';
   string public constant ZERO_ADDRESS = "300";
   enum CollateralManagerErrors {
     NO_ERROR,

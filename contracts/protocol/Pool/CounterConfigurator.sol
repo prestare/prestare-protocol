@@ -51,8 +51,8 @@ contract CounterConfigurator is ICounterConfigurator {
 
   function initialize(ICounterAddressesProvider provider) public {
     addressesProvider = provider;
-    // D Tier
-    _initAssetTier = 3;
+    // C Tier
+    _initAssetTier = 2;
     _counter = ICounter(addressesProvider.getCounter());
   }
 
@@ -113,6 +113,7 @@ contract CounterConfigurator is ICounterConfigurator {
   }
 
   function upgradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
+    console.log("upgradeAssetClass...");
     ICounter cache = _counter;
 
     _initToken(cache, input);
@@ -123,7 +124,7 @@ contract CounterConfigurator is ICounterConfigurator {
       input.variableDebtToken,
       input.interestRateStrategyAddress
     );
-
+    // after upgrade, the asset Class will minus one
     uint8 assetClass = _counter.getAssetClass(input.underlyingAsset);
     DataTypes.ReserveConfigurationMap memory currentConfig =
     _counter.getConfiguration(input.underlyingAsset, assetClass);
@@ -142,6 +143,26 @@ contract CounterConfigurator is ICounterConfigurator {
       input.pToken,
       input.variableDebtToken,
       input.interestRateStrategyAddress
+    );
+  }
+
+  function degradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
+    ICounter cache = _counter;
+
+    _counter.degradeAssetClass(
+      input.underlyingAsset
+    );
+    // after degrade, the asset Class will plus one
+    uint8 assetClass = _counter.getAssetClass(input.underlyingAsset);
+    DataTypes.ReserveData memory currentData = _counter.getReserveData(input.underlyingAsset, assetClass);
+    
+    emit ReserveClassUpdate(
+      input.underlyingAsset,
+      assetClass,
+      0,
+      currentData.pTokenAddress,
+      currentData.variableDebtTokenAddress,
+      currentData.interestRateStrategyAddress
     );
   }
   /**
@@ -195,8 +216,11 @@ contract CounterConfigurator is ICounterConfigurator {
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   ) external onlyPoolAdmin {
-    // console.log("configureReserveAsCollateral");
+    console.log("configureReserveAsCollateral");
     DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
+    console.log("asset is:", asset);
+    console.log("riskTier is:", riskTier);
+
     require(currentConfig.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
     //validation of the parameters: the LTV can

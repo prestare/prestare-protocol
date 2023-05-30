@@ -20,7 +20,7 @@ contract CounterStorage {
 
   // Map of reserves and map of their risk tier and their data (underlyingAssetOfReserve (Tier => reserveData))
   mapping(address => mapping(uint8 => DataTypes.ReserveData)) internal _reserves;
-  // Map of asset and their class
+  // Map of asset and their class,  0 is highest
   mapping(address => uint8) internal _assetClass;
   // Map of users address and their configuration data (userAddress => userConfiguration)
   mapping(address => DataTypes.UserConfigurationMap) internal _usersConfig;
