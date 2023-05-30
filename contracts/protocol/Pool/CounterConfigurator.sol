@@ -12,6 +12,7 @@ import {ReserveConfiguration} from '../libraries/configuration/ReserveConfigurat
 
 import {PercentageMath} from '../libraries/math/PercentageMath.sol';
 import {DataTypes} from '../libraries/types/DataTypes.sol';
+import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
 
 import {ICounterConfigurator} from '../../interfaces/ICounterConfigurator.sol';
 import {IInitializablePToken} from '../../interfaces/IInitializablePToken.sol';
@@ -55,10 +56,10 @@ contract CounterConfigurator is ICounterConfigurator {
     _counter = ICounter(addressesProvider.getCounter());
   }
 
-  function initReserve(InitReserveInput calldata input) external {
-    ICounter cache = _counter;
-    require(input.assetRiskTier == _initAssetTier, "Init Reserve in wrong risk Tier");
-    // console.log("init pToken");
+  function _initToken(
+    ICounter cache,
+    InitReserveInput calldata input
+  ) internal {
     IInitializablePToken(input.pToken).initialize(
       cache,
       input.treasury,
@@ -69,7 +70,6 @@ contract CounterConfigurator is ICounterConfigurator {
       input.pTokenSymbol,
       input.params
     );
-    // console.log("init variableDebtToken");
     IInitializableDebtToken(input.variableDebtToken).initialize(
       cache, 
       input.underlyingAsset, 
@@ -79,10 +79,17 @@ contract CounterConfigurator is ICounterConfigurator {
       input.variableDebtTokenSymbol, 
       input.params
     );
+  }
+
+  function initReserve(InitReserveInput calldata input) external {
+    ICounter cache = _counter;
+    require(input.assetRiskTier == _initAssetTier, "Init Reserve in wrong risk Tier");
+    // console.log("init pToken");
+    _initToken(cache, input);
 
     _counter.initReserve(
       input.underlyingAsset,
-      _initAssetTier,
+      input.assetRiskTier,
       input.pToken,
       input.variableDebtToken,
       input.interestRateStrategyAddress
@@ -107,26 +114,8 @@ contract CounterConfigurator is ICounterConfigurator {
 
   function upgradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
     ICounter cache = _counter;
-    IInitializablePToken(input.pToken).initialize(
-      cache,
-      input.treasury,
-      input.underlyingAsset,
-      input.assetRiskTier,
-      input.underlyingAssetDecimals,
-      input.pTokenName,
-      input.pTokenSymbol,
-      input.params
-    );
 
-    IInitializableDebtToken(input.variableDebtToken).initialize(
-      cache, 
-      input.underlyingAsset, 
-      input.assetRiskTier,
-      input.underlyingAssetDecimals, 
-      input.variableDebtTokenName, 
-      input.variableDebtTokenSymbol, 
-      input.params
-    );
+    _initToken(cache, input);
 
     _counter.upgradeAssetClass(
       input.underlyingAsset,
@@ -206,7 +195,9 @@ contract CounterConfigurator is ICounterConfigurator {
     uint256 liquidationThreshold,
     uint256 liquidationBonus
   ) external onlyPoolAdmin {
+    // console.log("configureReserveAsCollateral");
     DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
+    require(currentConfig.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
     //validation of the parameters: the LTV can
     //only be lower or equal than the liquidation threshold

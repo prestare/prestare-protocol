@@ -124,7 +124,7 @@ contract PlatformTokenInterestRateModel is IBaseRateModel, Ownable {
       poolIndexes.poolBorrowIndex = uint112(
           _pool.getReserveNormalizedVariableDebt(_underlyingToken)
       );
-      console.log("poolBorrowIndex is",poolIndex.poolBorrowIndex);
+      console.log("poolBorrowIndex is",poolIndexes.poolBorrowIndex);
 
       markets[platformToken] = Market({
         underlyingToken: _underlyingToken,

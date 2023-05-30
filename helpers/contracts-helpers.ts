@@ -7,6 +7,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
 import { MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
 import { getPlatformInterestRateModel } from "./contracts-getter";
+
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const getReservesConfigByPool = (pool: Prestare) => {

@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-ethers";
 import '@typechain/hardhat';
 import '@typechain/ethers-v5';
-
+require('hardhat-contract-sizer');
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -17,7 +17,7 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 20000,
+        runs: 200,
       },
     }
   },

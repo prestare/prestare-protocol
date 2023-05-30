@@ -124,16 +124,15 @@ export const deployOnMainnet = async function() {
 
     // 8. deploy pToken for each asset & initialize all token
     console.log("Deploy pToken and variableDebt...");
-    const assetTiers = MainnetFork.AssetTier;
+    const assetTiers = Mainnet.AssetTier;
     await initReservesByHelper(
         Mainnet.ReservesConfig,
         allTokenAddresses,
         assetTiers,
         admin,
         treasuryAddress,
-    )
-
-    await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, admin);
+    );
+    await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, 3, admin);
 
     // 9. WETHGateway
     // console.log("WETH is: ", [mockTokensAddress['WETH']]);

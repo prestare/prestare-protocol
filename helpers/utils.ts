@@ -7,6 +7,7 @@ import {
   deployPToken, 
   deployPTokenAAVE, 
   deployRateStrategy,
+  deployStrategy,
   deployVariableDebtToken 
 } from './contracts-deployments';
 import { 
@@ -22,7 +23,8 @@ import {
   IInterestRateStrategyParams
 } from './types';
 import {
-  getPlatformInterestRateModel
+  getPlatformInterestRateModel,
+  getStrategyAddress
 } from './contracts-getter';
 export const getDb = () => low(new FileSync('./deployed-contracts.json'));
 
@@ -125,7 +127,7 @@ export const initReservesByHelper = async (
   const reserves = Object.entries(reservesParams);
   
   for (let [symbol, params] of reserves) {
-    console.log(tokenAddresses);
+    // console.log(tokenAddresses);
     if (!tokenAddresses[symbol]) {
       console.log(`- Skipping init of ${symbol} due token address is not set at markets config`);
       continue;
@@ -145,28 +147,46 @@ export const initReservesByHelper = async (
     let strategyAddresses: Record<string, string> = {};
  
     strategyAddresses["aTokenrateStrategy"] = aTokenIRModel.address;
-    if (!strategyAddresses[strategy.name] && strategy.name.charAt(0) != 'a') {
-      const {
-        optimalUtilizationRate,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-      } = strategy as IInterestRateStrategyParams;
-
-      rateStrategies[strategy.name] = [
-        addressProvider.address,
-        optimalUtilizationRate,
-        baseVariableBorrowRate,
-        variableRateSlope1,
-        variableRateSlope2,
-      ];
-      strategyAddresses[strategy.name] = await deployRateStrategy(
-        strategy.name,
-        rateStrategies[strategy.name]
-      );
-
-      rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
+    console.log("aTokenrateStrategy", strategyAddresses["aTokenrateStrategy"]);
+    let strategyAddress = await getStrategyAddress(strategy.name);
+    console.log(strategy.name);
+    console.log("strategyAddress", strategyAddress);
+    if (!strategyAddress && strategy.name.charAt(0) != 'a') {
+      console.log("null strategyAddress");
+      console.log("test deployStrategy");
+      let obj = await deployStrategy(strategy as IInterestRateStrategyParams, addressProvider.address);
+      console.log(obj);
+      rateStrategies[strategy.name] = obj.rateStrategy;
+      strategyAddresses[strategy.name] = obj.strategyAddress;
+    } else {
+      strategyAddresses[strategy.name] = strategyAddress;
     }
+    if (strategy.name.charAt(0) == 'a') {
+      console.log(strategyAddresses[strategy.name]);
+    }
+    // console.log(rateStrategies);
+    // if (!strategyAddresses[strategy.name] && strategy.name.charAt(0) != 'a') {
+    //   const {
+    //     optimalUtilizationRate,
+    //     baseVariableBorrowRate,
+    //     variableRateSlope1,
+    //     variableRateSlope2,
+    //   } = strategy as IInterestRateStrategyParams;
+
+    //   rateStrategies[strategy.name] = [
+    //     addressProvider.address,
+    //     optimalUtilizationRate,
+    //     baseVariableBorrowRate,
+    //     variableRateSlope1,
+    //     variableRateSlope2,
+    //   ];
+    //   strategyAddresses[strategy.name] = await deployRateStrategy(
+    //     strategy.name,
+    //     rateStrategies[strategy.name]
+    //   );
+
+    //   rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
+    // }
     // console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
     let pTokenContract;
@@ -198,11 +218,11 @@ export const initReservesByHelper = async (
       params: '0x10',
     });
   }
-  
+    
   console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
-    // console.log("initReserve %s...",initInputParams[index].pTokenName);
+    // console.log("initReserve %s...",initInputParams[index]);
     await configurator.connect(admin).initReserve(initInputParams[index]);
     if (initInputParams[index].interestRateStrategyAddress == aTokenIRModel.address) {
       // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
@@ -220,10 +240,19 @@ export const initReservesByHelper = async (
   // console.log("finish initReserve.");
 };
 
+export const upgradeReservesByHelper = async(
+  reservesParams:{ [key: string]: IReserveParams},
+  tokenAddresses: { [symbol: string]: string },
+  assetTiers: {[symbol: string]: number},
+  admin: Signer,
+  treasuryAddress: string,
+) => {}
+
+// configureReservesByHelper帮助设置tokenaddress中对应的assetTier
 export const configureReservesByHelper =async (
   reservesParams:{ [key: string]: IReserveParams},
   tokenAddresses: { [symbol: string]: string },
-  assetTiers: { [symbol: string]: number},
+  assetTiers: number,
   admin: Signer,
 ) => {
 
@@ -262,15 +291,14 @@ export const configureReservesByHelper =async (
     // var [, assetTier] = (Object.entries(assetTiers) as [string, number][])[
     //   assetAddressIndex
     // ];
-    var assetTier = assetTiers[reserveSymbol];
+    // var assetTier = 3;
     // console.log("assetTier is", assetTier);
     const [, tokenAddress] = (Object.entries(tokenAddresses) as [string, string][])[
       assetAddressIndex
     ];
-    for (; assetTier <= 3; assetTier += 1) {
-      inputParams.push({
+    inputParams.push({
         asset: tokenAddress,
-        riskTier: assetTier,
+        riskTier: assetTiers,
         baseLTV: baseLTVAsCollateral,
         liquidationThreshold: liquidationThreshold,
         liquidationBonus: liquidationBonus,
@@ -278,9 +306,8 @@ export const configureReservesByHelper =async (
         borrowingEnabled: borrowingEnabled,
       });
 
-      tokens.push(tokenAddress);
-      symbols.push(reserveSymbol);
-    }
+    tokens.push(tokenAddress);
+    symbols.push(reserveSymbol);
   }
 
   if (tokens.length) {
@@ -328,5 +355,13 @@ export const enableReservesBorrowing = async (
         await configurator.connect(admin).enableBorrowingOnReserve(address, assetTier, false);
       }
     }
-
   }
+
+export const configRiskTierByHelper = async (
+  reservesParams:{ [key: string]: IReserveParams},
+  tokenAddresses: { [symbol: string]: string },
+  riskTiers: { [symbol: string]: number},
+  admin: Signer,
+) => {
+
+}

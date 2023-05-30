@@ -63,9 +63,9 @@ export const getPrestareOracleContract = async () => {
     return prestareOracle;
 }
 
-export const getCounterAssetInfo = async (user: Signer, reserveAddress: string) => {
+export const getCounterAssetInfo = async (user: Signer, reserveAddress: string, riskTier: number) => {
     let counter = await getCounter(user);
-    let reserveData = await counter.getReserveData(reserveAddress);
+    let reserveData = await counter.getReserveData(reserveAddress, riskTier);
     console.log("ReserveAddress %s", reserveAddress);
     console.log("Data");
     console.log("   Asset id is: ",  reserveData.id.toString());
@@ -91,3 +91,11 @@ export const getPlatformInterestRateModel = async () => {
     return aTokenRateModel;
 }
 
+export const getStrategyAddress =async (strategyName: string) => {
+    let strategy = await getDbProperty(strategyName, hre.network.name)
+    if (strategy == null) {
+        return null;
+    }
+    let Address = strategy.address;
+    return Address;
+}

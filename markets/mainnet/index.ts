@@ -3,7 +3,13 @@ import {
     strategyWETH_C,
     strategyUSDC_C,
     strategyUSDT_C,
-    aTokenStrategy
+    aTokenStrategy,
+    strategyDAI_B,
+    strategyWETH_B,
+    strategyUSDC_B,
+    strategyUSDT_B,
+    strategyUSDC_A,
+    strategyUSDT_A
 } from "./reserveConfig";
 import { MOCK_CHAINLINK_AGGREGATORS_PRICES, oneUSD, ZERO_ADDRESS } from "../../helpers/constants";
 import { EthereumNetwork } from "../../helpers/types";
@@ -35,6 +41,18 @@ export const Mainnet = {
         aUSDC: 2,
         aUSDT: 2
     },
+    BRiskTierReservesConfig: {
+        DAI: strategyDAI_B,
+        WETH: strategyWETH_B,
+        USDC: strategyUSDC_B,
+        USDT: strategyUSDT_B
+    },
+    
+    ARiskTierReservesConfig: {
+        USDC: strategyUSDC_A,
+        USDT: strategyUSDT_A
+    },
+
     Mocks: {
         AllMockAssetPrice: {
             ...MOCK_CHAINLINK_AGGREGATORS_PRICES,

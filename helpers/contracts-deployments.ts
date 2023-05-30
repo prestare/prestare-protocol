@@ -6,7 +6,18 @@ import { deployAndSave, registerContractInJsonDb } from './contracts-helpers';
 import { Prestare } from './types';
 import { getReservesConfigByPool } from './contracts-helpers';
 import {MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
-
+import { 
+  TokenMap,
+  IReserveParams,
+  IInterestRateStrategyParams
+} from './types';
+import { 
+  getCounterAddressesProvider, 
+  getCounter, 
+  rawInsertContractAddressInDb,
+  getContractAddressWithJsonFallback,
+  getCounterConfigurator
+} from './contracts-helpers';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 
@@ -252,3 +263,31 @@ export const deployDefaultReserveInterestRateStrategy = async (
   )
 };
 
+export const deployStrategy = async (
+  strategy: IInterestRateStrategyParams,
+  addressProviderAddress: string,
+) => {
+  const {
+    optimalUtilizationRate,
+    baseVariableBorrowRate,
+    variableRateSlope1,
+    variableRateSlope2,
+  } = strategy;
+
+  let rateStrategy: [string, string, string, string, string] = [
+    addressProviderAddress,
+    optimalUtilizationRate,
+    baseVariableBorrowRate,
+    variableRateSlope1,
+    variableRateSlope2,
+  ];
+  let strategyAddress = await deployRateStrategy(
+    strategy.name,
+    rateStrategy
+  );
+
+  rawInsertContractAddressInDb(strategy.name, strategyAddress);
+  console.log(strategyAddress);
+  console.log(rateStrategy);
+  return {strategyAddress, rateStrategy}
+};

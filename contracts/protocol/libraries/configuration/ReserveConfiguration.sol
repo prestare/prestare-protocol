@@ -156,7 +156,7 @@ library ReserveConfiguration {
    * @param self The reserve configuration
    * @return The active state
    **/
-  function getActive(DataTypes.ReserveConfigurationMap storage self) internal view returns (bool) {
+  function getActive(DataTypes.ReserveConfigurationMap memory self) internal view returns (bool) {
     return (self.data & ~ACTIVE_MASK) != 0;
   }
 
