@@ -12,25 +12,25 @@ import {
     deployWETHGateway,
     deployCRT,
     deployPlatformTokenInterestRateModel
-} from "../helpers/contracts-deployments";
+} from "../../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
     authorizeWETHGateway,
     getAllAssetTokens,
     insertAllAssetToken
-} from '../helpers/contracts-helpers';
+} from '../../helpers/contracts-helpers';
 import { getAllTokenAddresses,
     getPairsTokenAggregator,
     initReservesByHelper, 
     enableReservesBorrowing,
     configureReservesByHelper
- } from "../helpers/utils";
-import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
-import { setPlatformTokenIRModel } from "../helpers/contracts-helpers";
-import { Prestare, TokenContractName } from "../helpers/types";
-import { Mainnet } from '../markets/mainnet';
-import { LENDING_POOL_V2_GOERLI } from "../helpers/addressConstants";
-import { ZERO_ADDRESS } from "../helpers/constants";
+ } from "../../helpers/utils";
+import { setInitialAssetPricesInOracle } from "../../helpers/oracle-helpers";
+import { setPlatformTokenIRModel } from "../../helpers/contracts-helpers";
+import { Prestare, TokenContractName } from "../../helpers/types";
+import { Mainnet } from '../../markets/mainnet';
+import { LENDING_POOL_V2_GOERLI } from "../../helpers/addressConstants";
+import { ZERO_ADDRESS } from "../../helpers/constants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const deployOnGoerli = async function() {

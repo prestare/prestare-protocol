@@ -12,25 +12,25 @@ import {
     deployWETHGateway,
     deployCRT,
     deployPlatformTokenInterestRateModel
-} from "../helpers/contracts-deployments";
+} from "../../helpers/contracts-deployments";
 import {
     getAllMockedTokens,
     authorizeWETHGateway,
     getAllAssetTokens,
     insertAllAssetToken
-} from '../helpers/contracts-helpers';
+} from '../../helpers/contracts-helpers';
 import { getAllTokenAddresses,
     getPairsTokenAggregator,
     initReservesByHelper, 
     enableReservesBorrowing,
     configureReservesByHelper
- } from "../helpers/utils";
-import { setInitialAssetPricesInOracle } from "../helpers/oracle-helpers";
-import { setPlatformTokenIRModel } from "../helpers/contracts-helpers";
-import { Prestare, TokenContractName } from "../helpers/types";
-import { Mainnet } from '../markets/mainnet';
-import { ZERO_ADDRESS } from "../helpers/constants";
-import { LENDING_POOL_V2 } from "../helpers/addressConstants";
+ } from "../../helpers/utils";
+import { setInitialAssetPricesInOracle } from "../../helpers/oracle-helpers";
+import { setPlatformTokenIRModel } from "../../helpers/contracts-helpers";
+import { Prestare, TokenContractName } from "../../helpers/types";
+import { Mainnet } from '../../markets/mainnet';
+import { ZERO_ADDRESS } from "../../helpers/constants";
+import { LENDING_POOL_V2 } from "../../helpers/addressConstants";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 export const deployOnMainnet = async function() {
@@ -145,13 +145,13 @@ export const deployOnMainnet = async function() {
     console.log("Deploy finished...");
 }
 
-async function main() {
-    await deployOnMainnet();
-}
+// async function main() {
+//     await deployOnMainnet();
+// }
 
-main()
-    .then(() => process.exit(0))
-    .catch((error) => {
-        console.error(error);
-        process.exit(1);
-    });
+// main()
+//     .then(() => process.exit(0))
+//     .catch((error) => {
+//         console.error(error);
+//         process.exit(1);
+//     });

@@ -15,6 +15,7 @@ export const getReservesConfigByPool = (pool: Prestare) => {
             return Mainnet.ReservesConfig;
     }
 }
+
 export const getReserveAssetsAddress = (pool: Prestare) => {
   switch (pool) {
       case Prestare.Mainnet:
@@ -175,6 +176,16 @@ export const getCounterConfigurator = async (address?: string) => {
       ).address,
   );
 };
+
+
+export const getCounterCollateralManager = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("CounterCollateralManager")).attach(
+    address || 
+      (
+        await getDb().get(`${ContractName.CounterCollateralManager}.${hre.network.name}`).value()
+      ).address,
+  )
+}
 
 export const getCRT = async (address?: string) => {
   return await (await hre.ethers.getContractFactory("MockCRT")).attach(
