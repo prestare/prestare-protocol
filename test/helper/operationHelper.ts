@@ -6,9 +6,9 @@ import { getCounter, approveToken4Counter, getCRT } from '../../helpers/contract
 import { Counter } from '../../typechain-types';
 
 export async function checkBalance(contract: Contract, address: string) {
-    const tokenName = await contract.name();
+    const tokenSymbol = await contract.symbol();
     const balance = await contract.balanceOf(address);
-    console.log(`   Token %s user %s`, tokenName, address);
+    console.log(`   Token %s user %s`, tokenSymbol, address);
     console.log(`   balance is %s`, balance.toString());
 }
 

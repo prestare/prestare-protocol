@@ -177,7 +177,6 @@ export const getCounterConfigurator = async (address?: string) => {
   );
 };
 
-
 export const getCounterCollateralManager = async (address?: string) => {
   return await (await hre.ethers.getContractFactory("CounterCollateralManager")).attach(
     address || 

@@ -56,5 +56,7 @@ describe("check Asset Configuration", function() {
             expect(reserveData.id).to.eq(BigNumber.from(index));
             index++;
         }
-    })
+    });
+
+    
 })
