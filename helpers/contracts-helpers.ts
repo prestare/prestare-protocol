@@ -226,13 +226,14 @@ export const getContractAddressWithJsonFallback = async (
 };
 
 
-export const approveToken4Counter = async (signer: Signer, token: Contract, amount: ethers.BigNumber) => {
+export const approveToken4Counter = async (signer: Signer, token: Contract, amount: string) => {
   const counterAddress = await getCounterAddress()
   const balanceBefore = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("token %s", token.address);
   console.log("   Before Approve, allowance is: ", balanceBefore.toString());
   // console.log(counterAddress.address);
-  let tx = await token.connect(signer).approve(counterAddress.address, amount);
+  let approveAmount = ethers.utils.parseUnits(amount, await token.decimals());
+  let tx = await token.connect(signer).approve(counterAddress.address, approveAmount);
   // console.log(tx);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("   After  Approve, allowance is: ", balanceAfter.toString());
