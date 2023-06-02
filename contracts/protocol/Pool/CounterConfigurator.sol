@@ -146,18 +146,18 @@ contract CounterConfigurator is ICounterConfigurator {
     );
   }
 
-  function degradeAssetClass(InitReserveInput calldata input) external onlyPoolAdmin{
+  function degradeAssetClass(address asset) external onlyPoolAdmin{
     ICounter cache = _counter;
 
     _counter.degradeAssetClass(
-      input.underlyingAsset
+      asset
     );
     // after degrade, the asset Class will plus one
-    uint8 assetClass = _counter.getAssetClass(input.underlyingAsset);
-    DataTypes.ReserveData memory currentData = _counter.getReserveData(input.underlyingAsset, assetClass);
+    uint8 assetClass = _counter.getAssetClass(asset);
+    DataTypes.ReserveData memory currentData = _counter.getReserveData(asset, assetClass);
     
     emit ReserveClassUpdate(
-      input.underlyingAsset,
+      asset,
       assetClass,
       0,
       currentData.pTokenAddress,
