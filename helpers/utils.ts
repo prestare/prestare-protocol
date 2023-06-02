@@ -145,11 +145,12 @@ export const initReservesByHelper = async (
 
     const { strategy, pToken, reserveDecimals } = params;
     // check if we have deploy the interest rate Contract
-    let strategyAddress = await getStrategyAddress(strategy.name);
+    let strategyAddress = strategyAddresses[strategy.name];
     console.log(strategy.name);
     if (!strategyAddress && strategy.name.charAt(0) != 'a') {
       console.log("null strategyAddress");
       console.log("test deployStrategy");
+      console.log("deploy strategyAddress is: ", strategy.name);
       let obj = await deployStrategy(strategy as IInterestRateStrategyParams, addressProvider.address);
       console.log(obj);
       rateStrategies[strategy.name] = obj.rateStrategy;

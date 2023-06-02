@@ -7,9 +7,9 @@ import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
 import { getTokenContract } from '../../helpers/contracts-getter';
 import { expect } from "chai";
 import { Counter } from "../../typechain-types";
-import { borrowToken, checkBalance, depositToken, repayToken, transferErc20 } from "../helper/operationHelper";
+import { borrowERC20, depositERC20, repayErc20, transferErc20 } from "../helper/operationHelper";
 import { DAIHolder, USDCHolder } from "../../helpers/holder";
-import { hre } from "../constant";
+import { hre } from "../../helpers/hardhat";
 import { ethers } from "hardhat";
 
 describe("repay Asset from Prestare", function() {
@@ -36,10 +36,10 @@ describe("repay Asset from Prestare", function() {
         ETHuser = await hre.ethers.getSigner(DAIHolder);
         counter = await getCounter(admin);
         let depositAmount = "1000";
-        await depositToken(USDCuser, "USDC", depositAmount);
+        let riskTIer = 2;
+        await depositERC20(USDCuser, "USDC", riskTIer, depositAmount);
         depositAmount = "1000";
-        await depositToken(DAIuser, "DAI", depositAmount);
-
+        await depositERC20(DAIuser, "DAI", riskTIer, depositAmount);
     })
 
 
@@ -51,7 +51,8 @@ describe("repay Asset from Prestare", function() {
 
         let borrowAmount = "500";
         let borrowSymbol = 'DAI';
-        await borrowToken(USDCuser, borrowSymbol, borrowAmount);
+        let borrowRisk = 2;
+        await borrowERC20(USDCuser, borrowSymbol, borrowRisk, borrowAmount);
         let userAccountData = await counter.getUserAccountData(USDCuser.address);
         console.log(userAccountData);
 
@@ -61,8 +62,8 @@ describe("repay Asset from Prestare", function() {
 
         await transferErc20(DAIuser, USDCuser.address, token, repayAmount);
         await approveToken4Counter(DAIuser, repaytoken, repayAmount);
-        await repayToken(USDCuser, repaySymbol, repayAmount);
-        userAccountData = await counter.getUserAccountData(user0.address);
+        await repayErc20(USDCuser, repaySymbol, borrowRisk,repayAmount);
+        userAccountData = await counter.getUserAccountData(USDCuser.address);
         console.log(userAccountData);
     });
 })

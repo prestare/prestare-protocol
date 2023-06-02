@@ -10,7 +10,7 @@ import { Counter } from "../../typechain-types";
 
 import { checkBalance, transferErc20 } from "../helper/operationHelper";
 import { DAIHolder, USDCHolder } from "../../helpers/holder";
-import { hre } from "../constant";
+import { hre } from "../../helpers/hardhat";
 
 describe("check deposit on Prestare", function() {
     var counter: Counter;
@@ -33,7 +33,7 @@ describe("check deposit on Prestare", function() {
     })
 
 
-    it('deposit DAI to Counter first time',async () => {
+    it('deposit DAI-C to Counter when Counter is empty',async () => {
         let tokenSymbol = 'DAI';
         let token = await getTokenContract(tokenSymbol);
         let token_test = await token.symbol();
@@ -46,7 +46,7 @@ describe("check deposit on Prestare", function() {
         let userAccountData = await counter.getUserAccountData(user0.address);
         let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
         await approveToken4Counter(user0, token, transferAmount);
-        await counter.connect(user0).deposit(token.address, depositAmount, user0.address, 0);
+        await counter.connect(user0).deposit(token.address, 2, depositAmount, user0.address, 0);
         userAccountData = await counter.getUserAccountData(user0.address);
         console.log(userAccountData);
     });

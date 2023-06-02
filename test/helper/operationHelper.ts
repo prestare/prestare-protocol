@@ -52,7 +52,8 @@ export const transferETH =async (from: Signer, to: string, transferAmount: strin
     let receipt = await from.sendTransaction(tx);
     await receipt.wait();
 }
-export async function depositToken(signer: SignerWithAddress,tokenName: string, amount: string) {
+
+export async function depositERC20(signer: SignerWithAddress, tokenName: string, riskTier: number,amount: string) {
     console.log();
     console.log("deposit %s ...", tokenName);
     const counter: Counter = await getCounter(signer);
@@ -67,17 +68,17 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
     console.log("   Before deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);
-    const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
+    const tx = await counter.deposit(token.address, riskTier, depositAmount, signer.address, 0);
     await tx.wait();
     console.log("   After deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);
 
-    const counterInfo = await getCounterAssetInfo(signer, token.address);
+    const counterInfo = await getCounterAssetInfo(signer, token.address, riskTier);
     console.log("");
 }
 
-export async function borrowToken(signer: SignerWithAddress,tokenName: string, amount: string) {
+export async function borrowERC20(signer: SignerWithAddress,tokenName: string, riskTier: number, amount: string) {
     console.log();
     console.log("Borrow...")
     const counter: Counter = await getCounter(signer);
@@ -97,12 +98,12 @@ export async function borrowToken(signer: SignerWithAddress,tokenName: string, a
     let crtenable = false;
     let userConfig = await counter.getUserConfiguration(signer.address);
     console.log(userConfig);
-    const tx = await counter.connect(signer).borrow(token.address, borrowAmount, 2, 0, signer.address, crtenable);
+    const tx = await counter.connect(signer).borrow(token.address, riskTier, borrowAmount, 2, 0, signer.address, crtenable);
     console.log("   After Borrow ");
     await checkBalance(token, signer.address);
     await checkBalance(debtToken, signer.address);
 
-    const counterInfo = await getCounterAssetInfo(signer, token.address);
+    const counterInfo = await getCounterAssetInfo(signer, token.address, riskTier);
     console.log("");
 }
 
@@ -156,7 +157,7 @@ export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: st
 
 }
 
-export async function repayToken(signer: SignerWithAddress,tokenName: string, amount: string) {
+export async function repayErc20(signer: SignerWithAddress,tokenName: string, riskTier:number, amount: string) {
     console.log();
     console.log("repay %s ...", tokenName);
     const counter: Counter = await getCounter(signer);
@@ -175,12 +176,12 @@ export async function repayToken(signer: SignerWithAddress,tokenName: string, am
     const repayAmount = ethers.utils.parseUnits(amount, decimals);
     // const approveTx = await approveToken4Counter(signer, token, repayApprove);
 
-    const tx = await counter.connect(signer).repay(token.address, repayAmount, 2, signer.address);
+    const tx = await counter.connect(signer).repay(token.address, riskTier, repayAmount, 2, signer.address);
 
     const balanceT1: BigNumber = await token.balanceOf(signer.address);
     const debtT1: BigNumber = await debtToken.balanceOf(signer.address);
     console.log("   After repay borrower balance is: ", balanceT1.toString());
     console.log("   After repay, borrower debt balance is: ", debtT1.toString());
-    const counterInfo = await getCounterAssetInfo(signer, token.address);
+    const counterInfo = await getCounterAssetInfo(signer, token.address, riskTier);
     console.log("");
 }
