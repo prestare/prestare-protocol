@@ -3,7 +3,7 @@ import { BigNumber, Contract } from "ethers";
 import { TokenContractName } from '../../helpers/types';
 import { getCounter } from "../../helpers/contracts-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployOnMainnet } from "../../scripts/deployOnMainnetFork";
+import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
 import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getPTokenContract } from '../../helpers/contracts-getter';
 import { expect } from "chai";
 import { Counter } from "../../typechain-types";
@@ -56,5 +56,7 @@ describe("check Asset Configuration", function() {
             expect(reserveData.id).to.eq(BigNumber.from(index));
             index++;
         }
-    })
+    });
+
+    
 })
