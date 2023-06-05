@@ -243,13 +243,16 @@ contract Counter is ICounter, CounterStorage {
       userStatVar.currentLiquidationThreshold,
       userStatVar.healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      vars.onBehalfOf,
+      DataTypes.calculateUserAccountDatamsg(
+        vars.onBehalfOf,
+        _reservesCount,
+        oracle,
+        vars.riskTier
+      ),
       _reserves,
       userConfig,
       _usersCredit[vars.onBehalfOf],
-      _reservesList,
-      _reservesCount,
-      oracle
+      _reservesList
     );
     console.log("borrow - userCollateralBalanceUSD is ", userStatVar.userCollateralBalanceUSD);
     userStatVar.userLockCRTValue = _usersCredit[vars.onBehalfOf].crtValue;
@@ -399,13 +402,16 @@ contract Counter is ICounter, CounterStorage {
       userStatVar.currentLiquidationThreshold,
       userStatVar.healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      vars.onBehalfOf,
+      DataTypes.calculateUserAccountDatamsg(
+        vars.onBehalfOf,
+        _reservesCount,
+        oracle,
+        vars.riskTier
+      ),
       _reserves,
       _usersConfig[vars.onBehalfOf],
       userCredit,
-      _reservesList,
-      _reservesCount,
-      oracle
+      _reservesList
     );
     // CRT 
     (userStatVar.idleCRT, userStatVar.newCrtValue) = CRTLogic.calculateCRTRepay(
@@ -463,6 +469,7 @@ contract Counter is ICounter, CounterStorage {
     ValidationLogic.validateSetUseReserveAsCollateral(
       reserve,
       asset,
+      riskTier,
       useAsCollateral,
       _reserves,
       _usersConfig[msg.sender],
@@ -551,6 +558,7 @@ contract Counter is ICounter, CounterStorage {
   /**
    * @dev Returns the user account data across all the reserves
    * @param user The address of the user
+   * @param riskTier The risk Tier level of asset, Default is 2
    * @return totalCollateralUSD the total collateral in ETH of the user
    * @return totalDebtUSD the total debt in ETH of the user
    * @return availableBorrowsUSD the borrowing power left of the user
@@ -558,7 +566,7 @@ contract Counter is ICounter, CounterStorage {
    * @return ltv the loan to value of the user
    * @return healthFactor the current health factor of the user
    **/
-  function getUserAccountData(address user)
+  function getUserAccountData(address user, uint8 riskTier)
     external
     view
     override
@@ -578,13 +586,16 @@ contract Counter is ICounter, CounterStorage {
       currentLiquidationThreshold,
       healthFactor
     ) = GenericLogic.calculateUserAccountData(
-      user,
+      DataTypes.calculateUserAccountDatamsg(
+        user,
+        _reservesCount,
+        _addressesProvider.getPriceOracle(),
+        riskTier
+      ),
       _reserves,
       _usersConfig[user],
       _usersCredit[user],
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
+      _reservesList
     );
 
     availableBorrowsUSD = GenericLogic.calculateAvailableBorrowsUSD(
@@ -736,6 +747,7 @@ contract Counter is ICounter, CounterStorage {
 
     ValidationLogic.validateTransfer(
       from,
+      riskTier,
       _reserves,
       _usersConfig[from],
       _usersCredit[from],
@@ -799,7 +811,7 @@ contract Counter is ICounter, CounterStorage {
   ) external override onlyCounterConfigurator {
     require(Address.isContract(asset), Errors.LP_NOT_CONTRACT);
     require(_assetClass[asset] > 0, Errors.ASSET_HAVE_BEEN_ACLASS);
-    console.log("before upgrade, asset class is: ", _assetClass[asset]);
+    // console.log("before upgrade, asset class is: ", _assetClass[asset]);
     uint8 targetAssetClass = _assetClass[asset] - 1;
     _reserves[asset][targetAssetClass].init(
       pTokenAddress,
@@ -807,7 +819,7 @@ contract Counter is ICounter, CounterStorage {
       interestRateStrategyAddress
     );
     _addReserveToList(asset, targetAssetClass);
-    console.log("After upgrade, asset class is: ", _assetClass[asset]);
+    // console.log("After upgrade, asset class is: ", _assetClass[asset]);
 
   }
 
@@ -840,15 +852,15 @@ contract Counter is ICounter, CounterStorage {
   }
 
   function _addReserveToList(address asset, uint8 riskTier) internal {
-    console.log("_addReserveToList");
+    // console.log("_addReserveToList");
     uint256 reservesCount = _reservesCount;
 
     require(reservesCount < _maxNumberOfReserves, Errors.LP_NO_MORE_RESERVES_ALLOWED);
 
     bool reserveAlreadyAdded = _reserves[asset][riskTier].id != 0 || (_reservesList[0].reserveAddress == asset && _reservesList[0].tier == riskTier);
-    console.log("asset is", asset);
-    console.log("riskTier is", riskTier);
-    console.log("reserveAlreadyAdded", reserveAlreadyAdded);
+    // console.log("asset is", asset);
+    // console.log("riskTier is", riskTier);
+    // console.log("reserveAlreadyAdded", reserveAlreadyAdded);
     if (!reserveAlreadyAdded) {
       // _assetClass record the lowest risk tier that an asset have
       // when new asset and its risk tier added, asset's _assetClass will be update

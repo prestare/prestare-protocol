@@ -53,7 +53,7 @@ describe("repay Asset from Prestare", function() {
         let borrowSymbol = 'DAI';
         let borrowRisk = 2;
         await borrowERC20(USDCuser, borrowSymbol, borrowRisk, borrowAmount);
-        let userAccountData = await counter.getUserAccountData(USDCuser.address);
+        let userAccountData = await counter.getUserAccountData(USDCuser.address, borrowRisk);
         console.log(userAccountData);
 
         let repayAmount = "510";
@@ -62,8 +62,8 @@ describe("repay Asset from Prestare", function() {
 
         await transferErc20(DAIuser, USDCuser.address, token, repayAmount);
         await approveToken4Counter(DAIuser, repaytoken, repayAmount);
-        await repayErc20(USDCuser, repaySymbol, borrowRisk,repayAmount);
-        userAccountData = await counter.getUserAccountData(USDCuser.address);
+        await repayErc20(USDCuser, repaySymbol, borrowRisk, repayAmount);
+        userAccountData = await counter.getUserAccountData(USDCuser.address, borrowRisk);
         console.log(userAccountData);
     });
 })

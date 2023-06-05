@@ -282,6 +282,7 @@ interface ICounter {
   /**
    * @dev Returns the user account data across all the reserves
    * @param user The address of the user
+   * @param riskTier The risk Tier level of asset, Default is 2
    * @return totalCollateralUSD the total collateral in USD of the user
    * @return totalDebtUSD the total debt in USD of the user
    * @return availableBorrowsUSD the borrowing power left of the user
@@ -289,7 +290,7 @@ interface ICounter {
    * @return ltv the loan to value of the user
    * @return healthFactor the current health factor of the user
    **/
-  function getUserAccountData(address user)
+  function getUserAccountData(address user, uint8 riskTier)
     external
     view
     returns (

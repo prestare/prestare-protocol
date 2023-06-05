@@ -219,7 +219,7 @@ contract CounterConfigurator is ICounterConfigurator {
     console.log("configureReserveAsCollateral");
     DataTypes.ReserveConfigurationMap memory currentConfig = _counter.getConfiguration(asset, riskTier);
     console.log("asset is:", asset);
-    console.log("riskTier is:", riskTier);
+    // console.log("riskTier is:", riskTier);
 
     require(currentConfig.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 

@@ -133,14 +133,14 @@ export const deployOnMainnet = async function() {
         admin,
         treasuryAddress
     );
-    console.log("config init asset");
+    // console.log("config init asset");
     await configureReservesByHelper(Mainnet.ReservesConfig, allTokenAddresses, 2, admin);
     console.log("");
-    console.log("update asset B class");
+    // console.log("update asset B class");
     await upgradeReservesByHelper(Mainnet.assetBClassConfig, allTokenAddresses, assetTiers, admin, treasuryAddress);
     await configureReservesByHelper(Mainnet.assetBClassConfig, allTokenAddresses, 1, admin);
     console.log("");
-    console.log("update asset A class");
+    // console.log("update asset A class");
     await upgradeReservesByHelper(Mainnet.assetAClassConfig, allTokenAddresses, assetTiers, admin, treasuryAddress);
     await configureReservesByHelper(Mainnet.assetAClassConfig, allTokenAddresses, 0, admin);
 

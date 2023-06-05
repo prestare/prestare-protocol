@@ -75,10 +75,12 @@ library ValidationLogic {
 
     require(
       GenericLogic.balanceDecreaseAllowed(
-        reserveAddress,
-        assetTier,
-        msg.sender,
-        amount,
+        DataTypes.balanceDecreaseAllowedBaseVar(
+          reserveAddress,
+          assetTier,
+          msg.sender,
+          amount
+        ),
         reservesData,
         userConfig,
         userCredit,
@@ -226,6 +228,7 @@ library ValidationLogic {
   function validateSetUseReserveAsCollateral(
     DataTypes.ReserveData memory reserve,
     address reserveAddress,
+    uint8 riskTier,
     bool useAsCollateral,
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
@@ -241,10 +244,12 @@ library ValidationLogic {
     require(
       useAsCollateral ||
         GenericLogic.balanceDecreaseAllowed(
-          reserveAddress,
-          reserveTier,
-          msg.sender,
-          underlyingBalance,
+          DataTypes.balanceDecreaseAllowedBaseVar(
+            reserveAddress,
+            reserveTier,
+            msg.sender,
+            underlyingBalance
+          ),
           reservesData,
           userConfig,
           userCredit,
@@ -312,6 +317,7 @@ library ValidationLogic {
   /**
    * @dev Validates an pToken transfer
    * @param from The user from which the pTokens are being transferred
+   * @param riskTier The riskTier of asset.
    * @param reservesData The state of all the reserves
    * @param userConfig The state of the user for the specific reserve
    * @param reserves The addresses of all the active reserves
@@ -319,6 +325,7 @@ library ValidationLogic {
    */
   function validateTransfer(
     address from,
+    uint8 riskTier,
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap storage userConfig,
     DataTypes.UserCreditData memory userCredit,
@@ -328,13 +335,16 @@ library ValidationLogic {
   ) internal view {
     (, , , , uint256 healthFactor) =
       GenericLogic.calculateUserAccountData(
-        from,
+        DataTypes.calculateUserAccountDatamsg(
+          from,
+          reservesCount,
+          oracle,
+          riskTier
+        ),    
         reservesData,
         userConfig,
         userCredit,
-        reserves,
-        reservesCount,
-        oracle
+        reserves
       );
 
     require(

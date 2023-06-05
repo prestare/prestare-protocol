@@ -68,13 +68,16 @@ contract CounterCollateralManager is
     LiquidationCallLocalVars memory vars;
 
     (, , , , vars.healthFactor) = GenericLogic.calculateUserAccountData(
-      liqParams.user,
+      DataTypes.calculateUserAccountDatamsg(
+        liqParams.user,
+        _reservesCount,
+        _addressesProvider.getPriceOracle(),
+        liqParams.collateralRiskTier
+      ),
       _reserves,
       userConfig,
       userCredit,
-      _reservesList,
-      _reservesCount,
-      _addressesProvider.getPriceOracle()
+      _reservesList
     );
 
     vars.userVariableDebt = Helpers.getUserCurrentDebt(liqParams.user, debtReserve);

@@ -48,7 +48,7 @@ describe("borrow Asset from Prestare", function() {
         let borrowSymbol = 'DAI';
         let borrowRisk = 2;
         await borrowERC20(USDCuser, borrowSymbol, borrowRisk, borrowAmount);
-        let userAccountData = await counter.getUserAccountData(USDCuser.address);
+        let userAccountData = await counter.getUserAccountData(USDCuser.address, borrowRisk);
         console.log(userAccountData);
     });
 })

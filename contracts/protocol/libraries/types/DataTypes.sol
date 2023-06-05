@@ -65,4 +65,17 @@ library DataTypes {
       uint256 newCrtValue;
       uint256 idleCRT;
   }
+
+  struct balanceDecreaseAllowedBaseVar {
+    address asset; 
+    uint8 assetTier;
+    address user;
+    uint256 amount;
+  }
+  struct calculateUserAccountDatamsg {
+    address user;
+    uint256 reservesCount;
+    address oracle;
+    uint8 riskTier;
+  }
 }

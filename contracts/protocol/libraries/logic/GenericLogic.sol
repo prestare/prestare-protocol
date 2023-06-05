@@ -41,10 +41,7 @@ library GenericLogic {
   /**
    * @dev Checks if a specific balance decrease is allowed
    * (i.e. doesn't bring the user borrow position health factor under HEALTH_FACTOR_LIQUIDATION_THRESHOLD)
-   * @param asset The address of the underlying asset of the reserve
-   * @param assetTier The tier of the asset
-   * @param user The address of the user
-   * @param amount The amount to decrease
+   * @param base The struct of asset, asset Tier, user, and amount
    * @param reservesData The data of all the reserves
    * @param userConfig The user configuration
    * @param userCredit The user credit Data
@@ -53,10 +50,7 @@ library GenericLogic {
    * @return true if the decrease of the balance is allowed
    **/
   function balanceDecreaseAllowed(
-    address asset,    
-    uint8 assetTier,
-    address user,
-    uint256 amount,
+    DataTypes.balanceDecreaseAllowedBaseVar memory base,
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap calldata userConfig,
     DataTypes.UserCreditData memory userCredit,
@@ -64,13 +58,13 @@ library GenericLogic {
     uint256 reservesCount,
     address oracle
   ) external view returns (bool) {
-    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[asset][assetTier].id)) {
+    if (!userConfig.isBorrowingAny() || !userConfig.isUsingAsCollateral(reservesData[base.asset][base.assetTier].id)) {
       return true;
     }
 
     balanceDecreaseAllowedLocalVars memory vars;
 
-    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[asset][assetTier]
+    (, vars.liquidationThreshold, , vars.decimals, ) = reservesData[base.asset][base.assetTier]
       .configuration
       .getParams();
 
@@ -84,13 +78,13 @@ library GenericLogic {
       ,
       vars.avgLiquidationThreshold,
 
-    ) = calculateUserAccountData(user, reservesData, userConfig, userCredit,reserves, reservesCount, oracle);
+    ) = calculateUserAccountData(DataTypes.calculateUserAccountDatamsg(base.user, reservesCount, oracle, base.assetTier), reservesData, userConfig, userCredit, reserves);
 
     if (vars.totalDebtInUSD == 0) {
       return true;
     }
 
-    vars.amountToDecreaseInUSD = IPriceOracleGetter(oracle).getAssetPrice(asset) * amount / (
+    vars.amountToDecreaseInUSD = IPriceOracleGetter(oracle).getAssetPrice(base.asset) * base.amount / (
       10**vars.decimals
     );
 
@@ -107,14 +101,14 @@ library GenericLogic {
       - (vars.amountToDecreaseInUSD * vars.liquidationThreshold)
       / vars.collateralBalanceAfterDecrease;
 
-    uint256 healthFactorAfterDecrease =
+    vars.healthFactorAfterDecrease =
       calculateHealthFactorFromBalances(
         vars.collateralBalanceAfterDecrease,
         vars.totalDebtInUSD,
         vars.liquidationThresholdAfterDecrease
       );
 
-    return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
+    return vars.healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
   }
 
   struct CalculateUserAccountDataVars {
@@ -143,22 +137,19 @@ library GenericLogic {
    * @dev Calculates the user data across the reserves.
    * this includes the total liquidity/collateral/borrow balances in USD,
    * the average Loan To Value, the average Liquidation Ratio, and the Health factor.
-   * @param user The address of the user
+   * @param msgVars The address of the user, the price oracle address, the indicator that tell which risk Tier and above asset can be used to calculate as collateral
    * @param reservesData Data of all the reserves
    * @param userConfig The configuration of the user
    * @param userCredit The credit Data of the user
    * @param reserves The list of the available reserves
-   * @param oracle The price oracle address
    * @return The total collateral and total debt of the user in USD, the avg ltv, liquidation threshold and the HF
    **/
   function calculateUserAccountData(
-    address user,
+    DataTypes.calculateUserAccountDatamsg memory msgVars,
     mapping(address => mapping(uint8 => DataTypes.ReserveData)) storage reservesData,
     DataTypes.UserConfigurationMap memory userConfig,
     DataTypes.UserCreditData memory userCredit,
-    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves,
-    uint256 reservesCount,
-    address oracle
+    mapping(uint256 => DataTypes.RerserveAdTier) storage reserves
   )
     internal
     view
@@ -175,14 +166,19 @@ library GenericLogic {
     if (userConfig.isEmpty()) {
       return (0, 0, 0, 0, type(uint256).max);
     }
-    for (vars.i = 0; vars.i < reservesCount; vars.i++) {
+    for (vars.i = 0; vars.i < msgVars.reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
         console.log("calculateUserAccountData - found not allow borrowed asset");
         continue;
       }
 
+      vars.currentReserveTier = reserves[vars.i].tier;
+      if (vars.currentReserveTier > msgVars.riskTier) {
+        console.log("reserve Tier is lower than risk Tier");
+        continue;
+      }
       vars.currentReserveAddress = reserves[vars.i].reserveAddress;
-      vars.currentReserveTier =  reserves[vars.i].tier;
+
       DataTypes.ReserveData storage currentReserve = reservesData[vars.currentReserveAddress][vars.currentReserveTier];
 
       (vars.ltv, vars.liquidationThreshold, , vars.decimals, ) = currentReserve
@@ -190,7 +186,7 @@ library GenericLogic {
         .getParams();
 
       vars.tokenUnit = 10**vars.decimals;
-      vars.reserveUnitPrice = IPriceOracleGetter(oracle).getAssetPrice(vars.currentReserveAddress);
+      vars.reserveUnitPrice = IPriceOracleGetter(msgVars.oracle).getAssetPrice(vars.currentReserveAddress);
       console.log("calculateUserAccountData - pToken is", currentReserve.pTokenAddress);
       console.log("calculateUserAccountData - reserve is", vars.currentReserveAddress);
 
@@ -201,7 +197,7 @@ library GenericLogic {
 
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         console.log("calculateUserAccountData calculate asset %s value", vars.i);
-        vars.compoundedLiquidityBalance = IERC20(currentReserve.pTokenAddress).balanceOf(user);
+        vars.compoundedLiquidityBalance = IERC20(currentReserve.pTokenAddress).balanceOf(msgVars.user);
 
         uint256 liquidityBalanceUSD =
           vars.reserveUnitPrice * (vars.compoundedLiquidityBalance) / (vars.tokenUnit);
@@ -216,7 +212,7 @@ library GenericLogic {
 
       if (userConfig.isBorrowing(vars.i)) {
         vars.compoundedBorrowBalance = 
-          IERC20(currentReserve.variableDebtTokenAddress).balanceOf(user);
+          IERC20(currentReserve.variableDebtTokenAddress).balanceOf(msgVars.user);
 
         vars.totalDebtInUSD = vars.totalDebtInUSD + (
           vars.reserveUnitPrice * vars.compoundedBorrowBalance / vars.tokenUnit

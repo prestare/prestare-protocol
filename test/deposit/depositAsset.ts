@@ -42,12 +42,12 @@ describe("check deposit on Prestare", function() {
         let transferAmount = "1";
         await transferErc20(DAIUser, user0.address, token, transferAmount);
         await checkBalance(token, user0.address);
-
-        let userAccountData = await counter.getUserAccountData(user0.address);
+        let depositRisk = 2;
+        let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
         let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
         await approveToken4Counter(user0, token, transferAmount);
-        await counter.connect(user0).deposit(token.address, 2, depositAmount, user0.address, 0);
-        userAccountData = await counter.getUserAccountData(user0.address);
+        await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
+        userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
         console.log(userAccountData);
     });
 
