@@ -1,7 +1,7 @@
 import { ethers, Signer, BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getPTokenContract } from '../../helpers/contracts-getter';
-import { getCounter, approveToken4Counter, getCRT } from '../../helpers/contracts-helpers';
+import { getCounter, approveToken4Counter, getCRT, getWETHGateway } from '../../helpers/contracts-helpers';
 
 import { Counter } from '../../typechain-types';
 
@@ -52,14 +52,24 @@ export const transferETH =async (from: Signer, to: string, transferAmount: strin
     let receipt = await from.sendTransaction(tx);
     await receipt.wait();
 }
-
+export const constructTokenRiskName = (tokenName: string, riskTier: number) => {
+    if (riskTier == 2) {
+        tokenName = tokenName + "-C";
+    } else if (riskTier == 1) {
+        tokenName = tokenName + "-B";
+    } else if (riskTier == 0) {
+        tokenName = tokenName + "-A";
+    }
+    return tokenName;
+}
 export async function depositERC20(signer: SignerWithAddress, tokenName: string, riskTier: number,amount: string) {
     console.log();
     console.log("deposit %s ...", tokenName);
     const counter: Counter = await getCounter(signer);
     const token: Contract = await getTokenContract(tokenName);
+    tokenName = constructTokenRiskName(tokenName, riskTier);
     const pToken: Contract = await getPTokenContract(tokenName);
-
+    console.log(await pToken.symbol());
     const name = await token.name();
     const decimals = await token.decimals();
     console.log("Token is: ", name);
@@ -76,6 +86,20 @@ export async function depositERC20(signer: SignerWithAddress, tokenName: string,
 
     const counterInfo = await getCounterAssetInfo(signer, token.address, riskTier);
     console.log("");
+}
+
+export const depositWETH =async (signer: SignerWithAddress, riskTier: number,amount: string) => {
+    console.log();
+    const WETHGATEWAY: Contract = await getWETHGateway();
+    const counter: Contract = await getCounter(signer);
+    const depositETHAmount = ethers.utils.parseEther(amount);
+    let WETHRiskName = constructTokenRiskName("WETH", riskTier);
+    const pToken: Contract = await getPTokenContract(WETHRiskName);
+    console.log("   Before deposit, ");
+    await checkBalance(pToken, signer.address);
+    await WETHGATEWAY.connect(signer).depositETH(counter.address, riskTier, signer.address, 0, {value: depositETHAmount});
+    console.log("   After deposit, ");
+    await checkBalance(pToken, signer.address);
 }
 
 export async function borrowERC20(signer: SignerWithAddress,tokenName: string, riskTier: number, amount: string) {

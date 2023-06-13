@@ -24,7 +24,9 @@ export const getTokenAddress = async (tokenName:string) => {
 
 export const getPTokenAddress = async (tokenName:string) => {
     let pToken = 'p' + tokenName;
+    console.log(pToken);
     let pTokenInfo = await getDbProperty(pToken, hre.network.name);
+    console.log(pTokenInfo);
     return pTokenInfo;
 }
 

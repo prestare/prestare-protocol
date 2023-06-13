@@ -156,6 +156,7 @@ export const deployOnMainnet = async function() {
     
     await CounterConfigurator.connect(admin).setPoolPause(false);
     console.log("Deploy finished...");
+    console.log();
 }
 
 // async function main() {

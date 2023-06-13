@@ -155,10 +155,11 @@ export const initReservesByHelper = async (
       console.log(obj);
       rateStrategies[strategy.name] = obj.rateStrategy;
       strategyAddresses[strategy.name] = obj.strategyAddress;
+      console.log("Insert %s to db", strategy.name);
+      rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     } else {
       strategyAddresses[strategy.name] = strategyAddress;
       console.log("strategyAddress", strategyAddress);
-
     }
     if (strategy.name.charAt(0) == 'a') {
       strategyAddresses[strategy.name] = aTokenIRModel.address;
@@ -191,11 +192,12 @@ export const initReservesByHelper = async (
     // console.log("token is: ", symbol);
     reserveSymbols.push(symbol);
     let pTokenContract;
+    let RiskSymbol = symbol + "-C";
     if (symbol.charAt(0) == 'a') {
       // console.log("find AToken ", symbol);
-      pTokenContract = await deployPTokenAAVE(admin, symbol);
+      pTokenContract = await deployPTokenAAVE(admin, RiskSymbol);
     } else {
-      pTokenContract = await deployPToken(admin, symbol);
+      pTokenContract = await deployPToken(admin, RiskSymbol);
     }
     let variableDebtContract = await deployVariableDebtToken(admin, symbol);
     initInputParams.push({
@@ -304,7 +306,7 @@ export const upgradeReservesByHelper = async(
 
     const { strategy, pToken, reserveDecimals } = params;
     // check if we have deploy the interest rate Contract
-    let strategyAddress = await getStrategyAddress(strategy.name);
+    let strategyAddress = strategyAddresses[strategy.name];
     console.log(strategy.name);
     if (!strategyAddress && strategy.name.charAt(0) != 'a') {
       console.log("null strategyAddress");
@@ -313,6 +315,7 @@ export const upgradeReservesByHelper = async(
       console.log(obj);
       rateStrategies[strategy.name] = obj.rateStrategy;
       strategyAddresses[strategy.name] = obj.strategyAddress;
+      rawInsertContractAddressInDb(strategy.name, strategyAddresses[strategy.name]);
     } else {
       strategyAddresses[strategy.name] = strategyAddress;
       console.log("strategyAddress", strategyAddress);

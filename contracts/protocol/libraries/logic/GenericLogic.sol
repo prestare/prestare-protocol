@@ -168,7 +168,7 @@ library GenericLogic {
     }
     for (vars.i = 0; vars.i < msgVars.reservesCount; vars.i++) {
       if (!userConfig.isUsingAsCollateralOrBorrowing(vars.i)) {
-        console.log("calculateUserAccountData - found not allow borrowed asset");
+        // console.log("calculateUserAccountData - found not allow borrowed asset");
         continue;
       }
 

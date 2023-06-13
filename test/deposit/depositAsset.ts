@@ -8,10 +8,10 @@ import { getTokenContract } from '../../helpers/contracts-getter';
 import { expect } from "chai";
 import { Counter } from "../../typechain-types";
 
-import { checkBalance, transferErc20 } from "../helper/operationHelper";
-import { DAIHolder, USDCHolder } from "../../helpers/holder";
+import { checkBalance, depositERC20, depositWETH, transferErc20, transferETH } from "../helper/operationHelper";
+import { DAIHolder, ETHHolder, USDCHolder } from "../../helpers/holder";
 import { hre } from "../../helpers/hardhat";
-
+// not unit test, just test usage scenario
 describe("check deposit on Prestare", function() {
     var counter: Counter;
     var assetToken;
@@ -20,7 +20,9 @@ describe("check deposit on Prestare", function() {
     var user1: SignerWithAddress;
     var tokens = Object.keys(TokenContractName);
     // var tokensAddresses = Mainnet.ReserveAssetsAddress.Mainnet;
+    var USDCUser: SignerWithAddress;    
     var DAIUser: SignerWithAddress;
+    var ETHUser: SignerWithAddress;
     before(async () => {
         await deployOnMainnet();
         await impersonateAccount(DAIHolder);
@@ -28,18 +30,22 @@ describe("check deposit on Prestare", function() {
         admin = signers[0];
         user0 = signers[1];
         user1 = signers[2];
+        USDCUser = await hre.ethers.getSigner(USDCHolder);
         DAIUser = await hre.ethers.getSigner(DAIHolder);
+        ETHUser = await hre.ethers.getSigner(ETHHolder);
         counter = await getCounter(admin);
     })
 
 
-    it('deposit DAI-C to Counter when Counter is empty',async () => {
+    it('deposit DAI-C to Counter',async () => {
+        console.log();
+        console.log("deposit DAI-C to Counter");
         let tokenSymbol = 'DAI';
         let token = await getTokenContract(tokenSymbol);
         let token_test = await token.symbol();
         expect(token_test).to.eq(tokenSymbol);
 
-        let transferAmount = "1";
+        let transferAmount = "1000";
         await transferErc20(DAIUser, user0.address, token, transferAmount);
         await checkBalance(token, user0.address);
         let depositRisk = 2;
@@ -51,24 +57,41 @@ describe("check deposit on Prestare", function() {
         console.log(userAccountData);
     });
 
-    // it('deposit DAI to Counter second time',async () => {
-    //     let tokenSymbol = 'DAI';
-    //     let token = await getTokenContract(tokenSymbol);
-    //     let token_test = await token.symbol();
-    //     expect(token_test).to.eq(tokenSymbol);
+    it('deposit DAI-B to Counter',async () => {
+        let tokenSymbol = 'DAI';
+        let token = await getTokenContract(tokenSymbol);
+        let token_test = await token.symbol();
+        expect(token_test).to.eq(tokenSymbol);
 
-    //     let transferAmount = "2";
-    //     await transferErc20(DAIUser, user0.address, token, transferAmount);
-    //     await checkBalance(token, user0.address);
+        let transferAmount = "1000";
+        await transferErc20(DAIUser, user0.address, token, transferAmount);
+        await checkBalance(token, user0.address);
+        let depositRisk = 1;
+        let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+        await depositERC20(user0, tokenSymbol, depositRisk, transferAmount);
+        // let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
+        // await approveToken4Counter(user0, token, transferAmount);
+        // await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
+        // userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+        // console.log(userAccountData);
+    });
 
-    //     let userAccountData = await counter.getUserAccountData(user0.address);
-    //     let depositAmount = hre.ethers.utils.parseUnits("1", 18);
+    it('deposit WETH-C to Counter when Counter is empty',async () => {
+        let tokenSymbol = 'WETH';
+        let token = await getTokenContract(tokenSymbol);
+        let token_test = await token.symbol();
+        expect(token_test).to.eq(tokenSymbol);
 
-    //     await approveToken4Counter(user0, token, transferAmount);
-    //     await counter.connect(user0).deposit(token.address, depositAmount, user0.address, 0);
-    //     userAccountData = await counter.getUserAccountData(user0.address);
-    //     console.log(userAccountData);
-    //     await counter.connect(user0).deposit(token.address, depositAmount, user0.address, 0);
-    //     userAccountData = await counter.getUserAccountData(user0.address);
-    // });
+        let transferAmount = "1000";
+        await transferETH(ETHUser, user0.address, transferAmount);
+        await checkBalance(token, user0.address);
+        let depositRisk = 2;
+        let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+        await depositWETH(user0, depositRisk, transferAmount);
+        // let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
+        // await approveToken4Counter(user0, token, transferAmount);
+        // await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
+        userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+        console.log(userAccountData);
+    });
 })

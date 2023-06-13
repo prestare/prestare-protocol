@@ -192,6 +192,7 @@ library ReserveLogic {
     console.log("updateInterestRates - reserve.variableBorrowIndex", reserve.variableBorrowIndex);
     console.log("updateInterestRates - vars.totalVariableDebt:", vars.totalVariableDebt);
     console.log("updateInterestRates - reserve.interestRateStrategyAddress:", reserve.interestRateStrategyAddress);
+    console.log("updateInterestRates - interestRateStrategyAddress", reserve.interestRateStrategyAddress);
     (
       vars.newLiquidityRate,
       vars.newVariableRate
