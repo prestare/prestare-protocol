@@ -1,17 +1,17 @@
-import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
-import { TokenContractName } from '../../helpers/types';
-import { approveToken4Counter, getCounter } from "../../helpers/contracts-helpers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
-import { getTokenContract } from '../../helpers/contracts-getter';
-import { expect } from "chai";
-import { Counter } from "../../typechain-types";
-import { borrowERC20, depositERC20, transferErc20 } from "../helper/operationHelper";
-import { DAIHolder, USDCHolder } from "../../helpers/holder";
 import { hre } from "../../helpers/hardhat";
-import { ethers } from "hardhat";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 
-describe("borrow Asset from Prestare", function() {
+import { Counter } from "../../typechain-types";
+
+import { TokenContractName } from '../../helpers/types';
+import { getCounter } from "../../helpers/contracts-helpers";
+
+import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
+import { DAIHolder, ETHHolder, USDCHolder } from "../../helpers/holder";
+import { borrowERC20, depositERC20, depositWETH } from "../helper/operationHelper";
+
+describe("test CRT Function", function() {
     var counter: Counter;
     var assetToken;
     var admin: SignerWithAddress;
@@ -31,13 +31,14 @@ describe("borrow Asset from Prestare", function() {
         user1 = signers[2];
         USDCuser = await hre.ethers.getSigner(USDCHolder);
         DAIuser = await hre.ethers.getSigner(DAIHolder);
-        ETHuser = await hre.ethers.getSigner(DAIHolder);
+        ETHuser = await hre.ethers.getSigner(ETHHolder);
         counter = await getCounter(admin);
         let depositAmount = "1000";
-        let riskTIer = 2;
-        await depositERC20(USDCuser, "USDC", riskTIer, depositAmount);
+        let riskTier = 2;
+        await depositERC20(USDCuser, "USDC", riskTier, depositAmount);
         depositAmount = "1000";
-        await depositERC20(DAIuser, "DAI", riskTIer, depositAmount);
+        await depositERC20(DAIuser, "DAI", riskTier, depositAmount);
+        await depositWETH(ETHuser, riskTier, depositAmount);
     })
 
 
