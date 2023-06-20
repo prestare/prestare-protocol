@@ -374,12 +374,12 @@ contract CrtToken is ICRT, IERC20, IERC20Metadata, Context {
 
     function unlockCRT(address account, uint256 amount) external override {
         require(account != address(0), "CRT: unlock zero adddress");
-        uint256 accountBalance = _balances[account];
-        require(accountBalance >= amount, "CRT: lock amount exceeds balance");
+        uint256 accountLockBalance = _locked[account];
+        require(accountLockBalance >= amount, "CRT: unlock amount exceeds balance");
         // Overflow not possible: the sum of all balances is capped by totalSupply, and the sum is preserved by
         // decrementing then incrementing.
         _locked[account] -= amount;
-        _balances[account] = accountBalance + amount;
+        _balances[account] += amount;
         emit UnlockCRT(account, amount);
     }
 }

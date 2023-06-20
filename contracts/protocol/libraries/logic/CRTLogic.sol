@@ -124,6 +124,8 @@ library CRTLogic {
         console.log("calculateCRTRepay - newltv is", vars.newltv);
         vars.cf = ltv;
         console.log("calculateCRTRepay - currentLtv is", userStateVars.currentLtv);
+        console.log("calculateCRTRepay -  vars.cf is",  vars.cf);
+
         if (vars.newltv <= vars.cf) {
             return (userlockBalance, PercentageMath.PERCENTAGE_FACTOR);
         }
