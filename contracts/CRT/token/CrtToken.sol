@@ -85,7 +85,7 @@ contract CrtToken is ICRT, IERC20, IERC20Metadata, Context {
      * {IERC20-balanceOf} and {IERC20-transfer}.
      */
     function decimals() public view virtual override returns (uint8) {
-        return 18;
+        return 8;
     }
 
     function totalSupply() public view virtual override returns (uint256) {

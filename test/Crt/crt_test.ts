@@ -1,15 +1,17 @@
 import { hre } from "../../helpers/hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
+import { expect } from "chai";
 
 import { Counter } from "../../typechain-types";
 
 import { TokenContractName } from '../../helpers/types';
-import { getCounter } from "../../helpers/contracts-helpers";
+import { approveToken4Counter, getCounter } from "../../helpers/contracts-helpers";
+import { getTokenContract } from '../../helpers/contracts-getter';
 
 import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
 import { DAIHolder, ETHHolder, USDCHolder } from "../../helpers/holder";
-import { borrowERC20, depositERC20, depositWETH } from "../helper/operationHelper";
+import { checkBalance, borrowTokenWithCRT, depositERC20, depositWETH, transferErc20, mintCRT } from "../helper/operationHelper";
 
 describe("test CRT Function", function() {
     var counter: Counter;
@@ -34,21 +36,36 @@ describe("test CRT Function", function() {
         ETHuser = await hre.ethers.getSigner(ETHHolder);
         counter = await getCounter(admin);
         let depositAmount = "1000";
-        let riskTier = 2;
+        let riskTier = 1;
         await depositERC20(USDCuser, "USDC", riskTier, depositAmount);
-        depositAmount = "1000";
+        depositAmount = "2000";
         await depositERC20(DAIuser, "DAI", riskTier, depositAmount);
         await depositWETH(ETHuser, riskTier, depositAmount);
     })
 
 
     it('borrow DAI from Counter',async () => {
+        let tokenSymbol = 'USDC';
+        let token = await getTokenContract(tokenSymbol);
+        let token_test = await token.symbol();
+        expect(token_test).to.eq(tokenSymbol);
 
-        let borrowAmount = "500";
+        let transferAmount = "400";
+        await transferErc20(USDCuser, user0.address, token, transferAmount);
+        await checkBalance(token, user0.address);
+        let depositRisk = 1;
+        let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+        let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 6);
+        await approveToken4Counter(user0, token, transferAmount);
+        await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
+
+        let fakeCRTamount = '250';
+
+        let borrowAmount = "450";
         let borrowSymbol = 'DAI';
-        let borrowRisk = 2;
-        await borrowERC20(USDCuser, borrowSymbol, borrowRisk, borrowAmount);
-        let userAccountData = await counter.getUserAccountData(USDCuser.address, borrowRisk);
+        let borrowRisk = 1;
+        await borrowTokenWithCRT(user0, borrowSymbol, borrowRisk, borrowAmount, fakeCRTamount);
+        userAccountData = await counter.getUserAccountData(user0.address, borrowRisk);
         console.log(userAccountData);
     });
 })

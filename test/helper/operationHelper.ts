@@ -133,7 +133,7 @@ export async function borrowERC20(signer: SignerWithAddress,tokenName: string, r
 
 export async function mintCRT(signer: SignerWithAddress, amount: string, address?: string) {
     const crt: Contract = await getCRT();
-    const mintAmount = ethers.utils.parseEther(amount);
+    const mintAmount = ethers.utils.parseUnits(amount, await crt.decimals());
     console.log("Mint CRT...")
     const balanceT0 = await crt.balanceOf(signer.address);
     console.log("   Before mint, signer CRT balance is: ", balanceT0);
@@ -142,7 +142,7 @@ export async function mintCRT(signer: SignerWithAddress, amount: string, address
     console.log("   After mint, signer CRT balance is: ", balanceT1);
 };
 
-export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: string, amount: string, crtAmount: string) {
+export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: string, riskTier: number,amount: string, crtAmount: string) {
     console.log();
     console.log("Borrow...")
     const counter: Counter = await getCounter(signer);
@@ -165,7 +165,7 @@ export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: st
     let crtenable = true;
     let userConfig = await counter.getUserConfiguration(signer.address);
     console.log(userConfig);
-    const tx = await counter.connect(signer).borrow(token.address, borrowAmount, 2, 0, signer.address, crtenable);
+    const tx = await counter.connect(signer).borrow(token.address, riskTier, borrowAmount, 2, 0, signer.address, crtenable);
     
     const balanceT1: BigNumber = await token.balanceOf(signer.address);
     const debtT1: BigNumber = await debtToken.balanceOf(signer.address);
@@ -176,7 +176,7 @@ export async function borrowTokenWithCRT(signer: SignerWithAddress,tokenName: st
     console.log("   After Borrow, borrower debt balance is: ", debtT1.toString());
     console.log("   After Borrow, scaled debt token totalSupply is: ", scaledTotalSupplyT1.toString());
     console.log("   After Borrow, debt token totalSupply is: ", TotalSupplyT1.toString());
-    const counterInfo = await getCounterAssetInfo(signer, token.address);
+    const counterInfo = await getCounterAssetInfo(signer, token.address, riskTier);
     console.log("");
 
 }
