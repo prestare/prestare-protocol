@@ -177,6 +177,15 @@ contract PTokenAAVE is
     emit Mint(treasury, amount, index);
   }
 
+  function mintToCRT(address crt, uint256 amount, uint256 index) external override onlyCounter {
+    if (amount == 0) {
+      return;
+    }
+    _mint(crt, amount.rayDiv(index));
+    emit Transfer(address(0), crt, amount);
+    emit Mint(crt, amount, index);
+  }
+  
   /**
    * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the pToken
    * - Only callable by the Counter

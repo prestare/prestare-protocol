@@ -120,7 +120,8 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(
-    DataTypes.ReserveData storage reserve
+    DataTypes.ReserveData storage reserve,
+    address crtaddress
   ) internal {
     console.log("");
     console.log("updateState...");
@@ -150,7 +151,8 @@ library ReserveLogic {
       previousVariableBorrowIndex,
       newLiquidityIndex,
       newVariableBorrowIndex,
-      lastUpdatedTimestamp
+      lastUpdatedTimestamp,
+      crtaddress
     );
     scaledVariableDebt =
       IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
@@ -245,7 +247,8 @@ library ReserveLogic {
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
     uint256 newVariableBorrowIndex,
-    uint40 timestamp
+    uint40 timestamp,
+    address crtAddress
   ) internal {
     MintToTreasuryLocalVars memory vars;
 
@@ -268,6 +271,7 @@ library ReserveLogic {
 
     if (vars.amountToMint != 0) {
       IPToken(reserve.pTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      IPToken(reserve.pTokenAddress).mintToCRT(crtAddress, vars.amountToMint, newLiquidityIndex);
     }
   }
   

@@ -139,7 +139,7 @@ contract CounterCollateralManager is
       }
     }
 
-    debtReserve.updateState();
+    debtReserve.updateState(_crtaddress);
 
     if (vars.userVariableDebt >= vars.actualDebtToLiquidate) {
       IVariableDebtToken(debtReserve.variableDebtTokenAddress).burn(
@@ -166,7 +166,7 @@ contract CounterCollateralManager is
         emit ReserveUsedAsCollateralEnabled(liqParams.collateralAsset, msg.sender);
       }
     } else {
-      collateralReserve.updateState();
+      collateralReserve.updateState(_crtaddress);
       collateralReserve.updateInterestRates(
         liqParams.collateralAsset,
         address(vars.collateralPtoken),

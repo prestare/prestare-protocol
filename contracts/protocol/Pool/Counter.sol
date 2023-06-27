@@ -106,7 +106,7 @@ contract Counter is ICounter, CounterStorage {
     address pToken = reserve.pTokenAddress;
     console.log("pToken is ", pToken);
     console.log("reserve updateState...");
-    reserve.updateState();
+    reserve.updateState(_crtaddress);
     console.log("reserve updateInterestRates");
     reserve.updateInterestRates(asset, pToken, amount, 0);
     console.log("reserve update success");
@@ -157,7 +157,7 @@ contract Counter is ICounter, CounterStorage {
       _addressesProvider.getPriceOracle()
     );
 
-    reserve.updateState();
+    reserve.updateState(_crtaddress);
 
     reserve.updateInterestRates(asset, pToken, 0, amountToWithdraw);
 
@@ -284,7 +284,7 @@ contract Counter is ICounter, CounterStorage {
       crtNeed
     );
 
-    reserve.updateState();
+    reserve.updateState(_crtaddress);
 
     bool isFirstBorrowing = false;
 
@@ -430,7 +430,7 @@ contract Counter is ICounter, CounterStorage {
       _usersCredit[vars.user].crtValue = userStatVar.newCrtValue;
     }
 
-    reserve.updateState();
+    reserve.updateState(_crtaddress);
     console.log("update state finish");
     IVariableDebtToken(reserve.variableDebtTokenAddress).burn(
         vars.onBehalfOf,

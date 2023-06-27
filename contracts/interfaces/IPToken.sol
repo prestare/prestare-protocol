@@ -66,6 +66,14 @@ interface IPToken is IERC20, IScaledBalanceToken {
   function mintToTreasury(uint256 amount, uint256 index) external;
 
   /**
+   * @dev Mints pTokens to the crt
+   * @param crt The crtaddress
+   * @param amount The amount of tokens getting minted
+   * @param index The new liquidity index of the reserve
+   */
+  function mintToCRT(address crt, uint256 amount, uint256 index) external;
+
+  /**
    * @dev Transfers pTokens in the event of a borrow being liquidated, in case the liquidators reclaims the pToken
    * @param from The address getting liquidated, current owner of the pTokens
    * @param to The recipient
