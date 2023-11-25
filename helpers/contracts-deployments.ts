@@ -97,7 +97,7 @@ export const deployCounterConfigurator =async (admin: Signer) => {
 export const deployAllMockTokens = async (admin: Signer) => {
     const tokens: { [symbol: string]: Contract | MintableERC20} = {};
 
-    const protocolConfig = getReservesConfigByPool(Prestare.MainnetFork);
+    const protocolConfig = getReservesConfigByPool(Prestare.Mainnet);
 
     for (const tokenSymbol of Object.keys(TokenContractName)) {
         let decimals = '18';

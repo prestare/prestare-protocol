@@ -5,11 +5,11 @@ import { BigNumber, Contract } from "ethers";
 import { TokenContractName } from '../../helpers/types';
 import { getCounter } from "../../helpers/contracts-helpers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployOnMainnetFork } from "../../scripts/deployOnMainnetFork";
+import { deployOnMainnet } from "../../scripts/deploy/deployOnMainnetFork";
 import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getPTokenContract } from '../../helpers/contracts-getter';
 import { expect } from "chai";
 import { Counter } from "../../typechain-types";
-import { MainnetFork } from "../../markets/mainnet";
+import { Mainnet } from "../../markets/mainnet";
 import { DataTypes } from "../../typechain-types/contracts/interfaces/ICounter";
 import { oneRay } from "../../helpers/constants";
 import { aDAIHolder, DAIHolder } from "../../helpers/holder";
@@ -23,7 +23,7 @@ describe("check borrow Configuration", function() {
     var aDaiUser: SignerWithAddress;
     var DaiUser: SignerWithAddress;
     before(async () => {
-        await deployOnMainnetFork();
+        await deployOnMainnet();
         admin = (await hre.ethers.getSigners())[0];
         counter = await getCounter(admin);
         await impersonateAccount(aDAIHolder);

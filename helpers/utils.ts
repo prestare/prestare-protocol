@@ -191,7 +191,7 @@ export const initReservesByHelper = async (
     });
   }
   
-  // console.log("finish initInputParams");
+  console.log("finish initInputParams");
   const configurator = await getCounterConfigurator();
   for (let index = 0; index < initInputParams.length; index++) {
     // console.log(initInputParams[index]);
@@ -200,8 +200,10 @@ export const initReservesByHelper = async (
       // console.log("%s Special interestRateStrategy", initInputParams[index].pTokenSymbol);
       let underlyingAsset = tokenAddresses[initInputParams[index].pTokenSymbol.slice(2)];
       let aToken = initInputParams[index].underlyingAsset;
+      // console.log("aToken is,", aToken);
       // console.log("underlyingAsset is", underlyingAsset);
-      aTokenIRModel.connect(admin).createMarket(
+      // console.log("initInputParams[index].pToken is", initInputParams[index].pToken)
+      await aTokenIRModel.connect(admin).createMarket(
         underlyingAsset,
         aToken,
         initInputParams[index].pToken,

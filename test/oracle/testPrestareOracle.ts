@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { Signer } from 'ethers';
 import { getAllAssetTokens, getPrestareOracle } from "../../helpers/contracts-helpers";
 import { getTokenContract } from "../../helpers/contracts-getter";
-import { MainnetFork } from "../../markets/mainnet";
+import { Mainnet } from "../../markets/mainnet";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
     console.log("   WETH price is ", wethPrice.toString());
     console.log("   aWETH price is ", aWETHPrice.toString());
     // later we will use expect to write testcase
-    const ReserveAssetsAddress = MainnetFork.ReserveAssetsAddress.MainnetFork;
+    const ReserveAssetsAddress = Mainnet.ReserveAssetsAddress.Mainnet;
     let assets = await getAllAssetTokens(ReserveAssetsAddress);
     let tokens = Object.entries(assets);
     for (let [symbol, token] of tokens) {

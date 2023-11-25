@@ -23,10 +23,10 @@ export enum ContractName {
 }
 
 export enum EthereumNetwork {
-    MainnetFork = 'MainnetFork',
+    Mainnet = 'Mainnet',
     main = 'main',
     hardhat = 'hardhat',
-    goerli = 'goerli',
+    Goerli = 'Goerli',
 }
 
 export enum TokenContractName {
@@ -72,5 +72,6 @@ export interface IReserveParams extends IReserveBorrowParams, IReserveCollateral
 }
 
 export enum Prestare {
-    MainnetFork = 'MainnetFork',
+    Mainnet = 'Mainnet',
+    Goerli = "Goerli"
 }

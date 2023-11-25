@@ -10,13 +10,15 @@ async function main() {
     console.log("Test paToken's balanceOf is equal to the amount of the underlying asset instead of atoken");
 
     // 修改不同的代币持有者
-    await impersonateAccount(USDCHolder);
-    const fakeSigner: SignerWithAddress = await hre.ethers.getSigner(USDCHolder);
+    await impersonateAccount(ETHHolder);
+    const fakeSigner: SignerWithAddress = await hre.ethers.getSigner(ETHHolder);
     // 代币名字
     let tokenSymbol = 'USDC';
     let amount = '100000';
+
     // 修改dicimals
-    let inputAmount = ethers.utils.parseUnits(amount, 6);
+    let inputAmount = ethers.utils.parseUnits(amount, 18);
+
 
     let to = "0x78210A0480Cb3d1426111f3cB57fB90620e774e1";
 
@@ -24,7 +26,10 @@ async function main() {
     let Token = await getTokenContract(tokenSymbol);
     let pToken = await getPTokenContract(tokenSymbol);
 
-    console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
+
+    // transfer ERC20 token
+    // let Token = await getTokenContract(tokenSymbol);
+    // let pToken = await getPTokenContract(tokenSymbol);
 
     await Token.connect(fakeSigner).transfer(to, inputAmount);
     console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
@@ -37,6 +42,7 @@ async function main() {
     // const receipt = await fakeSigner.sendTransaction(tx)
     // await receipt.wait() // 等待链上确认交易
     // console.log(receipt)
+
     
 }
 

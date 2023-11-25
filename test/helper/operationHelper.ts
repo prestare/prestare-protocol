@@ -6,9 +6,9 @@ import { getCounter, approveToken4Counter, getCRT } from '../../helpers/contract
 import { Counter } from '../../typechain-types';
 
 export async function checkBalance(contract: Contract, address: string) {
-    const tokenName = await contract.name();
+    const tokenSymbol = await contract.symbol();
     const balance = await contract.balanceOf(address);
-    console.log(`   Token %s user %s`, tokenName, address);
+    console.log(`   Token %s user %s`, tokenSymbol, address);
     console.log(`   balance is %s`, balance.toString());
 }
 
@@ -36,6 +36,22 @@ export async function mintToken(signer: SignerWithAddress, tokenName: string, am
     // const wei = ethers.utils.parseEther("1");
 }
 
+export const transferErc20 = async (from: Signer, to: string, token: Contract, transferAmount: string) => {
+    let transfer = ethers.utils.parseUnits(transferAmount, await token.decimals());
+    console.log(transfer.toString());
+    let receipt = await token.connect(from).transfer(to, transfer);
+    await receipt.wait();
+}
+
+export const transferETH =async (from: Signer, to: string, transferAmount: string) => {
+    let transfer = ethers.utils.parseEther(transferAmount);
+    let tx = {
+        to: to,
+        value: transfer
+    }
+    let receipt = await from.sendTransaction(tx);
+    await receipt.wait();
+}
 export async function depositToken(signer: SignerWithAddress,tokenName: string, amount: string) {
     console.log();
     console.log("deposit %s ...", tokenName);
@@ -46,12 +62,13 @@ export async function depositToken(signer: SignerWithAddress,tokenName: string, 
     const name = await token.name();
     const decimals = await token.decimals();
     console.log("Token is: ", name);
+    const approveTx = await approveToken4Counter(signer, token, amount);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
-    const approveTx = await approveToken4Counter(signer, token, depositAmount);
     console.log("   Before deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);
     const tx = await counter.deposit(token.address, depositAmount, signer.address, 0);
+    await tx.wait();
     console.log("   After deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);
@@ -156,7 +173,7 @@ export async function repayToken(signer: SignerWithAddress,tokenName: string, am
 
     const repayApprove = ethers.constants.MaxUint256;
     const repayAmount = ethers.utils.parseUnits(amount, decimals);
-    const approveTx = await approveToken4Counter(signer, token, repayApprove);
+    // const approveTx = await approveToken4Counter(signer, token, repayApprove);
 
     const tx = await counter.connect(signer).repay(token.address, repayAmount, 2, signer.address);
 

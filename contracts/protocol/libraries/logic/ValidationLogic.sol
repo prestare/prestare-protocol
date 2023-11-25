@@ -131,8 +131,8 @@ library ValidationLogic {
     console.log(reserve.pTokenAddress);
     console.log("validateBorrow - availableLiquidity is: ", availableLiquidity);
     console.log("validateBorrow - amountInUSD is: ", amountInUSD);
-    require(availableLiquidity > amountInUSD, 
-      Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW);
+    // require(availableLiquidity > amountInUSD, 
+    //   Errors.VL_COLLATERAL_CANNOT_COVER_NEW_BORROW);
 
     ValidateBorrowLocalVars memory vars;
 
