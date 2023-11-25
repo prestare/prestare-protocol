@@ -10,33 +10,33 @@ async function main() {
     console.log("Test paToken's balanceOf is equal to the amount of the underlying asset instead of atoken");
 
     // 修改不同的代币持有者
-    await impersonateAccount(ETHHolder);
-    const fakeSigner: SignerWithAddress = await hre.ethers.getSigner(ETHHolder);
+    await impersonateAccount(USDCHolder);
+    const fakeSigner: SignerWithAddress = await hre.ethers.getSigner(USDCHolder);
     // 代币名字
-    let tokenSymbol = 'ETH';
-    let amount = '100';
+    let tokenSymbol = 'USDC';
+    let amount = '100000';
     // 修改dicimals
-    let inputAmount = ethers.utils.parseUnits(amount, 18);
+    let inputAmount = ethers.utils.parseUnits(amount, 6);
 
-    let to = "0xD5A832A6813631380b72C503c980a4d2B30934F1";
+    let to = "0x78210A0480Cb3d1426111f3cB57fB90620e774e1";
 
     // transfer ERC20 token
-    // let Token = await getTokenContract(tokenSymbol);
-    // let pToken = await getPTokenContract(tokenSymbol);
+    let Token = await getTokenContract(tokenSymbol);
+    let pToken = await getPTokenContract(tokenSymbol);
 
-    // console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
+    console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
 
-    // await Token.connect(fakeSigner).transfer(to, inputAmount);
-    // console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
+    await Token.connect(fakeSigner).transfer(to, inputAmount);
+    console.log("%s balance: ", tokenSymbol, await Token.balanceOf(to));
 
     // transfer ETH
-    const tx = {
-        to: to,
-        value: ethers.utils.parseEther("100")
-    }
-    const receipt = await fakeSigner.sendTransaction(tx)
-    await receipt.wait() // 等待链上确认交易
-    console.log(receipt)
+    // const tx = {
+    //     to: to,
+    //     value: ethers.utils.parseEther("100000")
+    // }
+    // const receipt = await fakeSigner.sendTransaction(tx)
+    // await receipt.wait() // 等待链上确认交易
+    // console.log(receipt)
     
 }
 

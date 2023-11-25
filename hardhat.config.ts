@@ -3,7 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 import "@nomiclabs/hardhat-ethers";
 import '@typechain/hardhat';
 import '@typechain/ethers-v5';
-
+import 'hardhat-contract-sizer';
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -17,21 +17,25 @@ const config: HardhatUserConfig = {
     settings: {
       optimizer: {
         enabled: true,
-        runs: 100000,
+        runs: 20000,
       },
     }
   },
 
   networks: {
     hardhat: {
-      chainId: 2,
+      chainId: 4545,
       forking: {
         url: "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_ID,
-        blockNumber: 16802614
+        blockNumber: 17256120
       },
       gasPrice: 0,
       initialBaseFeePerGas: 0,
-      loggingEnabled: false
+      loggingEnabled: true
+    },
+    goerli: {
+      url: "https://eth-goerli.g.alchemy.com/v2/" + process.env.GOERLI_ID,
+      chainId: 5,
     },
     localhost: {
       url: "http://120.53.224.174:8545",
@@ -39,6 +43,10 @@ const config: HardhatUserConfig = {
     },
     local: {
       url: "http://127.0.0.1:8545/"
+    },
+    prestare: {
+      url: "http://120.53.224.174:8547",
+      chainId: 4545,
     }
   }
 };

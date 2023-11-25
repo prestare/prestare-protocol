@@ -142,13 +142,13 @@ export const deployOnMainnetFork = async function() {
     console.log("Deploy finished...");
 }
 
-// async function main() {
-//     await deployOnMainnetFork();
-// }
+async function main() {
+    await deployOnMainnetFork();
+}
 
-// main()
-//     .then(() => process.exit(0))
-//     .catch((error) => {
-//         console.error(error);
-//         process.exit(1);
-//     });
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
