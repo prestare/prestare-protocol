@@ -47,6 +47,12 @@ export const getTokenContract = async (tokenName: string) => {
     return tokenContract;
 }
 
+export const getERC20Contract = async (tokenName: string) => {
+    let tokenAddress = (await getTokenAddress(tokenName)).address;
+    let tokenContract = await getStandardERC20(tokenAddress);
+    return tokenContract;
+}
+
 export const getPTokenContract = async (tokenName:string) => {
     let tokenAddress = (await getPTokenAddress(tokenName)).address;
     let pTokenContract = await getPToken(tokenAddress);

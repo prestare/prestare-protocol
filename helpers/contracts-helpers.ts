@@ -245,7 +245,7 @@ export const approveToken4Counter = async (signer: Signer, token: Contract, amou
   let approveAmount = ethers.utils.parseUnits(amount, await token.decimals());
   // console.log(approveAmount)
   await checkBalance(token, await signer.getAddress());
-  // console.log(counterAddress)
+  console.log(counterAddress.address)
   let tx = await token.connect(signer).approve(counterAddress.address, approveAmount);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("   After  Approve, allowance is: ", balanceAfter.toString());

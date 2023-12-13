@@ -1,13 +1,18 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { borrowToken } from '../helper/operationHelper';
+import { borrowERC20 } from '../helper/operationHelper';
+import { getCounter } from "../../helpers/contracts-helpers";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
-    let amount = '1';
     const [admin, user1] = await hre.ethers.getSigners();
+    let borrowAmount = "100";
+    let borrowSymbol = 'USDC';
+    let borrowRisk = 1;
+    await borrowERC20(user1, borrowSymbol, borrowRisk, borrowAmount);
 
-    let tokenSymbol = 'DAI';
-    await borrowToken(user1, tokenSymbol, amount);
+    let counter = await getCounter(admin);
+    let userAccountData = await counter.getUserAccountData(user1.address, borrowRisk);
+    console.log(userAccountData);
 }
 
 main()

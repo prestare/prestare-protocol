@@ -1,6 +1,6 @@
 import { ethers, Signer, BigNumber, Contract } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getPTokenContract } from '../../helpers/contracts-getter';
+import { getCounterAssetInfo, getVariableDebtTokenContract, getTokenContract, getERC20Contract, getPTokenContract } from '../../helpers/contracts-getter';
 import { getCounter, approveToken4Counter, getCRT, getWETHGateway } from '../../helpers/contracts-helpers';
 
 import { Counter } from '../../typechain-types';
@@ -69,21 +69,22 @@ export async function depositERC20(signer: SignerWithAddress, tokenName: string,
     console.log();
     console.log("deposit %s ...", tokenName);
     const counter: Counter = await getCounter(signer);
-    const token: Contract = await getTokenContract(tokenName);
+    const token: Contract = await getERC20Contract(tokenName);
     tokenName = constructTokenRiskName(tokenName, riskTier);
     const pToken: Contract = await getPTokenContract(tokenName);
     console.log(await pToken.symbol());
     const name = await token.name();
     const decimals = await token.decimals();
     console.log("Token is: ", name);
-    // const approveTx = await approveToken4Counter(signer, token, amount);
+    const approveTx = await approveToken4Counter(signer, token, amount);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
     console.log("   Before deposit, ");
     await checkBalance(token, signer.address);
     // console.log("check",pToken);
     await checkBalance(pToken, signer.address);
+    
     const tx = await counter.connect(signer).deposit(token.address, riskTier, depositAmount, signer.address, 0);
-    // await tx.wait();
+    await tx.wait();
     console.log("   After deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);
@@ -92,7 +93,7 @@ export async function depositERC20(signer: SignerWithAddress, tokenName: string,
     console.log("");
 }
 
-export const depositWETH =async (signer: SignerWithAddress, riskTier: number,amount: string) => {
+export const depositWETH =async (signer: SignerWithAddress, riskTier: number, amount: string) => {
     console.log();
     const WETHGATEWAY: Contract = await getWETHGateway();
     const counter: Contract = await getCounter(signer);
