@@ -6,8 +6,11 @@ import { getCounter, approveToken4Counter, getCRT, getWETHGateway } from '../../
 import { Counter } from '../../typechain-types';
 
 export async function checkBalance(contract: Contract, address: string) {
+    // console.log(contract.address)
     const tokenSymbol = await contract.symbol();
+    console.log(tokenSymbol)
     const balance = await contract.balanceOf(address);
+    // console.log(balance)
     console.log(`   Token %s user %s`, tokenSymbol, address);
     console.log(`   balance is %s`, balance.toString());
 }
@@ -62,7 +65,7 @@ export const constructTokenRiskName = (tokenName: string, riskTier: number) => {
     }
     return tokenName;
 }
-export async function depositERC20(signer: SignerWithAddress, tokenName: string, riskTier: number,amount: string) {
+export async function depositERC20(signer: SignerWithAddress, tokenName: string, riskTier: number, amount: string) {
     console.log();
     console.log("deposit %s ...", tokenName);
     const counter: Counter = await getCounter(signer);
@@ -73,13 +76,14 @@ export async function depositERC20(signer: SignerWithAddress, tokenName: string,
     const name = await token.name();
     const decimals = await token.decimals();
     console.log("Token is: ", name);
-    const approveTx = await approveToken4Counter(signer, token, amount);
+    // const approveTx = await approveToken4Counter(signer, token, amount);
     const depositAmount = ethers.utils.parseUnits(amount, decimals);
     console.log("   Before deposit, ");
     await checkBalance(token, signer.address);
+    // console.log("check",pToken);
     await checkBalance(pToken, signer.address);
-    const tx = await counter.deposit(token.address, riskTier, depositAmount, signer.address, 0);
-    await tx.wait();
+    const tx = await counter.connect(signer).deposit(token.address, riskTier, depositAmount, signer.address, 0);
+    // await tx.wait();
     console.log("   After deposit, ");
     await checkBalance(token, signer.address);
     await checkBalance(pToken, signer.address);

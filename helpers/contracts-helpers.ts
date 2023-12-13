@@ -6,7 +6,9 @@ import { getCounterAddress } from './contracts-getter';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Counter, Counter__factory } from "../typechain-types";
 import { MintableERC20} from '../typechain-types/contracts/mocks/tokens/MintableERC20';
+import { ERC20 } from "../typechain-types/contracts/CRT/openzeppelin";
 import { getPlatformInterestRateModel } from "./contracts-getter";
+import { checkBalance } from "../test/helper/operationHelper";
 
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
@@ -76,9 +78,9 @@ export const getAllAssetTokens = async (reserveAddress: any) => {
     const tokens: {[key: string]: Contract} = await Object.keys(TokenContractName).reduce(
       async (acc, tokenSymbol) => {
         const accumulator: any = await acc;
-        // console.log(tokenSymbol);
+        console.log(tokenSymbol);
         const address = reserveAddress[tokenSymbol];
-        // console.log(address);
+        console.log(address);
         accumulator[tokenSymbol] = await getMintableERC20(address);
         return Promise.resolve(acc);
       },
@@ -115,6 +117,13 @@ export const insertAllAssetToken = async (network: Prestare) => {
 
 export const getMintableERC20 = async (address: string) =>
   await (await hre.ethers.getContractFactory("MintableERC20")).attach(
+    address || (
+        await getDb().get(`${ContractName.MintableERC20}.${hre.network.name}`).value()
+      ).address,
+);
+
+export const getStandardERC20 = async (address: string) =>
+  await (await hre.ethers.getContractFactory("contracts/CRT/openzeppelin/ERC20.sol:ERC20")).attach(
     address || (
         await getDb().get(`${ContractName.MintableERC20}.${hre.network.name}`).value()
       ).address,
@@ -234,8 +243,10 @@ export const approveToken4Counter = async (signer: Signer, token: Contract, amou
   console.log("   Before Approve, allowance is: ", balanceBefore.toString());
   // console.log(counterAddress.address);
   let approveAmount = ethers.utils.parseUnits(amount, await token.decimals());
+  // console.log(approveAmount)
+  await checkBalance(token, await signer.getAddress());
+  // console.log(counterAddress)
   let tx = await token.connect(signer).approve(counterAddress.address, approveAmount);
-  // console.log(tx);
   const balanceAfter = await token.allowance(signer.getAddress(), counterAddress.address);
   console.log("   After  Approve, allowance is: ", balanceAfter.toString());
 }

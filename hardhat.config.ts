@@ -27,7 +27,7 @@ const config: HardhatUserConfig = {
       chainId: 2,
       forking: {
         url: "https://eth-mainnet.g.alchemy.com/v2/" + process.env.ALCHEMY_ID,
-        blockNumber: 18710385
+        blockNumber: 18710387
 
         // url: "https://eth-goerli.g.alchemy.com/v2/" + process.env.GOERLI_ID,
         // blockNumber: 9000000
@@ -41,7 +41,7 @@ const config: HardhatUserConfig = {
       chainId: 2,
     },
     local: {
-      url: "http://127.0.0.1:8545/"
+      url: "http://0.0.0.0:8545/"
     }
   }
 };

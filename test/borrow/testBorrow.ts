@@ -3,11 +3,11 @@ import { borrowToken } from '../helper/operationHelper';
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
-    let amount = '10';
-    const [signer,] = await hre.ethers.getSigners();
+    let amount = '1';
+    const [admin, user1] = await hre.ethers.getSigners();
 
     let tokenSymbol = 'DAI';
-    await borrowToken(signer, tokenSymbol, amount);
+    await borrowToken(user1, tokenSymbol, amount);
 }
 
 main()

@@ -1,5 +1,5 @@
 import { getCounter, getDbProperty, getPrestareOracle } from './contracts-helpers';
-import { getMintableERC20, getPToken, getVariableDebtToken, getATokenRateModel } from './contracts-helpers';
+import { getMintableERC20, getStandardERC20, getPToken, getVariableDebtToken, getATokenRateModel } from './contracts-helpers';
 import { ContractName } from './types';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { Signer } from 'ethers';
