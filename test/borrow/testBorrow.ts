@@ -5,9 +5,9 @@ const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
     const [admin, user1] = await hre.ethers.getSigners();
-    let borrowAmount = "100";
+    let borrowAmount = "50";
     let borrowSymbol = 'USDC';
-    let borrowRisk = 1;
+    let borrowRisk = 2;
     await borrowERC20(user1, borrowSymbol, borrowRisk, borrowAmount);
 
     let counter = await getCounter(admin);
