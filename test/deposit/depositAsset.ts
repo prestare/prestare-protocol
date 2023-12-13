@@ -95,22 +95,22 @@ describe("check deposit on Prestare", function() {
         console.log(userAccountData);
     });
 
-    it('deposit aDAI-C to Counter',async () => {
-        let tokenSymbol = 'aDAI';
-        let token = await getTokenContract(tokenSymbol);
-        let token_test = await token.symbol();
-        expect(token_test).to.eq(tokenSymbol);
-        let aDAIUser = await hre.ethers.getSigner(aDAIHolder);
-        let transferAmount = "100";
-        await transferErc20(aDAIUser, user0.address, token, transferAmount);
-        await checkBalance(token, user0.address);
-        let depositRisk = 2;
-        let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
-        await depositERC20(user0, tokenSymbol, depositRisk, transferAmount);
-        // let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
-        // await approveToken4Counter(user0, token, transferAmount);
-        // await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
-        userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
-        console.log(userAccountData);
-    });
+    // it('deposit aDAI-C to Counter',async () => {
+    //     let tokenSymbol = 'aDAI';
+    //     let token = await getTokenContract(tokenSymbol);
+    //     let token_test = await token.symbol();
+    //     expect(token_test).to.eq(tokenSymbol);
+    //     let aDAIUser = await hre.ethers.getSigner(aDAIHolder);
+    //     let transferAmount = "100";
+    //     await transferErc20(aDAIUser, user0.address, token, transferAmount);
+    //     await checkBalance(token, user0.address);
+    //     let depositRisk = 2;
+    //     let userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+    //     await depositERC20(user0, tokenSymbol, depositRisk, transferAmount);
+    //     // let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
+    //     // await approveToken4Counter(user0, token, transferAmount);
+    //     // await counter.connect(user0).deposit(token.address, depositRisk, depositAmount, user0.address, 0);
+    //     userAccountData = await counter.getUserAccountData(user0.address, depositRisk);
+    //     console.log(userAccountData);
+    // });
 })

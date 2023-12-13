@@ -159,13 +159,13 @@ export const deployOnMainnet = async function() {
     console.log();
 }
 
-// async function main() {
-//     await deployOnMainnet();
-// }
+async function main() {
+    await deployOnMainnet();
+}
 
-// main()
-//     .then(() => process.exit(0))
-//     .catch((error) => {
-//         console.error(error);
-//         process.exit(1);
-//     });
+main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
