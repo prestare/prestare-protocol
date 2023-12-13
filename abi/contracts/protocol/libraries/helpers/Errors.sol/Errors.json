@@ -1,0 +1,1142 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "Errors",
+  "sourceName": "contracts/protocol/libraries/helpers/Errors.sol",
+  "abi": [
+    {
+      "inputs": [],
+      "name": "ASSET_CLASS_IS_TOO_LOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ASSET_HAVE_BEEN_ACLASS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "BORROW_ALLOWANCE_NOT_ENOUGH",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CALLER_NOT_POOL_ADMIN",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CRT_INVALID_AMOUNT",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CT_CALLER_MUST_BE_Counter",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CT_CANNOT_GIVE_ALLOWANCE_TO_HIMSELF",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CT_INVALID_BURN_AMOUNT",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CT_INVALID_MINT_AMOUNT",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "CT_TRANSFER_AMOUNT_NOT_GT_0",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPAPR_INVALID_ADDRESSES_PROVIDER_ID",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPAPR_PROVIDER_NOT_REGISTERED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPCM_COLLATERAL_CANNOT_BE_LIQUIDATED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPCM_HEALTH_FACTOR_NOT_BELOW_THRESHOLD",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPCM_NOT_ENOUGH_LIQUIDITY_TO_LIQUIDATE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPCM_NO_ERRORS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPCM_SPECIFIED_CURRENCY_NOT_BORROWED_BY_USER",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_CALLER_NOT_EMERGENCY_ADMIN",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_ADDRESSES_PROVIDER_ID",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_CONFIGURATION",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_STABLE_DEBT_TOKEN_POOL_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_STABLE_DEBT_TOKEN_UNDERLYING_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_VARIABLE_DEBT_TOKEN_POOL_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_VARIABLE_DEBT_TOKEN_UNDERLYING_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_INVALID_pToken_POOL_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LPC_RESERVE_LIQUIDITY_NOT_0",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_CALLER_MUST_BE_AN_pToken",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_CALLER_NOT_Counter_CONFIGURATOR",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_FAILED_COLLATERAL_SWAP",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_FAILED_REPAY_WITH_COLLATERAL",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INCONSISTENT_FLASHLOAN_PARAMS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INCONSISTENT_PARAMS_LENGTH",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INCONSISTENT_PROTOCOL_ACTUAL_BALANCE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INTEREST_RATE_REBALANCE_CONDITIONS_NOT_MET",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INVALID_EQUAL_ASSETS_TO_SWAP",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INVALID_FLASHLOAN_MODE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_IS_PAUSED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_LIQUIDATION_CALL_FAILED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_NOT_CONTRACT",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_NOT_ENOUGH_LIQUIDITY_TO_BORROW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_NOT_ENOUGH_STABLE_BORROW_BALANCE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_NO_MORE_RESERVES_ALLOWED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_REENTRANCY_NOT_ALLOWED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "LP_REQUESTED_AMOUNT_TOO_SMALL",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MATH_ADDITION_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MATH_DIVISION_BY_ZERO",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MATH_MULTIPLICATION_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MATH_MULTIPLICATION_UNDERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "MATH_PERCENTAGE_DIVISION_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RC_INVALID_DECIMALS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RC_INVALID_LIQ_BONUS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RC_INVALID_LIQ_THRESHOLD",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RC_INVALID_LTV",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RC_INVALID_RESERVE_FACTOR",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_LIQUIDITY_INDEX_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_LIQUIDITY_RATE_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_RESERVE_ALREADY_INITIALIZED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_STABLE_BORROW_RATE_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_VARIABLE_BORROW_INDEX_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "RL_VARIABLE_BORROW_RATE_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SDT_BURN_EXCEEDS_BALANCE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "SDT_STABLE_DEBT_OVERFLOW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "UL_INVALID_INDEX",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_AMOUNT_BIGGER_THAN_MAX_LOAN_SIZE_STABLE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_BORROWING_NOT_ENABLED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_COLLATERAL_BALANCE_IS_0",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_COLLATERAL_CANNOT_COVER_NEW_BORROW",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_COLLATERAL_SAME_AS_BORROWING_CURRENCY",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_CURRENT_AVAILABLE_LIQUIDITY_NOT_ENOUGH",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_DEPOSIT_ALREADY_IN_USE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_HEALTH_FACTOR_LOWER_THAN_LIQUIDATION_THRESHOLD",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_INCONSISTENT_FLASHLOAN_PARAMS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_INVALID_AMOUNT",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_INVALID_INTEREST_RATE_MODE_SELECTED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NOT_ENOUGH_AVAILABLE_USER_BALANCE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NO_ACTIVE_RESERVE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NO_DEBT_OF_SELECTED_TYPE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NO_EXPLICIT_AMOUNT_TO_REPAY_ON_BEHALF",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NO_STABLE_RATE_LOAN_IN_RESERVE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_NO_VARIABLE_RATE_LOAN_IN_RESERVE",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_RESERVE_FROZEN",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_STABLE_BORROWING_NOT_ENABLED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_TRANSFER_NOT_ALLOWED",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "VL_UNDERLYING_BALANCE_NOT_GREATER_THAN_0",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "WRONG_TARGET_ASSET_TIER",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "ZERO_ADDRESS",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6110ab61003a600b82828239805160001a60731461002d57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600436106104d75760003560e01c80636ab5e6151161028d578063c09e261811610166578063daf23547116100d8578063e7bf91b31161009c578063e7bf91b314610f62578063f11c672014610f83578063f3d9cc1114610fa4578063f902735d14610fc4578063fb681def14610fe5578063fe75fd261461100657600080fd5b8063daf2354714610ebd578063e0d7dfd714610ede578063e29425dc14610eff578063e2c16d6914610f20578063e663274814610f4157600080fd5b8063d3e370ee1161012a578063d3e370ee14610df8578063d44e8e8814610e19578063d57bb96414610e3a578063d6f681b614610e5b578063d7510e0c14610e7c578063d7b079aa14610e9c57600080fd5b8063c09e261814610d53578063c2d628df14610d74578063cc5fc44c14610d95578063cdad445a14610db6578063d397c3a714610dd757600080fd5b806399473d63116101ff578063a8440241116101c3578063a844024114610c8d578063ac75323614610cad578063b72e40c714610cce578063b80c1e6e14610cef578063b89652cd14610d11578063bd013f5b14610d3257600080fd5b806399473d6314610be75780639ae6cf7314610c095780639be4f03a14610c2a578063a2fbc8ad14610c4b578063a39ed4ff14610c6c57600080fd5b806376f190301161025157806376f1903014610b225780637865a62714610b4357806378d8734414610b635780638637da9b14610b84578063871938a814610ba657806391a9fb1814610bc657600080fd5b80636ab5e61514610a7d5780636d422aa114610a9e578063708b8dd314610abf57806371a629da14610adf57806374203e7314610b0057600080fd5b8063390f34ba116103bf5780634a529f91116103315780635e869ff1116102f55780635e869ff1146109b6578063614cf6a1146109d7578063637a5a12146109f85780636422b25714610a1957806364560b6514610a3a5780636534479914610a5c57600080fd5b80634a529f91146109105780634fe4f1ab14610931578063538ba4f91461095257806355bab12c146109745780635a9786d41461099557600080fd5b806341b40ba51161038357806341b40ba51461084a5780634349e3d81461086b578063449420041461088c57806344dc4f70146108ad57806347d25300146108ce5780634927c63a146108ef57600080fd5b8063390f34ba146107a65780633aa786a8146107c75780633b5d25aa146107e85780633f5d6ec814610808578063407374a41461082957600080fd5b80631ec68b1d116104585780632ea347b01161041c5780632ea347b0146106e0578063333e8ea81461070157806333bfe85b1461072257806335a9d21d1461074457806336565ab1146107655780633872b0ad1461078557600080fd5b80631ec68b1d1461063b57806322a6f08e1461065c5780632ace698a1461067d5780632b34c3491461069e5780632b9c57f6146106bf57600080fd5b80630f5ee4821161049f5780630f5ee482146105975780631291a38b146105b8578063179476c5146105d95780631befa78d146105f95780631ea7c6041461061a57600080fd5b806302454ad3146104dc578063029d23441461051357806306f355ad146105345780630b8fd588146105555780630c265de214610576575b600080fd5b6104fd60405180604001604052806002815260200161373760f01b81525081565b60405161050a9190611027565b60405180910390f35b6104fd60405180604001604052806002815260200161068760f31b81525081565b6104fd60405180604001604052806002815260200161033360f41b81525081565b6104fd60405180604001604052806002815260200161191b60f11b81525081565b6104fd60405180604001604052806002815260200161363360f01b81525081565b6104fd60405180604001604052806002815260200161343960f01b81525081565b6104fd604051806040016040528060028152602001611a9b60f11b81525081565b6104fd604051806040016040528060018152602001600d60fa1b81525081565b6104fd60405180604001604052806002815260200161038360f41b81525081565b6104fd604051806040016040528060028152602001611a1b60f11b81525081565b6104fd60405180604001604052806002815260200161031360f41b81525081565b6104fd604051806040016040528060028152602001610c8d60f21b81525081565b6104fd60405180604001604052806002815260200161313160f01b81525081565b6104fd60405180604001604052806002815260200161064760f31b81525081565b6104fd6040518060400160405280600281526020016106a760f31b81525081565b6104fd604051806040016040528060028152602001610d4d60f21b81525081565b6104fd604051806040016040528060028152602001611b9960f11b81525081565b6104fd6040518060400160405280600381526020016232303160e81b81525081565b6104fd60405180604001604052806002815260200161313960f01b81525081565b6104fd604051806040016040528060018152602001603760f81b81525081565b6104fd60405180604001604052806002815260200161333960f01b81525081565b6104fd60405180604001604052806002815260200161323560f01b81525081565b6104fd604051806040016040528060028152602001610c4d60f21b81525081565b6104fd604051806040016040528060018152602001600760fb1b81525081565b6104fd60405180604001604052806002815260200161037360f41b81525081565b6104fd60405180604001604052806002815260200161343360f01b81525081565b6104fd60405180604001604052806002815260200161066760f31b81525081565b6104fd60405180604001604052806002815260200161035360f41b81525081565b6104fd604051806040016040528060028152602001611a9960f11b81525081565b6104fd60405180604001604052806002815260200161323160f01b81525081565b6104fd60405180604001604052806002815260200161373560f01b81525081565b6104fd60405180604001604052806002815260200161189960f11b81525081565b6104fd60405180604001604052806002815260200161323360f01b81525081565b6104fd60405180604001604052806002815260200161353160f01b81525081565b6104fd6040518060400160405280600381526020016203330360ec1b81525081565b6104fd60405180604001604052806002815260200161036360f41b81525081565b6104fd60405180604001604052806002815260200161034360f41b81525081565b6104fd60405180604001604052806002815260200161363960f01b81525081565b6104fd60405180604001604052806002815260200161363760f01b81525081565b6104fd6040518060400160405280600281526020016106e760f31b81525081565b6104fd60405180604001604052806002815260200161313760f01b81525081565b6104fd6040518060400160405280600381526020016203230360ec1b81525081565b6104fd604051806040016040528060028152602001610ccd60f21b81525081565b6104fd60405180604001604052806002815260200161062760f31b81525081565b6104fd60405180604001604052806002815260200161353560f01b81525081565b6104fd604051806040016040528060018152602001603960f81b81525081565b6104fd604051806040016040528060028152602001610d0d60f21b81525081565b6104fd6040518060400160405280600381526020016218981960e91b81525081565b6104fd60405180604001604052806002815260200161363560f01b81525081565b6104fd604051806040016040528060018152602001601960f91b81525081565b6104fd60405180604001604052806002815260200161323760f01b81525081565b6104fd6040518060400160405280600381526020016219181960e91b81525081565b6104fd604051806040016040528060018152602001603160f81b81525081565b6104fd60405180604001604052806002815260200161313560f01b81525081565b6104fd6040518060400160405280600381526020016203130360ec1b81525081565b6104fd60405180604001604052806002815260200161333560f01b81525081565b6104fd60405180604001604052806002815260200161373160f01b81525081565b6104fd60405180604001604052806002815260200161333160f01b81525081565b6104fd60405180604001604052806002815260200161313360f01b81525081565b6104fd604051806040016040528060018152602001603560f81b81525081565b6104fd60405180604001604052806002815260200161333360f01b81525081565b6104fd604051806040016040528060028152602001610dcd60f21b81525081565b6104fd6040518060400160405280600381526020016231303160e81b81525081565b6104fd60405180604001604052806002815260200161191960f11b81525081565b6104fd6040518060400160405280600281526020016106c760f31b81525081565b6104fd60405180604001604052806002815260200161333760f01b81525081565b6104fd60405180604001604052806002815260200161363160f01b81525081565b6104fd60405180604001604052806002815260200161343560f01b81525081565b6104fd60405180604001604052806002815260200161373960f01b81525081565b6104fd60405180604001604052806002815260200161323960f01b81525081565b6104fd604051806040016040528060028152602001611b9b60f11b81525081565b6104fd604051806040016040528060028152602001611b1b60f11b81525081565b6104fd604051806040016040528060028152602001610d8d60f21b81525081565b6104fd60405180604001604052806002815260200161343160f01b81525081565b6104fd604051806040016040528060018152602001603360f81b81525081565b6104fd60405180604001604052806002815260200161373360f01b81525081565b6104fd60405180604001604052806002815260200161189b60f11b81525081565b6104fd60405180604001604052806002815260200161199b60f11b81525081565b6104fd60405180604001604052806002815260200161032360f41b81525081565b6104fd60405180604001604052806002815260200161353960f01b81525081565b6104fd60405180604001604052806002815260200161353760f01b81525081565b6104fd60405180604001604052806002815260200161343760f01b81525081565b6104fd60405180604001604052806002815260200161353360f01b81525081565b6104fd604051806040016040528060018152602001601b60f91b81525081565b6104fd604051806040016040528060028152602001611b1960f11b81525081565b6104fd604051806040016040528060028152602001611a1960f11b81525081565b6104fd60405180604001604052806002815260200161199960f11b81525081565b600060208083528351808285015260005b8181101561105457858101830151858201604001528201611038565b506000604082860101526040601f19601f830116850101925050509291505056fea2646970667358221220e06ec6134c2d99c74256083bd5b2d1a2db0d477f724a715204016377c687b3d864736f6c63430008110033",
+  "deployedBytecode": "0x73000000000000000000000000000000000000000030146080604052600436106104d75760003560e01c80636ab5e6151161028d578063c09e261811610166578063daf23547116100d8578063e7bf91b31161009c578063e7bf91b314610f62578063f11c672014610f83578063f3d9cc1114610fa4578063f902735d14610fc4578063fb681def14610fe5578063fe75fd261461100657600080fd5b8063daf2354714610ebd578063e0d7dfd714610ede578063e29425dc14610eff578063e2c16d6914610f20578063e663274814610f4157600080fd5b8063d3e370ee1161012a578063d3e370ee14610df8578063d44e8e8814610e19578063d57bb96414610e3a578063d6f681b614610e5b578063d7510e0c14610e7c578063d7b079aa14610e9c57600080fd5b8063c09e261814610d53578063c2d628df14610d74578063cc5fc44c14610d95578063cdad445a14610db6578063d397c3a714610dd757600080fd5b806399473d63116101ff578063a8440241116101c3578063a844024114610c8d578063ac75323614610cad578063b72e40c714610cce578063b80c1e6e14610cef578063b89652cd14610d11578063bd013f5b14610d3257600080fd5b806399473d6314610be75780639ae6cf7314610c095780639be4f03a14610c2a578063a2fbc8ad14610c4b578063a39ed4ff14610c6c57600080fd5b806376f190301161025157806376f1903014610b225780637865a62714610b4357806378d8734414610b635780638637da9b14610b84578063871938a814610ba657806391a9fb1814610bc657600080fd5b80636ab5e61514610a7d5780636d422aa114610a9e578063708b8dd314610abf57806371a629da14610adf57806374203e7314610b0057600080fd5b8063390f34ba116103bf5780634a529f91116103315780635e869ff1116102f55780635e869ff1146109b6578063614cf6a1146109d7578063637a5a12146109f85780636422b25714610a1957806364560b6514610a3a5780636534479914610a5c57600080fd5b80634a529f91146109105780634fe4f1ab14610931578063538ba4f91461095257806355bab12c146109745780635a9786d41461099557600080fd5b806341b40ba51161038357806341b40ba51461084a5780634349e3d81461086b578063449420041461088c57806344dc4f70146108ad57806347d25300146108ce5780634927c63a146108ef57600080fd5b8063390f34ba146107a65780633aa786a8146107c75780633b5d25aa146107e85780633f5d6ec814610808578063407374a41461082957600080fd5b80631ec68b1d116104585780632ea347b01161041c5780632ea347b0146106e0578063333e8ea81461070157806333bfe85b1461072257806335a9d21d1461074457806336565ab1146107655780633872b0ad1461078557600080fd5b80631ec68b1d1461063b57806322a6f08e1461065c5780632ace698a1461067d5780632b34c3491461069e5780632b9c57f6146106bf57600080fd5b80630f5ee4821161049f5780630f5ee482146105975780631291a38b146105b8578063179476c5146105d95780631befa78d146105f95780631ea7c6041461061a57600080fd5b806302454ad3146104dc578063029d23441461051357806306f355ad146105345780630b8fd588146105555780630c265de214610576575b600080fd5b6104fd60405180604001604052806002815260200161373760f01b81525081565b60405161050a9190611027565b60405180910390f35b6104fd60405180604001604052806002815260200161068760f31b81525081565b6104fd60405180604001604052806002815260200161033360f41b81525081565b6104fd60405180604001604052806002815260200161191b60f11b81525081565b6104fd60405180604001604052806002815260200161363360f01b81525081565b6104fd60405180604001604052806002815260200161343960f01b81525081565b6104fd604051806040016040528060028152602001611a9b60f11b81525081565b6104fd604051806040016040528060018152602001600d60fa1b81525081565b6104fd60405180604001604052806002815260200161038360f41b81525081565b6104fd604051806040016040528060028152602001611a1b60f11b81525081565b6104fd60405180604001604052806002815260200161031360f41b81525081565b6104fd604051806040016040528060028152602001610c8d60f21b81525081565b6104fd60405180604001604052806002815260200161313160f01b81525081565b6104fd60405180604001604052806002815260200161064760f31b81525081565b6104fd6040518060400160405280600281526020016106a760f31b81525081565b6104fd604051806040016040528060028152602001610d4d60f21b81525081565b6104fd604051806040016040528060028152602001611b9960f11b81525081565b6104fd6040518060400160405280600381526020016232303160e81b81525081565b6104fd60405180604001604052806002815260200161313960f01b81525081565b6104fd604051806040016040528060018152602001603760f81b81525081565b6104fd60405180604001604052806002815260200161333960f01b81525081565b6104fd60405180604001604052806002815260200161323560f01b81525081565b6104fd604051806040016040528060028152602001610c4d60f21b81525081565b6104fd604051806040016040528060018152602001600760fb1b81525081565b6104fd60405180604001604052806002815260200161037360f41b81525081565b6104fd60405180604001604052806002815260200161343360f01b81525081565b6104fd60405180604001604052806002815260200161066760f31b81525081565b6104fd60405180604001604052806002815260200161035360f41b81525081565b6104fd604051806040016040528060028152602001611a9960f11b81525081565b6104fd60405180604001604052806002815260200161323160f01b81525081565b6104fd60405180604001604052806002815260200161373560f01b81525081565b6104fd60405180604001604052806002815260200161189960f11b81525081565b6104fd60405180604001604052806002815260200161323360f01b81525081565b6104fd60405180604001604052806002815260200161353160f01b81525081565b6104fd6040518060400160405280600381526020016203330360ec1b81525081565b6104fd60405180604001604052806002815260200161036360f41b81525081565b6104fd60405180604001604052806002815260200161034360f41b81525081565b6104fd60405180604001604052806002815260200161363960f01b81525081565b6104fd60405180604001604052806002815260200161363760f01b81525081565b6104fd6040518060400160405280600281526020016106e760f31b81525081565b6104fd60405180604001604052806002815260200161313760f01b81525081565b6104fd6040518060400160405280600381526020016203230360ec1b81525081565b6104fd604051806040016040528060028152602001610ccd60f21b81525081565b6104fd60405180604001604052806002815260200161062760f31b81525081565b6104fd60405180604001604052806002815260200161353560f01b81525081565b6104fd604051806040016040528060018152602001603960f81b81525081565b6104fd604051806040016040528060028152602001610d0d60f21b81525081565b6104fd6040518060400160405280600381526020016218981960e91b81525081565b6104fd60405180604001604052806002815260200161363560f01b81525081565b6104fd604051806040016040528060018152602001601960f91b81525081565b6104fd60405180604001604052806002815260200161323760f01b81525081565b6104fd6040518060400160405280600381526020016219181960e91b81525081565b6104fd604051806040016040528060018152602001603160f81b81525081565b6104fd60405180604001604052806002815260200161313560f01b81525081565b6104fd6040518060400160405280600381526020016203130360ec1b81525081565b6104fd60405180604001604052806002815260200161333560f01b81525081565b6104fd60405180604001604052806002815260200161373160f01b81525081565b6104fd60405180604001604052806002815260200161333160f01b81525081565b6104fd60405180604001604052806002815260200161313360f01b81525081565b6104fd604051806040016040528060018152602001603560f81b81525081565b6104fd60405180604001604052806002815260200161333360f01b81525081565b6104fd604051806040016040528060028152602001610dcd60f21b81525081565b6104fd6040518060400160405280600381526020016231303160e81b81525081565b6104fd60405180604001604052806002815260200161191960f11b81525081565b6104fd6040518060400160405280600281526020016106c760f31b81525081565b6104fd60405180604001604052806002815260200161333760f01b81525081565b6104fd60405180604001604052806002815260200161363160f01b81525081565b6104fd60405180604001604052806002815260200161343560f01b81525081565b6104fd60405180604001604052806002815260200161373960f01b81525081565b6104fd60405180604001604052806002815260200161323960f01b81525081565b6104fd604051806040016040528060028152602001611b9b60f11b81525081565b6104fd604051806040016040528060028152602001611b1b60f11b81525081565b6104fd604051806040016040528060028152602001610d8d60f21b81525081565b6104fd60405180604001604052806002815260200161343160f01b81525081565b6104fd604051806040016040528060018152602001603360f81b81525081565b6104fd60405180604001604052806002815260200161373360f01b81525081565b6104fd60405180604001604052806002815260200161189b60f11b81525081565b6104fd60405180604001604052806002815260200161199b60f11b81525081565b6104fd60405180604001604052806002815260200161032360f41b81525081565b6104fd60405180604001604052806002815260200161353960f01b81525081565b6104fd60405180604001604052806002815260200161353760f01b81525081565b6104fd60405180604001604052806002815260200161343760f01b81525081565b6104fd60405180604001604052806002815260200161353360f01b81525081565b6104fd604051806040016040528060018152602001601b60f91b81525081565b6104fd604051806040016040528060028152602001611b1960f11b81525081565b6104fd604051806040016040528060028152602001611a1960f11b81525081565b6104fd60405180604001604052806002815260200161199960f11b81525081565b600060208083528351808285015260005b8181101561105457858101830151858201604001528201611038565b506000604082860101526040601f19601f830116850101925050509291505056fea2646970667358221220e06ec6134c2d99c74256083bd5b2d1a2db0d477f724a715204016377c687b3d864736f6c63430008110033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

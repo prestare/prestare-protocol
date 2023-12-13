@@ -1,0 +1,118 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "PriceOracle",
+  "sourceName": "contracts/mocks/oracle/PriceOracle.sol",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "AssetPriceUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "timestamp",
+          "type": "uint256"
+        }
+      ],
+      "name": "EthPriceUpdated",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        }
+      ],
+      "name": "getAssetPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getEthUsdPrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_asset",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "setAssetPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_price",
+          "type": "uint256"
+        }
+      ],
+      "name": "setEthUsdPrice",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b5061020a806100206000396000f3fe608060405234801561001057600080fd5b506004361061004c5760003560e01c806351323f7214610051578063a0a8045e14610066578063b3596f071461007c578063b951883a146100a5575b600080fd5b61006461005f36600461016f565b6100b8565b005b6001545b60405190815260200160405180910390f35b61006a61008a366004610199565b6001600160a01b031660009081526020819052604090205490565b6100646100b33660046101bb565b610113565b6001600160a01b03821660008181526020818152604091829020849055815192835282018390524282820152517fce6e0b57367bae95ca7198e1172f653ea64a645c16ab586b4cefa9237bfc2d929181900360600190a15050565b6001819055604080518281524260208201527fb4f35977939fa8b5ffe552d517a8ff5223046b1fdd3ee0068ae38d1e2b8d0016910160405180910390a150565b80356001600160a01b038116811461016a57600080fd5b919050565b6000806040838503121561018257600080fd5b61018b83610153565b946020939093013593505050565b6000602082840312156101ab57600080fd5b6101b482610153565b9392505050565b6000602082840312156101cd57600080fd5b503591905056fea2646970667358221220ec470d5ccd906513b1d47b3d53a7ea00f8e774121b84c78f8097acd57606797e64736f6c63430008110033",
+  "deployedBytecode": "0x608060405234801561001057600080fd5b506004361061004c5760003560e01c806351323f7214610051578063a0a8045e14610066578063b3596f071461007c578063b951883a146100a5575b600080fd5b61006461005f36600461016f565b6100b8565b005b6001545b60405190815260200160405180910390f35b61006a61008a366004610199565b6001600160a01b031660009081526020819052604090205490565b6100646100b33660046101bb565b610113565b6001600160a01b03821660008181526020818152604091829020849055815192835282018390524282820152517fce6e0b57367bae95ca7198e1172f653ea64a645c16ab586b4cefa9237bfc2d929181900360600190a15050565b6001819055604080518281524260208201527fb4f35977939fa8b5ffe552d517a8ff5223046b1fdd3ee0068ae38d1e2b8d0016910160405180910390a150565b80356001600160a01b038116811461016a57600080fd5b919050565b6000806040838503121561018257600080fd5b61018b83610153565b946020939093013593505050565b6000602082840312156101ab57600080fd5b6101b482610153565b9392505050565b6000602082840312156101cd57600080fd5b503591905056fea2646970667358221220ec470d5ccd906513b1d47b3d53a7ea00f8e774121b84c78f8097acd57606797e64736f6c63430008110033",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
