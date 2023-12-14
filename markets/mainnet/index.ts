@@ -46,10 +46,10 @@ export const Mainnet = {
         USDC: 0,
         USDT: 0,
         // BUSD: strategyBUSD,
-        aDAI: 2,
-        aWETH: 2,
-        aUSDC: 2,
-        aUSDT: 2
+        // aDAI: 2,
+        // aWETH: 2,
+        // aUSDC: 2,
+        // aUSDT: 2
     },
     BRiskTierReservesConfig: {
         DAI: strategyDAI_B,

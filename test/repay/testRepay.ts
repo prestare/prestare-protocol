@@ -1,20 +1,36 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
+import { impersonateAccount } from "@nomicfoundation/hardhat-network-helpers";
 import { TokenContractName } from '../../helpers/types';
-
-import { repayToken } from '../helper/operationHelper';
+import { USDCHolder } from "../../helpers/holder";
+import { repayErc20 } from "../helper/operationHelper";
+import { getTokenContract } from "../../helpers/contracts-getter";
+import { transferErc20 } from "../helper/operationHelper";
+import { approveToken4Counter, getCounter, getCRT } from "../../helpers/contracts-helpers";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 
 async function main() {
+    let [admin,user1,] = await hre.ethers.getSigners();
 
-    let tokens = Object.keys(TokenContractName)
+    // await impersonateAccount(USDCHolder);
+    // let USDCUser = await hre.ethers.getSigner(USDCHolder);
 
-    let [signer,] = await hre.ethers.getSigners();
+    let repayAmount = "25";
+    let repaySymbol = "USDC";
+    let repayRisk = 2;
+    // let repaytoken = await getTokenContract(repaySymbol);
 
-    let tokenSymbol = 'DAI';
+    // await transferErc20(USDCUser, user1.address, repaytoken, repayAmount);
+    // await approveToken4Counter(user1, repaytoken, repayAmount);
+    // await repayErc20(user1, repaySymbol, repayRisk, repayAmount);
 
-    let repayAmount = '120';
+    let counter = await getCounter(admin);
 
-    // await repayToken(signer, tokenSymbol, repayAmount);
+    let userAccountData = await counter.getUserAccountData(user1.address, repayRisk);
+    console.log(userAccountData);
+
+    let crtToken = await getCRT();
+    let crtBalance = await crtToken.balanceOf(user1.address);
+    console.log("User Crt Balance is:", crtBalance);
 }
 
 main()

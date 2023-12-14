@@ -4,7 +4,7 @@ const hre: HardhatRuntimeEnvironment = require('hardhat');
 import { DAIHolder, ETHHolder, USDCHolder, USDTHolder } from "../helpers/holder";
 import { checkBalance, depositERC20, depositWETH, transferErc20, transferETH } from "../test/helper/operationHelper";
 import { getPTokenContract, getTokenContract } from "../helpers/contracts-getter";
-import { getCounter, getPToken, getCRT } from "../helpers/contracts-helpers";
+import { getCounter, getPToken, getCRT, getVariableDebtToken } from "../helpers/contracts-helpers";
 import { BigNumber, Contract, Signer } from "ethers";
 import { getPrestareOracle } from "../helpers/contracts-helpers";
 import { constructTokenRiskName } from "../test/helper/operationHelper";
@@ -42,45 +42,29 @@ async function main() {
 
     let counter = await getCounter(admin);
     console.log("counter", counter.address);
-    // let priceOrcale = await getPrestareOracle();
-    // let oracle_dicimals = ethers.utils.parseUnits("1", 8);
-    console.log()
-    let reservelist = await counter.getReservesList();
-    // console.log(reservelist);
-
-    let dai = "DAI";
-    let dai_token = await getTokenContract(dai);
-    // console.log("DAI is", dai_token.address)
-    
-    // 获取所有等级pToken对应的token总量
-    let daiTotalDeposit = await calAssetTotalDeposit(dai, 1);
-    // 获取价格预言机上的价格，计算总价格
-    let dai_totalAmount = await calculateTotalAssetUSD(dai_token, daiTotalDeposit);
-
     let usdc = "USDC";
     let usdc_token = await getTokenContract(usdc);
-    // 获取所有等级pToken对应的token总量
-    let usdcTotalDeposit = await calAssetTotalDeposit(usdc, 1);
-    // 获取价格预言机上的价格，计算总价格
-    let usdc_totalAmount = await calculateTotalAssetUSD(usdc_token, usdcTotalDeposit);
 
-    let weth = "WETH";
-    let weth_token = await getTokenContract(weth);
-    let wethTotalDeposit = await calAssetTotalDeposit(weth, 1);
-    // 获取价格预言机上的价格，计算总价格
-    let weth_totalAmount = await calculateTotalAssetUSD(weth_token, wethTotalDeposit);
+    // 目前只有USDC-B 有进行借贷，所以supply rate
+    // 2代表着B类资产
+    let reserveInfo = await counter.getReserveData(usdc_token.address, 2);
+    console.log(reserveInfo);
+    //     5 00000 0000 0000 0000 0000 0000
+    // 1000000000000000000000000000
+    //        2252 8375 1984 3275 0483 5695 = 0.02%
+    //    10 01250 0138 6524 9614 5460 6071 = 10%
+    let ray = ethers.utils.parseUnits("1", 27);
+    console.log("Supply Interest Rate is %s %", reserveInfo.currentLiquidityRate.mul(100).div(ray));
+    console.log("Borrow Interest Rate is %s %", reserveInfo.currentVariableBorrowRate.mul(100).div(ray));
 
-    // 获取 Total CRT minded
-    let crtToken = await getCRT();
-    let crtTotalSupply = await crtToken.totalSupply();
-    let crtDecimals = await crtToken.decimals();
-    let divfactor = ethers.utils.parseUnits("1", crtDecimals)
-    crtTotalSupply = crtTotalSupply.div(divfactor);
-    console.log("User Crt total Supply is:", crtTotalSupply);
-
-    let reserveInfo = await counter.getReserveData(dai, 1);
+    let pUSDC_B = await getPToken(reserveInfo.pTokenAddress);
+    let pUSDC_BSupply = await pUSDC_B.totalSupply(); 
+    console.log("pUSDC_B total Supply is", pUSDC_BSupply);
+    let pUSDC_B_debt = await getVariableDebtToken(reserveInfo.variableDebtTokenAddress);
+    let pUSDC_B_debtSupply = await pUSDC_B_debt.totalSupply();
+    console.log("pUSDC_B debt Token total Supply is", pUSDC_B_debtSupply);
+    console.log("USDC Tier: B", )
 }
-
 main()
     .then(() => process.exit(0))
     .catch((error) => {

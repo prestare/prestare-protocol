@@ -42,25 +42,25 @@ async function main() {
 
     let [admin,user1,] = await hre.ethers.getSigners();
     console.log(user1.address)
-    // await depositAll(admin);
+    await depositAll(admin);
 
-    // let depositRisk = 1;
-    // let counter = await getCounter(admin);
-    // let userAccountData = await counter.getUserAccountData(user1.address, depositRisk);
+    let depositRisk = 1;
+    let counter = await getCounter(admin);
+    let userAccountData = await counter.getUserAccountData(user1.address, depositRisk);
 
-    // let tokenSymbol = 'DAI';
-    // let transferAmount = "1200";
-    // let token = await getTokenContract(tokenSymbol);
-    // let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
-    // let DAIUser = await hre.ethers.getSigner(DAIHolder);
-    // await transferErc20(DAIUser, user1.address, token, transferAmount);
-    // await checkBalance(token, user1.address);
+    let tokenSymbol = 'DAI';
+    let transferAmount = "1200";
+    let token = await getTokenContract(tokenSymbol);
+    let depositAmount = hre.ethers.utils.parseUnits(transferAmount, 18);
+    let DAIUser = await hre.ethers.getSigner(DAIHolder);
+    await transferErc20(DAIUser, user1.address, token, transferAmount);
+    await checkBalance(token, user1.address);
 
-    // await approveToken4Counter(user1, token, transferAmount);
+    await approveToken4Counter(user1, token, transferAmount);
     
-    // await counter.connect(user1).deposit(token.address, depositRisk, depositAmount, user1.address, 0);
-    // userAccountData = await counter.getUserAccountData(user1.address, depositRisk);
-    // console.log(userAccountData);
+    await counter.connect(user1).deposit(token.address, depositRisk, depositAmount, user1.address, 0);
+    userAccountData = await counter.getUserAccountData(user1.address, depositRisk);
+    console.log(userAccountData);
 }
 
 main()
