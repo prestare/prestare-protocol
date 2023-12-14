@@ -51,11 +51,15 @@ async function main() {
     console.log(reserveInfo);
     //     5 00000 0000 0000 0000 0000 0000
     // 1000000000000000000000000000
+    //       11320 3984 3656 6107 4079 3674 = 0.1%
     //        2252 8375 1984 3275 0483 5695 = 0.02%
     //    10 01250 0138 6524 9614 5460 6071 = 10%
+    //    10 06250 04715312049687699255
     let ray = ethers.utils.parseUnits("1", 27);
-    console.log("Supply Interest Rate is %s %", reserveInfo.currentLiquidityRate.mul(100).div(ray));
-    console.log("Borrow Interest Rate is %s %", reserveInfo.currentVariableBorrowRate.mul(100).div(ray));
+    let supplyIR = reserveInfo.currentLiquidityRate.mul(10000).div(ray);
+    let borrowIR = reserveInfo.currentVariableBorrowRate.mul(10000).div(ray);
+    console.log("Supply Interest Rate is %s %", (supplyIR.toNumber() / 100).toFixed(2));
+    console.log("Borrow Interest Rate is %s %", (borrowIR.toNumber() / 100).toFixed(2));
 
     let pUSDC_B = await getPToken(reserveInfo.pTokenAddress);
     let pUSDC_BSupply = await pUSDC_B.totalSupply(); 
@@ -63,7 +67,7 @@ async function main() {
     let pUSDC_B_debt = await getVariableDebtToken(reserveInfo.variableDebtTokenAddress);
     let pUSDC_B_debtSupply = await pUSDC_B_debt.totalSupply();
     console.log("pUSDC_B debt Token total Supply is", pUSDC_B_debtSupply);
-    console.log("USDC Tier: B", )
+    console.log("USDC-B Tier is B")
 }
 main()
     .then(() => process.exit(0))
