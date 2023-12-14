@@ -9,7 +9,7 @@ import { BigNumber, Contract, Signer } from "ethers";
 import { getPrestareOracle } from "../helpers/contracts-helpers";
 import { constructTokenRiskName } from "../test/helper/operationHelper";
 import { ethers } from "hardhat";
-
+import { getLtv,getLiquidationThreshold, getLiquidationBonus, getReserveFactor } from "./configParser";
 
 async function main() {
 
@@ -21,30 +21,43 @@ async function main() {
     let usdc = "USDC";
     let usdc_token = await getTokenContract(usdc);
 
-    // 目前只有USDC-C 有进行借贷，所以supply rate
-    // 2代表着C类资产, 1代表B类资产，0代表A类资产
+    // 目前只有USDC-B 有进行借贷，所以supply rate
+    // 2代表着B类资产
     let reserveInfo = await counter.getReserveData(usdc_token.address, 2);
     console.log(reserveInfo);
-    //     5 00000 0000 0000 0000 0000 0000
-    // 1000000000000000000000000000
-    //       11320 3984 3656 6107 4079 3674 = 0.1%
-    //        2252 8375 1984 3275 0483 5695 = 0.02%
-    //    10 01250 0138 6524 9614 5460 6071 = 10%
-    //    10 06250 04715312049687699255
+
     let ray = ethers.utils.parseUnits("1", 27);
     let supplyIR = reserveInfo.currentLiquidityRate.mul(10000).div(ray);
     let borrowIR = reserveInfo.currentVariableBorrowRate.mul(10000).div(ray);
     console.log("Supply Interest Rate is %s %", (supplyIR.toNumber() / 100).toFixed(2));
     console.log("Borrow Interest Rate is %s %", (borrowIR.toNumber() / 100).toFixed(2));
 
-    // 获取pToken地址可以从reserveInfo中获取
-    let pUSDC_C = await getPToken(reserveInfo.pTokenAddress);
-    let pUSDC_CSupply = await pUSDC_C.totalSupply(); 
-    console.log("pUSDC_C total Supply is", pUSDC_CSupply);
+    let assetConfig = await counter.getConfiguration(usdc_token.address, 2);
+    let config = assetConfig.data
+    console.log("MAX LTV: %d %", (getLtv(config) / 100).toFixed(2));
+    console.log("LiquidationThreshold %d %", (getLiquidationThreshold(config) / 100).toFixed(2));
+    console.log("Liquidation Bonus %d %", (getLiquidationBonus(config) / 100).toFixed(2));
+    console.log("Reserve Factor %d %", (getReserveFactor(config) / 100).toFixed(2));
+
+    let avaliableLiquidity = await usdc_token.balanceOf(reserveInfo.pTokenAddress);
     let pUSDC_C_debt = await getVariableDebtToken(reserveInfo.variableDebtTokenAddress);
-    let pUSDC_C_debtSupply = await pUSDC_C_debt.totalSupply();
-    console.log("pUSDC_B debt Token total Supply is", pUSDC_C_debtSupply);
-    console.log("USDC-C Tier is C")
+    let totalVariableDebt = (await pUSDC_C_debt.scaledTotalSupply()).mul(reserveInfo.variableBorrowIndex).div(ray);
+    // console.log(avaliableLiquidity);
+    // console.log(totalVariableDebt);
+    // 保留两位小数
+    let Utilization = totalVariableDebt.mul(10000).div(avaliableLiquidity.add(totalVariableDebt)).toNumber();
+    console.log("Utilization rate: %d %", (Utilization / 100).toFixed(2));
+
+
+    // Your wallet
+    // 查看用户在该等级的资产中的情况，假设还是C等级，user1,存了DAI只借了USDC-c
+    let pUSDC_C = await getPToken(reserveInfo.pTokenAddress);
+    let riskTier = 2;
+    let userAccount = await counter.getUserAccountData(user1.address, 2);
+    let walletBalance = await pUSDC_C.balanceOf(user1.address);
+    console.log(userAccount);
+    let factor = ethers.utils.parseUnits("1", 8)
+    console.log("Available to Borrow: ", userAccount.availableBorrowsUSD.div(factor));
 }
 main()
     .then(() => process.exit(0))
