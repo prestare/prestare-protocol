@@ -255,3 +255,12 @@ export const setPlatformTokenIRModel =async (admin: Signer, PoolAddress:string) 
   const PlatformTokenIRModel = await getPlatformInterestRateModel();
   let tx = await PlatformTokenIRModel.connect(admin).setPool(PoolAddress);
 }
+
+export const getDefaultIRModel = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("DefaultReserveInterestRateStrategy")).attach(
+    address || 
+      (
+        await getDb().get(`${ContractName.DefaultReserveInterestRateStrategy}.${hre.network.name}`).value()
+      ).address
+  )
+}

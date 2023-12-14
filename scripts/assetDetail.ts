@@ -3,8 +3,8 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 const hre: HardhatRuntimeEnvironment = require('hardhat');
 import { DAIHolder, ETHHolder, USDCHolder, USDTHolder } from "../helpers/holder";
 import { checkBalance, depositERC20, depositWETH, transferErc20, transferETH } from "../test/helper/operationHelper";
-import { getPTokenContract, getTokenContract } from "../helpers/contracts-getter";
-import { getCounter, getPToken, getCRT, getVariableDebtToken } from "../helpers/contracts-helpers";
+import { getPTokenContract, getStrategyAddress, getTokenContract } from "../helpers/contracts-getter";
+import { getCounter, getPToken, getCRT, getVariableDebtToken, getDefaultIRModel } from "../helpers/contracts-helpers";
 import { BigNumber, Contract, Signer } from "ethers";
 import { getPrestareOracle } from "../helpers/contracts-helpers";
 import { constructTokenRiskName } from "../test/helper/operationHelper";
@@ -48,16 +48,25 @@ async function main() {
     let Utilization = totalVariableDebt.mul(10000).div(avaliableLiquidity.add(totalVariableDebt)).toNumber();
     console.log("Utilization rate: %d %", (Utilization / 100).toFixed(2));
 
+    // 曲线图，利用率导致利率变化的图
+    let irStrategy = await getDefaultIRModel(reserveInfo.interestRateStrategyAddress);
+    let variableRateSlope1 = await irStrategy.variableRateSlope1();
+    let variableRateSlope2 = await irStrategy.variableRateSlope2();
+    let OPTIMAL_UTILIZATION_RATE = await irStrategy.OPTIMAL_UTILIZATION_RATE();
+
+    console.log("variableRateSlope1 is: ", (variableRateSlope1.mul(100).div(ray).toNumber() / 100).toFixed(2));
+    console.log("variableRateSlope2 is: ", (variableRateSlope2.mul(100).div(ray).toNumber() / 100).toFixed(2));
+    console.log("OPTIMAL_UTILIZATION_RATE is: ", (OPTIMAL_UTILIZATION_RATE.mul(100).div(ray).toNumber() / 100).toFixed(2));
 
     // Your wallet
     // 查看用户在该等级的资产中的情况，假设还是C等级，user1,存了DAI只借了USDC-c
     let pUSDC_C = await getPToken(reserveInfo.pTokenAddress);
     let riskTier = 2;
-    let userAccount = await counter.getUserAccountData(user1.address, 2);
+    let userAccount = await counter.getUserAccountData(user1.address, riskTier);
     let walletBalance = await pUSDC_C.balanceOf(user1.address);
-    console.log(userAccount);
+    // console.log(userAccount);
     let factor = ethers.utils.parseUnits("1", 8)
-    console.log("Available to Borrow: ", userAccount.availableBorrowsUSD.div(factor));
+    console.log("Available to Borrow: %s $", userAccount.availableBorrowsUSD.div(factor).toString());
 }
 main()
     .then(() => process.exit(0))
