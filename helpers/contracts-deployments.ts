@@ -231,6 +231,16 @@ export const deployCRT = async (admin: Signer) => {
   )
 }
 
+export const deployPRS =async (admin:Signer) => {
+  const ContractFac = await hre.ethers.getContractFactory("PRS");
+  // console.log(ContractFac);
+  return deployAndSave(
+    await ContractFac.connect(admin).deploy(),
+    ContractName.PRS
+  )
+  
+}
+
 export const deployRateStrategy = async (
   strategyName: string,
   args: [string, string, string, string, string],

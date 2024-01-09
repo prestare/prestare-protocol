@@ -20,6 +20,7 @@ export enum ContractName {
     DefaultReserveInterestRateStrategy = 'DefaultReserveInterestRateStrategy',
     PlatformTokenInterestRateModel = 'PlatformTokenInterestRateModel',
     CRT = 'CRT',
+    PRS = "PRS",
 }
 
 export enum EthereumNetwork {
