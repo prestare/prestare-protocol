@@ -237,6 +237,10 @@ contract CrtToken is ICRT, IERC20, IERC20Metadata, Context {
         _afterTokenTransfer(address(0), account, amount);
     }
 
+    function burn(address account, uint256 amount) external virtual {
+        _burn(account, amount);
+    }
+
     /**
      * @dev Destroys `amount` tokens from `account`, reducing the
      * total supply.
@@ -253,7 +257,7 @@ contract CrtToken is ICRT, IERC20, IERC20Metadata, Context {
 
         _beforeTokenTransfer(account, address(0), amount);
 
-        uint256 accountBalance = _balances[account];
+        uint256 accountBalance = _balances[account] - _locked[account];
         require(accountBalance >= amount, "ERC20: burn amount exceeds balance");
         unchecked {
             _balances[account] = accountBalance - amount;

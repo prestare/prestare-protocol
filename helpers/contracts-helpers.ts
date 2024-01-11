@@ -205,6 +205,15 @@ export const getCRT = async (address?: string) => {
   );
 }
 
+export const getPRS = async (address?: string) => {
+  return await (await hre.ethers.getContractFactory("PRS")).attach(
+    address ||
+      (
+        await getDb().get(`${ContractName.PRS}.${hre.network.name}`).value()
+      ).address,
+  );
+}
+
 export const getPrestareOracle = async (address?: string) => {
   return await (await hre.ethers.getContractFactory("PrestareOracle")).attach(
     address ||
